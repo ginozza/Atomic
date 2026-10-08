@@ -9,7 +9,7 @@ exports[`PluginStoreItem > (Snapshot) renders default state 1`] = `
     class="flex min-w-0 flex-1 flex-col gap-1"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex flex-wrap items-center gap-2"
     >
       <h3
         class="text-foreground inline-flex flex-row items-baseline gap-2 text-lg leading-tight font-bold select-none"
@@ -19,7 +19,7 @@ exports[`PluginStoreItem > (Snapshot) renders default state 1`] = `
         >
           YouTube Music
         </span>
-        <p
+        <span
           class="text-muted-foreground text-sm font-normal select-none"
         >
           <span
@@ -32,7 +32,7 @@ exports[`PluginStoreItem > (Snapshot) renders default state 1`] = `
           >
             Nuclear Team
           </span>
-        </p>
+        </span>
       </h3>
       <span
         class="border-border inline-flex items-center justify-center border-(length:--border-width) whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold surface-accent-cyan"
@@ -102,7 +102,7 @@ exports[`PluginStoreItem > (Snapshot) renders installed state 1`] = `
     class="flex min-w-0 flex-1 flex-col gap-1"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex flex-wrap items-center gap-2"
     >
       <h3
         class="text-foreground inline-flex flex-row items-baseline gap-2 text-lg leading-tight font-bold select-none"
@@ -112,7 +112,7 @@ exports[`PluginStoreItem > (Snapshot) renders installed state 1`] = `
         >
           YouTube Music
         </span>
-        <p
+        <span
           class="text-muted-foreground text-sm font-normal select-none"
         >
           <span
@@ -125,7 +125,7 @@ exports[`PluginStoreItem > (Snapshot) renders installed state 1`] = `
           >
             Nuclear Team
           </span>
-        </p>
+        </span>
       </h3>
       <span
         class="border-border inline-flex items-center justify-center border-(length:--border-width) whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold surface-accent-cyan"
@@ -191,7 +191,7 @@ exports[`PluginStoreItem > (Snapshot) renders installing state 1`] = `
     class="flex min-w-0 flex-1 flex-col gap-1"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex flex-wrap items-center gap-2"
     >
       <h3
         class="text-foreground inline-flex flex-row items-baseline gap-2 text-lg leading-tight font-bold select-none"
@@ -201,7 +201,7 @@ exports[`PluginStoreItem > (Snapshot) renders installing state 1`] = `
         >
           YouTube Music
         </span>
-        <p
+        <span
           class="text-muted-foreground text-sm font-normal select-none"
         >
           <span
@@ -214,7 +214,7 @@ exports[`PluginStoreItem > (Snapshot) renders installing state 1`] = `
           >
             Nuclear Team
           </span>
-        </p>
+        </span>
       </h3>
       <span
         class="border-border inline-flex items-center justify-center border-(length:--border-width) whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold surface-accent-cyan"
@@ -292,7 +292,7 @@ exports[`PluginStoreItem > (Snapshot) renders with custom labels 1`] = `
     class="flex min-w-0 flex-1 flex-col gap-1"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex flex-wrap items-center gap-2"
     >
       <h3
         class="text-foreground inline-flex flex-row items-baseline gap-2 text-lg leading-tight font-bold select-none"
@@ -302,7 +302,7 @@ exports[`PluginStoreItem > (Snapshot) renders with custom labels 1`] = `
         >
           YouTube Music
         </span>
-        <p
+        <span
           class="text-muted-foreground text-sm font-normal select-none"
         >
           <span
@@ -315,7 +315,7 @@ exports[`PluginStoreItem > (Snapshot) renders with custom labels 1`] = `
           >
             Nuclear Team
           </span>
-        </p>
+        </span>
       </h3>
       <span
         class="border-border inline-flex items-center justify-center border-(length:--border-width) whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold surface-accent-cyan"
@@ -385,7 +385,7 @@ exports[`PluginStoreItem > (Snapshot) renders with long description 1`] = `
     class="flex min-w-0 flex-1 flex-col gap-1"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex flex-wrap items-center gap-2"
     >
       <h3
         class="text-foreground inline-flex flex-row items-baseline gap-2 text-lg leading-tight font-bold select-none"
@@ -395,7 +395,7 @@ exports[`PluginStoreItem > (Snapshot) renders with long description 1`] = `
         >
           YouTube Music
         </span>
-        <p
+        <span
           class="text-muted-foreground text-sm font-normal select-none"
         >
           <span
@@ -408,7 +408,7 @@ exports[`PluginStoreItem > (Snapshot) renders with long description 1`] = `
           >
             Nuclear Team
           </span>
-        </p>
+        </span>
       </h3>
       <span
         class="border-border inline-flex items-center justify-center border-(length:--border-width) whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold surface-accent-cyan"

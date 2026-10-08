@@ -15,7 +15,7 @@ exports[`PlayerShell > matches snapshot with complete layout 1`] = `
       data-tauri-drag-region="true"
     />
     <div
-      class="surface-muted relative grid h-full min-h-0 grid-cols-[auto_1fr_auto]"
+      class="surface-background relative grid h-full min-h-0 grid-cols-[auto_1fr_auto]"
     >
       <div
         animate="[object Object]"
@@ -66,7 +66,7 @@ exports[`PlayerShell > matches snapshot with complete layout 1`] = `
         />
       </div>
       <main
-        class="surface-muted overflow-auto"
+        class="surface-background overflow-auto"
         data-testid="player-workspace-main"
       />
       <div
