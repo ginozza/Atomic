@@ -2,7 +2,7 @@
 
 exports[`FavoriteTracks view > (Snapshot) renders empty state 1`] = `
 <main
-  class="surface-muted overflow-auto"
+  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -16,11 +16,11 @@ exports[`FavoriteTracks view > (Snapshot) renders empty state 1`] = `
       transition="[object Object]"
     >
       <div
-        class="surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-6 pt-6"
+        class="surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-4 pt-2 md:px-6 md:pt-4"
         data-testid="favorite-tracks-view"
       >
         <h1
-          class="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
+          class="hidden"
           data-testid="title"
         >
           Favorite tracks
@@ -29,7 +29,7 @@ exports[`FavoriteTracks view > (Snapshot) renders empty state 1`] = `
           class="relative h-full flex min-h-0 w-full flex-1 flex-col"
         >
           <div
-            class="scrollbar-hide flex h-full w-full flex-col overflow-auto"
+            class="scrollbar-hide flex h-full w-full flex-col overflow-auto pb-36 md:pb-6"
             style="scrollbar-width: none;"
           >
             <div
@@ -92,7 +92,7 @@ exports[`FavoriteTracks view > (Snapshot) renders empty state 1`] = `
 
 exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
 <main
-  class="surface-muted overflow-auto"
+  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -106,11 +106,11 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
       transition="[object Object]"
     >
       <div
-        class="surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-6 pt-6"
+        class="surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-4 pt-2 md:px-6 md:pt-4"
         data-testid="favorite-tracks-view"
       >
         <h1
-          class="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
+          class="hidden"
           data-testid="title"
         >
           Favorite tracks
@@ -119,7 +119,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
           class="relative h-full flex min-h-0 w-full flex-1 flex-col"
         >
           <div
-            class="scrollbar-hide flex h-full w-full flex-col overflow-auto"
+            class="scrollbar-hide flex h-full w-full flex-col overflow-auto pb-36 md:pb-6"
             style="scrollbar-width: none;"
           >
             <div
@@ -195,7 +195,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                       <input
                         class="border-border focus-visible:ring-ring focus-visible:ring-offset-muted w-full px-3 transition-colors focus-visible:outline-none surface-input placeholder:text-input-foreground/60 h-9 text-sm rounded-l border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         data-headlessui-state=""
-                        id="input-:r7:"
+                        id="input-:r1:"
                         placeholder="Filter tracks"
                         type="text"
                         value=""
@@ -334,7 +334,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                         aria-describedby=""
                         aria-disabled="true"
                         aria-roledescription="sortable"
-                        class="border-border bg-muted group border-b-(length:--border-width) select-none"
+                        class="border-border bg-muted group border-b-(length:--border-width) select-none cursor-pointer transition-colors hover:bg-white/5 active:bg-white/10"
                         data-testid="track-row"
                         role="button"
                         style="height: 42px;"
@@ -440,7 +440,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                                 data-headlessui-state=""
                                 data-state="closed"
                                 data-testid="track-context-menu-button"
-                                id="radix-:ra:"
+                                id="radix-:r4:"
                                 type="button"
                               >
                                 <svg
@@ -481,7 +481,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                         aria-describedby=""
                         aria-disabled="true"
                         aria-roledescription="sortable"
-                        class="border-border bg-muted group border-b-(length:--border-width) select-none"
+                        class="border-border bg-muted group border-b-(length:--border-width) select-none cursor-pointer transition-colors hover:bg-white/5 active:bg-white/10"
                         data-testid="track-row"
                         role="button"
                         style="height: 42px;"
@@ -587,7 +587,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                                 data-headlessui-state=""
                                 data-state="closed"
                                 data-testid="track-context-menu-button"
-                                id="radix-:rc:"
+                                id="radix-:r6:"
                                 type="button"
                               >
                                 <svg

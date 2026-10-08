@@ -49,13 +49,17 @@ fn cors_headers(headers: &mut HeaderMap) {
     );
     headers.insert(
         header::ACCESS_CONTROL_ALLOW_HEADERS,
-        "Range".parse().unwrap(),
+        "*".parse().unwrap(),
     );
     headers.insert(
         header::ACCESS_CONTROL_EXPOSE_HEADERS,
         "Content-Range, Content-Length, Accept-Ranges"
             .parse()
             .unwrap(),
+    );
+    headers.insert(
+        "access-control-allow-private-network",
+        "true".parse().unwrap(),
     );
 }
 
@@ -172,6 +176,7 @@ pub fn init_stream_server(app_handle: AppHandle) {
     let client = Arc::new(
         Client::builder()
             .user_agent(USER_AGENT)
+            .danger_accept_invalid_certs(true)
             .read_timeout(Duration::from_secs(300))
             .connect_timeout(Duration::from_secs(30))
             .build()

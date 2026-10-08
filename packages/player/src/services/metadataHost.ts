@@ -103,7 +103,7 @@ export const createMetadataHost = (): MetadataHost => {
     providersHost.get<MetadataProvider>(
       providerId ?? providersHost.getActive('metadata'),
       'metadata',
-    );
+    ) ?? (providersHost.list('metadata')[0] as MetadataProvider | undefined);
 
   const withArtistCapability =
     <TResult>(

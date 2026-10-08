@@ -8,7 +8,7 @@ const canPlayNativeHls = (audio: HTMLAudioElement): boolean =>
 
 export const useHlsSource = (
   audioRef: RefObject<HTMLAudioElement | null>,
-  src: AudioSource,
+  src: AudioSource | null,
 ) => {
   const hlsRef = useRef<Hls | null>(null);
   const prevUrl = useRef<string | null>(null);
@@ -18,7 +18,7 @@ export const useHlsSource = (
     if (!audio) {
       return;
     }
-    if (src.protocol !== 'hls') {
+    if (!src || src.protocol !== 'hls') {
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;

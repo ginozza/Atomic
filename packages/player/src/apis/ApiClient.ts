@@ -9,7 +9,7 @@ export class ApiClient {
     const url = `${this.baseUrl}${path}?t=${Date.now()}`;
     Logger.http.debug(`GET ${url}`);
 
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
 
     if (!response.ok) {
       Logger.http.warn(`GET ${url} -> ${response.status}`);

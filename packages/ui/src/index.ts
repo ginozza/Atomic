@@ -7,6 +7,7 @@ import '@fontsource/space-mono/400.css';
 export * from './components';
 export * from './hooks';
 export * from './utils';
+export * from './utils/time';
 
 export { setupDomMocks } from './test/domMocks';
 export { createFramerMotionMock } from './test/mockFramerMotion';

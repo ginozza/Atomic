@@ -110,6 +110,10 @@ pub struct HttpResponse {
 #[specta::specta]
 pub async fn http_fetch(request: HttpRequest) -> Result<HttpResponse, String> {
     let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(15))
+        .connect_timeout(std::time::Duration::from_secs(8))
+        .danger_accept_invalid_certs(true)
+        .redirect(reqwest::redirect::Policy::limited(10))
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 

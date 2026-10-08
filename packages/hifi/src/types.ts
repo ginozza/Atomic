@@ -2,7 +2,7 @@ import { ScriptHTMLAttributes } from 'react';
 
 export type AudioSource = {
   url: string;
-  protocol: 'file' | 'http' | 'https' | 'hls' | 'mse';
+  protocol: 'file' | 'http' | 'https' | 'hls' | 'mse' | 'youtube';
   durationSeconds?: number;
   codec?: string;
   startPositionSeconds?: number;
@@ -16,7 +16,7 @@ export type HifiLogger = {
 
 export type SoundStatus = 'playing' | 'paused' | 'stopped';
 export type SoundProps = {
-  src: AudioSource;
+  src: AudioSource | null;
   status: SoundStatus;
   seek?: number;
   volume?: number;

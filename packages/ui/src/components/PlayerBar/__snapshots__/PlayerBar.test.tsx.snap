@@ -3,13 +3,13 @@
 exports[`PlayerBar > (Snapshot) active states render 1`] = `
 <DocumentFragment>
   <footer
-    class="surface-bottombar border-border flex h-16 items-center border-t-(length:--border-width) px-4"
+    class="surface-bottombar border-border flex items-center border-t-(length:--border-width) h-auto px-4 py-2.5 md:h-16 md:py-0"
   >
     <div
-      class="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4"
+      class="flex w-full flex-col gap-2.5 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-4"
     >
       <div
-        class="min-w-0"
+        class="w-full min-w-0 md:w-auto"
       >
         <div
           class="flex min-w-0 items-center gap-3"
@@ -43,7 +43,7 @@ exports[`PlayerBar > (Snapshot) active states render 1`] = `
         </div>
       </div>
       <div
-        class="justify-self-center"
+        class="flex w-full justify-center md:w-auto md:justify-self-center"
       >
         <div
           class="flex items-center justify-center gap-2"
@@ -212,14 +212,16 @@ exports[`PlayerBar > (Snapshot) active states render 1`] = `
         </div>
       </div>
       <div
-        class="justify-self-end"
+        class="flex w-full justify-center md:w-auto md:justify-self-end"
       >
         <div
-          class="flex items-center gap-2"
+          class="flex items-center justify-center gap-2"
         >
           <button
+            aria-label="Mute"
             class="inline-flex cursor-pointer items-center rounded-md whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 size-10 justify-center"
             data-headlessui-state=""
+            data-testid="player-mute-button"
             type="button"
           >
             <svg
@@ -247,7 +249,7 @@ exports[`PlayerBar > (Snapshot) active states render 1`] = `
             </svg>
           </button>
           <div
-            class="w-24"
+            class="flex min-h-[40px] w-28 items-center md:w-24"
             data-testid="player-volume-slider"
           >
             <div
@@ -299,13 +301,13 @@ exports[`PlayerBar > (Snapshot) active states render 1`] = `
 exports[`PlayerBar > (Snapshot) default render 1`] = `
 <DocumentFragment>
   <footer
-    class="surface-bottombar border-border flex h-16 items-center border-t-(length:--border-width) px-4"
+    class="surface-bottombar border-border flex items-center border-t-(length:--border-width) h-auto px-4 py-2.5 md:h-16 md:py-0"
   >
     <div
-      class="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4"
+      class="flex w-full flex-col gap-2.5 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-4"
     >
       <div
-        class="min-w-0"
+        class="w-full min-w-0 md:w-auto"
       >
         <div
           class="flex min-w-0 items-center gap-3"
@@ -339,7 +341,7 @@ exports[`PlayerBar > (Snapshot) default render 1`] = `
         </div>
       </div>
       <div
-        class="justify-self-center"
+        class="flex w-full justify-center md:w-auto md:justify-self-center"
       >
         <div
           class="flex items-center justify-center gap-2"
@@ -497,14 +499,16 @@ exports[`PlayerBar > (Snapshot) default render 1`] = `
         </div>
       </div>
       <div
-        class="justify-self-end"
+        class="flex w-full justify-center md:w-auto md:justify-self-end"
       >
         <div
-          class="flex items-center gap-2"
+          class="flex items-center justify-center gap-2"
         >
           <button
+            aria-label="Mute"
             class="inline-flex cursor-pointer items-center rounded-md whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 size-10 justify-center"
             data-headlessui-state=""
+            data-testid="player-mute-button"
             type="button"
           >
             <svg
@@ -532,7 +536,7 @@ exports[`PlayerBar > (Snapshot) default render 1`] = `
             </svg>
           </button>
           <div
-            class="w-24"
+            class="flex min-h-[40px] w-28 items-center md:w-24"
             data-testid="player-volume-slider"
           >
             <div
@@ -587,13 +591,13 @@ exports[`PlayerBar > (Snapshot) long metadata truncation 1`] = `
     style="width: 420px;"
   >
     <footer
-      class="surface-bottombar border-border flex h-16 items-center border-t-(length:--border-width) px-4"
+      class="surface-bottombar border-border flex items-center border-t-(length:--border-width) h-auto px-4 py-2.5 md:h-16 md:py-0"
     >
       <div
-        class="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4"
+        class="flex w-full flex-col gap-2.5 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-4"
       >
         <div
-          class="min-w-0"
+          class="w-full min-w-0 md:w-auto"
         >
           <div
             class="flex min-w-0 items-center gap-3"
@@ -627,7 +631,7 @@ exports[`PlayerBar > (Snapshot) long metadata truncation 1`] = `
           </div>
         </div>
         <div
-          class="justify-self-center"
+          class="flex w-full justify-center md:w-auto md:justify-self-center"
         >
           <div
             class="flex items-center justify-center gap-2"
@@ -785,14 +789,16 @@ exports[`PlayerBar > (Snapshot) long metadata truncation 1`] = `
           </div>
         </div>
         <div
-          class="justify-self-end"
+          class="flex w-full justify-center md:w-auto md:justify-self-end"
         >
           <div
-            class="flex items-center gap-2"
+            class="flex items-center justify-center gap-2"
           >
             <button
+              aria-label="Mute"
               class="inline-flex cursor-pointer items-center rounded-md whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 size-10 justify-center"
               data-headlessui-state=""
+              data-testid="player-mute-button"
               type="button"
             >
               <svg
@@ -820,7 +826,7 @@ exports[`PlayerBar > (Snapshot) long metadata truncation 1`] = `
               </svg>
             </button>
             <div
-              class="w-24"
+              class="flex min-h-[40px] w-28 items-center md:w-24"
               data-testid="player-volume-slider"
             >
               <div
@@ -873,13 +879,13 @@ exports[`PlayerBar > (Snapshot) long metadata truncation 1`] = `
 exports[`PlayerBar > (Snapshot) no artwork fallback 1`] = `
 <DocumentFragment>
   <footer
-    class="surface-bottombar border-border flex h-16 items-center border-t-(length:--border-width) px-4"
+    class="surface-bottombar border-border flex items-center border-t-(length:--border-width) h-auto px-4 py-2.5 md:h-16 md:py-0"
   >
     <div
-      class="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4"
+      class="flex w-full flex-col gap-2.5 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-4"
     >
       <div
-        class="min-w-0"
+        class="w-full min-w-0 md:w-auto"
       >
         <div
           class="flex min-w-0 items-center gap-3"
@@ -934,7 +940,7 @@ exports[`PlayerBar > (Snapshot) no artwork fallback 1`] = `
         </div>
       </div>
       <div
-        class="justify-self-center"
+        class="flex w-full justify-center md:w-auto md:justify-self-center"
       >
         <div
           class="flex items-center justify-center gap-2"
@@ -1092,14 +1098,16 @@ exports[`PlayerBar > (Snapshot) no artwork fallback 1`] = `
         </div>
       </div>
       <div
-        class="justify-self-end"
+        class="flex w-full justify-center md:w-auto md:justify-self-end"
       >
         <div
-          class="flex items-center gap-2"
+          class="flex items-center justify-center gap-2"
         >
           <button
+            aria-label="Mute"
             class="inline-flex cursor-pointer items-center rounded-md whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 size-10 justify-center"
             data-headlessui-state=""
+            data-testid="player-mute-button"
             type="button"
           >
             <svg
@@ -1127,7 +1135,7 @@ exports[`PlayerBar > (Snapshot) no artwork fallback 1`] = `
             </svg>
           </button>
           <div
-            class="w-24"
+            class="flex min-h-[40px] w-28 items-center md:w-24"
             data-testid="player-volume-slider"
           >
             <div

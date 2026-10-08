@@ -5,7 +5,7 @@ import { AudioSource } from '../types';
 
 export const useMseSource = (
   audioRef: RefObject<HTMLAudioElement | null>,
-  src: AudioSource,
+  src: AudioSource | null,
   onError?: (error: Error) => void,
   onSourceInvalid?: () => void,
 ) => {
@@ -18,7 +18,7 @@ export const useMseSource = (
     }
 
     const audio = audioRef.current;
-    if (!audio || src.protocol !== 'mse') {
+    if (!audio || !src || src.protocol !== 'mse') {
       return;
     }
 
@@ -48,5 +48,5 @@ export const useMseSource = (
       controller.destroy(audio);
       controllerRef.current = null;
     };
-  }, [src.url, src.protocol, audioRef, onError, onSourceInvalid]);
+  }, [src?.url, src?.protocol, audioRef, onError, onSourceInvalid]);
 };

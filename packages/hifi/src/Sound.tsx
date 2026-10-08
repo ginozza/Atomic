@@ -25,12 +25,39 @@ export const Sound: React.FC<SoundProps> = ({
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  useEffect(() => {
+    if (src !== null) {
+      return;
+    }
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+    try {
+      audio.pause();
+    } catch (_) {
+    }
+  }, [src]);
+
+  useEffect(() => {
+    return () => {
+      const audio = audioRef.current;
+      if (!audio) {
+        return;
+      }
+      try {
+        audio.pause();
+      } catch (_) {
+      }
+    };
+  }, []);
+
   useAudioSeek(audioRef, seek);
   useStartPosition(audioRef, src);
   useAudioLoader(audioRef, src);
   useHlsSource(audioRef, src);
   useMseSource(audioRef, src, onError, onSourceInvalid);
-  usePlaybackStatus(audioRef, status, src.url, onError);
+  usePlaybackStatus(audioRef, status, src?.url ?? null, onError);
 
   useEffect(() => {
     const audio = audioRef.current;

@@ -21,10 +21,9 @@ export const ConnectedControls: FC = () => {
     useCoreSetting<boolean>('playback.discovery');
   const hasDiscoveryProviders = useProviders('discovery').length > 0;
 
-  const { goToNext, goToPrevious } = useQueueStore(
+  const { goToNext } = useQueueStore(
     useShallow((state) => ({
       goToNext: state.goToNext,
-      goToPrevious: state.goToPrevious,
     })),
   );
   const status = useSoundStore((state) => state.status);
@@ -51,7 +50,7 @@ export const ConnectedControls: FC = () => {
       repeatMode={repeatMode ?? 'off'}
       onPlayPause={playbackManager.toggle}
       onNext={goToNext}
-      onPrevious={goToPrevious}
+      onPrevious={playbackManager.previous}
       onShuffleToggle={handleToggleShuffle}
       onRepeatToggle={handleToggleRepeat}
       isDiscoveryActive={hasDiscoveryProviders && Boolean(discoveryEnabled)}

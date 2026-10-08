@@ -18,7 +18,7 @@ export const PlaylistCardGrid: FC<PlaylistCardGridProps> = ({
   const { t } = useTranslation('playlists');
 
   return (
-    <CardGrid>
+    <CardGrid className="pb-44">
       {playlists.map((playlist) => (
         <Card
           key={playlist.id}

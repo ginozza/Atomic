@@ -10,9 +10,7 @@ export const PluginsWrapper = {
       await component.findByRole('button', { name: 'Preferences' }),
     );
     await userEvent.click(
-      await component.findByRole('button', {
-        name: 'Plugins',
-      }),
+      await component.findByTestId('settings-navigation-item-app-plugins'),
     );
     await screen.findByRole('heading', { name: 'Plugins' });
 

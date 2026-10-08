@@ -11,11 +11,37 @@ export class AudioSourceFactory {
   async fromCandidate(candidate: StreamCandidate): Promise<AudioSource> {
     const { stream } = candidate;
     if (!stream) {
+      if (
+        candidate.source?.provider === 'youtube' ||
+        /^[a-zA-Z0-9_-]{11}$/.test(candidate.id)
+      ) {
+        const durationMs = candidate.durationMs;
+        return {
+          url: `https://www.youtube.com/watch?v=${candidate.id}`,
+          protocol: 'youtube',
+          durationSeconds: durationMs ? durationMs / 1000 : undefined,
+        };
+      }
       return { url: candidate.id, protocol: 'http' };
     }
 
     if (stream.protocol === 'hls') {
       return { url: stream.url, protocol: 'hls' };
+    }
+
+    const isDirectYoutube =
+      stream.container === 'youtube' ||
+      stream.codec === 'youtube' ||
+      (stream.url.includes('youtube.com') && !stream.url.includes('googlevideo.com')) ||
+      stream.url.includes('youtu.be');
+
+    if (isDirectYoutube) {
+      const durationMs = stream.durationMs ?? candidate.durationMs;
+      return {
+        url: stream.url,
+        protocol: 'youtube',
+        durationSeconds: durationMs ? durationMs / 1000 : undefined,
+      };
     }
 
     const proxyUrl = this.proxiedUrl(stream.url, await this.streamServerPort());

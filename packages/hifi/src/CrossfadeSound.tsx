@@ -43,7 +43,7 @@ export const CrossfadeSound: React.FC<
   const { source: sourceB } = useAudioElementSource(audioRefB, context);
   const isReady = !!sourceA && !!sourceB;
 
-  const prevSrc = useRef<AudioSource>(src);
+  const prevSrc = useRef<AudioSource | null>(src ?? null);
 
   const adapters = useMemo(
     () =>
@@ -183,7 +183,7 @@ export const CrossfadeSound: React.FC<
           onError={handleError}
         >
           <source
-            src={activeIndex === adapter.id ? prevSrc.current.url : src.url}
+            src={activeIndex === adapter.id ? prevSrc.current?.url : src?.url}
           />
         </audio>
       ))}

@@ -63,6 +63,35 @@ export const initPlayerApp = async (
 ) => {
   initLogStream();
 
+  // Suppress DOMException/AbortError from interrupted media operations (play(),
+  // fetch cancellation on skip, Vite dynamic import cancellation) that would
+  // otherwise bubble up and trigger React error boundaries.
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason;
+    if (reason instanceof DOMException) {
+      event.preventDefault();
+      return;
+    }
+    if (reason instanceof Error && reason.name === 'AbortError') {
+      event.preventDefault();
+    }
+  });
+
+  // React 18 also re-dispatches uncaught errors via window.dispatchEvent,
+  // which bypasses unhandledrejection. Catch DOMException here too.
+  window.addEventListener('error', (event) => {
+    const error = event.error;
+    if (error instanceof DOMException) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+    if (error instanceof Error && error.name === 'AbortError') {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  });
+
   await initializeStores()
     .then(() => registerBuiltInCoreSettings())
     .then(() => initDiscoveryService())

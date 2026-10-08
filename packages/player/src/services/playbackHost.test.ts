@@ -66,6 +66,21 @@ describe('playbackHost', () => {
     expect(state.seek).toBe(0);
   });
 
+  it('restarts the current track before navigating to the previous track', () => {
+    const items = [createQueueItem('Track 1'), createQueueItem('Track 2')];
+    useQueueStore.setState({ items, currentIndex: 1 });
+    useSoundStore.setState({ status: 'playing', seek: 12 });
+
+    playbackManager.previous();
+
+    expect(useSoundStore.getState().seek).toBe(0);
+    expect(useQueueStore.getState().currentIndex).toBe(1);
+
+    playbackManager.previous();
+
+    expect(useQueueStore.getState().currentIndex).toBe(0);
+  });
+
   it('toggle switches between playing and paused', async () => {
     await playbackHost.toggle();
     const afterFirst = await playbackHost.getState();
@@ -144,6 +159,26 @@ describe('playbackHost', () => {
     expect(useSettingsStore.getState().getValue('core.playback.shuffle')).toBe(
       true,
     );
+  });
+
+  it('advances through the shuffle deck when a track ends at the linear queue end', () => {
+    const items = [
+      createQueueItem('Track 1'),
+      createQueueItem('Track 2'),
+      createQueueItem('Track 3'),
+    ];
+    useQueueStore.setState({
+      items,
+      currentIndex: 2,
+      shuffleOrder: [2, 0, 1],
+      shufflePosition: 0,
+    });
+    useSettingsStore.setState({ values: { 'core.playback.shuffle': true } });
+
+    playbackManager.finishTrack();
+
+    expect(useQueueStore.getState().currentIndex).toBe(0);
+    expect(useQueueStore.getState().shufflePosition).toBe(1);
   });
 
   it('getRepeatMode returns off when not set', async () => {

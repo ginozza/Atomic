@@ -18,6 +18,7 @@ export * from './KeyCombo';
 export * from './LogEntry';
 export * from './LogViewer';
 export * from './Loader';
+export * from './MarqueeText';
 export * from './Mosaic';
 export * from './NuclearJam';
 export * from './Pagination';

@@ -222,8 +222,19 @@
 
   --border: oklch(0.68 0.11 5);
   --border-width: 1px;
-  --ring: oklch(0.9 0.008 5);
-
   --shadow-x: 0px;
   --shadow-y: 0px;
 }
+
+/* Global scrollbar suppression */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+}
+

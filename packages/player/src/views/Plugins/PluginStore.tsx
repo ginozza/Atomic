@@ -125,7 +125,7 @@ export const PluginStore: FC = () => {
       )}
       {!isLoading && filteredPlugins.length > 0 && (
         <ScrollableArea className="flex-1 overflow-hidden">
-          <div className="flex flex-col gap-3 px-2 py-2">
+          <div className="flex flex-col gap-3 px-2 pt-2 pb-36">
             {filteredPlugins.map((plugin) => (
               <PluginStoreItem
                 key={plugin.id}

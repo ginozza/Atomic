@@ -23,7 +23,7 @@ const InstalledPluginsContent: FC<{
 
   return (
     <ScrollableArea className="flex-1 overflow-hidden">
-      <div className="flex flex-col gap-4 overflow-visible px-2 py-2">
+      <div className="flex flex-col gap-4 overflow-visible px-2 pt-2 pb-36">
         {plugins.map((plugin) => (
           <ConnectedPluginItem key={plugin.metadata.id} plugin={plugin} />
         ))}

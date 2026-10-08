@@ -17,6 +17,8 @@ describe('useQueueStore', () => {
       currentIndex: 0,
       isReady: false,
       isLoading: false,
+      shuffleOrder: [],
+      shufflePosition: -1,
     });
     useSettingsStore.setState({ values: {} });
   });
@@ -158,12 +160,16 @@ describe('useQueueStore', () => {
         .getState()
         .addToQueue([createMockTrack('A'), createMockTrack('B')]);
       useQueueStore.setState({ currentIndex: 1 });
+      useSoundStore.setState({
+        src: { url: 'https://example.com/track.mp3', protocol: 'https' },
+      });
 
       useQueueStore.getState().clearQueue();
 
       const state = useQueueStore.getState();
       expect(state.items).toHaveLength(0);
       expect(state.currentIndex).toBe(0);
+      expect(useSoundStore.getState().src).toBeNull();
     });
   });
 
@@ -334,6 +340,46 @@ describe('useQueueStore', () => {
       expect(useSoundStore.getState().status).toBe('playing');
     });
 
+    it('goToNext keeps playing status when active track is playing', () => {
+      useSoundStore.setState({
+        status: 'playing',
+        seek: 45,
+        src: { url: 'https://example.com/audio.mp3', protocol: 'https' },
+      });
+      useQueueStore.getState().goToNext();
+      expect(useQueueStore.getState().currentIndex).toBe(1);
+      expect(useSoundStore.getState().status).toBe('playing');
+      expect(useSoundStore.getState().src).toBeNull();
+      expect(useSoundStore.getState().seek).toBe(0);
+    });
+
+    it('goToPrevious keeps playing status when active track is playing', () => {
+      useQueueStore.setState({ currentIndex: 2 });
+      useSoundStore.setState({
+        status: 'playing',
+        seek: 45,
+        src: { url: 'https://example.com/audio.mp3', protocol: 'https' },
+      });
+      useQueueStore.getState().goToPrevious();
+      expect(useQueueStore.getState().currentIndex).toBe(1);
+      expect(useSoundStore.getState().status).toBe('playing');
+      expect(useSoundStore.getState().src).toBeNull();
+      expect(useSoundStore.getState().seek).toBe(0);
+    });
+
+    it('goToIndex to different track keeps playing status when active track is playing', () => {
+      useSoundStore.setState({
+        status: 'playing',
+        seek: 45,
+        src: { url: 'https://example.com/audio.mp3', protocol: 'https' },
+      });
+      useQueueStore.getState().goToIndex(2);
+      expect(useQueueStore.getState().currentIndex).toBe(2);
+      expect(useSoundStore.getState().status).toBe('playing');
+      expect(useSoundStore.getState().src).toBeNull();
+      expect(useSoundStore.getState().seek).toBe(0);
+    });
+
     it('getCurrentItem returns the current queue item', () => {
       useQueueStore.setState({ currentIndex: 1 });
       const current = useQueueStore.getState().getCurrentItem();
@@ -353,37 +399,53 @@ describe('useQueueStore', () => {
       expect(useQueueStore.getState().currentIndex).toBe(2);
     });
 
-    it('goToNext picks a different random index when shuffle is enabled', () => {
-      const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9);
+    it('goToNext with shuffle enabled advances through a deck without repeats', () => {
       useSettingsStore.setState({ values: { 'core.playback.shuffle': true } });
       useQueueStore.getState().goToNext();
-      expect(useQueueStore.getState().currentIndex).toBe(2);
-      randomSpy.mockRestore();
+      const firstShuffledIndex = useQueueStore.getState().currentIndex;
+      useQueueStore.getState().goToNext();
+      const secondShuffledIndex = useQueueStore.getState().currentIndex;
+      expect(firstShuffledIndex).not.toBe(secondShuffledIndex);
     });
 
-    it('goToNext retries random selection until index changes', () => {
-      const randomSpy = vi
-        .spyOn(Math, 'random')
-        .mockReturnValueOnce(0.1)
-        .mockReturnValueOnce(0.8);
+    it('goToPrevious with shuffle enabled steps back through the played deck', () => {
       useSettingsStore.setState({ values: { 'core.playback.shuffle': true } });
       useQueueStore.getState().goToNext();
-      expect(useQueueStore.getState().currentIndex).toBe(2);
-      expect(randomSpy).toHaveBeenCalledTimes(2);
-      randomSpy.mockRestore();
-    });
-
-    it('goToPrevious picks a different random index when shuffle is enabled', () => {
-      const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.4);
-      useSettingsStore.setState({ values: { 'core.playback.shuffle': true } });
-      useQueueStore.setState({ currentIndex: 2 });
+      const indexAfterNext = useQueueStore.getState().currentIndex;
       useQueueStore.getState().goToPrevious();
-      expect(useQueueStore.getState().currentIndex).toBe(1);
-      randomSpy.mockRestore();
+      expect(useQueueStore.getState().currentIndex).toBe(0);
+      expect(indexAfterNext).not.toBe(0);
+    });
+
+    it('goToPrevious at deck start does not move with shuffle enabled', () => {
+      useSettingsStore.setState({ values: { 'core.playback.shuffle': true } });
+      useQueueStore.getState().buildShuffleDeck();
+      useQueueStore.getState().goToPrevious();
+      expect(useQueueStore.getState().currentIndex).toBe(0);
     });
   });
 
   describe('persistence', () => {
+    it('persists queue replacements in order', async () => {
+      useQueueStore.getState().addToQueue([createMockTrack('Old Track')]);
+      useQueueStore.getState().clearQueue();
+      useQueueStore.getState().addToQueue([createMockTrack('New Track')]);
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      useQueueStore.setState({
+        items: [],
+        currentIndex: 0,
+        isReady: false,
+        isLoading: false,
+      });
+
+      await initializeQueueStore();
+
+      expect(useQueueStore.getState().items).toHaveLength(1);
+      expect(useQueueStore.getState().items[0]?.track.title).toBe('New Track');
+    });
+
     it('initializeQueueStore restores state from storage', async () => {
       const tracks = [createMockTrack('Track 1'), createMockTrack('Track 2')];
       useQueueStore.getState().addToQueue(tracks);

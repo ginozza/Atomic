@@ -1,6 +1,17 @@
 import isEmpty from 'lodash-es/isEmpty';
 import { FC } from 'react';
 
+const stripHtml = (html: string): string =>
+  html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+
 import { useTranslation } from '@nuclearplayer/i18n';
 import { pickArtwork } from '@nuclearplayer/model';
 
@@ -92,7 +103,7 @@ export const ArtistBioHeader: FC<ArtistBioHeaderProps> = ({
           )}
           {artist.bio && (
             <p className="text-card-foreground/60 line-clamp-5 text-sm leading-relaxed">
-              {artist.bio}
+              {stripHtml(artist.bio)}
             </p>
           )}
         </div>

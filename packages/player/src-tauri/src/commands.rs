@@ -12,6 +12,17 @@ pub fn is_flatpak() -> bool {
 
 #[command]
 #[specta::specta]
+pub fn force_webview_gc() {
+    // This command triggers MainActivity.forceWebViewGC() on Android
+    // The actual implementation is in the Kotlin side via a plugin event
+    #[cfg(target_os = "android")]
+    {
+        println!("[Rust] force_webview_gc called");
+    }
+}
+
+#[command]
+#[specta::specta]
 pub fn copy_dir_recursive(from: PathBuf, to: PathBuf) -> Result<(), String> {
     fn inner(from: &Path, to: &Path) -> Result<(), std::io::Error> {
         fs::create_dir_all(to)?;
@@ -106,8 +117,11 @@ pub async fn download_file(url: String, dest_path: PathBuf) -> Result<(), String
         log::info!("Downloading {} to {:?}", url, dest_path);
 
         let client = reqwest::Client::builder()
-            .timeout(Duration::from_secs(300))
+            .user_agent("Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 Atomic/1.20")
+            .timeout(Duration::from_secs(90))
             .connect_timeout(Duration::from_secs(30))
+            .danger_accept_invalid_certs(true)
+            .redirect(reqwest::redirect::Policy::limited(10))
             .build()?;
 
         let response = client.get(url).send().await?;

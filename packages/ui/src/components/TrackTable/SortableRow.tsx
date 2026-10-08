@@ -5,6 +5,7 @@ import { flexRender, Row } from '@tanstack/react-table';
 import { Track } from '@nuclearplayer/model';
 
 import { cn } from '../../utils';
+import { useTrackTableContext } from './TrackTableContext';
 
 type SortableRowProps<T extends Track = Track> = {
   row: Row<T>;
@@ -19,6 +20,7 @@ export function SortableRow<T extends Track = Track>({
   isReorderable = false,
   style: externalStyle,
 }: SortableRowProps<T>) {
+  const { actions } = useTrackTableContext<T>();
   const {
     attributes,
     listeners,
@@ -42,8 +44,13 @@ export function SortableRow<T extends Track = Track>({
       data-testid="track-row"
       ref={setNodeRef}
       style={style}
+      onClick={() => {
+        if (!isDragging) {
+          actions.onPlayNow?.(row.original);
+        }
+      }}
       className={cn(
-        'border-border bg-muted group border-b-(length:--border-width) select-none',
+        'border-border bg-muted group border-b-(length:--border-width) select-none cursor-pointer transition-colors hover:bg-white/5 active:bg-white/10',
         {
           '': !isDragging,
           'z-50': isDragging,

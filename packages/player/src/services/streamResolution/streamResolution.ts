@@ -26,11 +26,20 @@ export class StreamResolution {
     const { updateItemState } = useQueueStore.getState();
 
     if (options.autoPlay) {
-      useSoundStore.getState().stop();
+      const isPlaying = useSoundStore.getState().status === 'playing';
+      if (isPlaying) {
+        useSoundStore.getState().setSrc(null);
+      } else {
+        useSoundStore.getState().stop();
+        useSoundStore.getState().setSrc(null);
+      }
     }
     updateItemState(item.id, { status: 'loading', error: undefined });
 
-    if (!hasActiveStreamingProvider()) {
+    const isDirectYoutube =
+      item.track.source?.provider === 'youtube' &&
+      Boolean(item.track.source.id);
+    if (!hasActiveStreamingProvider() && !isDirectYoutube) {
       this.failItem(item.id, 'streaming:errors.noProviderAvailable');
       return;
     }
@@ -77,6 +86,11 @@ export class StreamResolution {
     const candidate = candidates.find((current) => !current.failed);
     if (!candidate) {
       this.failItem(item.id, 'streaming:errors.allCandidatesFailed');
+      return;
+    }
+
+    // Check again before resolving, in case abort happened during the find
+    if (signal.aborted) {
       return;
     }
 

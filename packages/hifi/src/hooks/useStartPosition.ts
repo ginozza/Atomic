@@ -4,9 +4,10 @@ import { AudioSource } from '../types';
 
 export const useStartPosition = (
   audioRef: RefObject<HTMLAudioElement | null>,
-  src: AudioSource,
+  src: AudioSource | null,
 ) => {
-  const { url, startPositionSeconds } = src;
+  const url = src?.url;
+  const startPositionSeconds = src?.startPositionSeconds;
 
   useEffect(() => {
     const audio = audioRef.current;

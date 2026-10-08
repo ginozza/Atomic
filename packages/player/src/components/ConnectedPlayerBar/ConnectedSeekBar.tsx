@@ -7,12 +7,12 @@ import { useQueueStore } from '../../stores/queueStore';
 import { useSoundStore } from '../../stores/soundStore';
 
 export const ConnectedSeekBar: FC = () => {
-  const currentItem = useQueueStore((s) => s.getCurrentItem());
+  const currentItem = useQueueStore((state) => state.getCurrentItem());
   const { seek, duration, seekTo } = useSoundStore(
-    useShallow((s) => ({
-      seek: s.seek,
-      duration: s.duration,
-      seekTo: s.seekTo,
+    useShallow((state) => ({
+      seek: state.seek,
+      duration: state.duration,
+      seekTo: state.seekTo,
     })),
   );
 

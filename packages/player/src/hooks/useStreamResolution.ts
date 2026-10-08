@@ -42,7 +42,12 @@ export const useStreamResolution = (): void => {
       onCurrentItemChanged(state.getCurrentItem());
     });
 
-    onCurrentItemChanged(useQueueStore.getState().getCurrentItem());
+    const initialItem = useQueueStore.getState().getCurrentItem();
+    if (!initialItem) {
+      isFirstResolutionRef.current = false;
+    } else {
+      onCurrentItemChanged(initialItem);
+    }
 
     return unsubscribe;
   }, []);

@@ -25,14 +25,14 @@ export const ViewShell: FC<ViewShellProps> = ({
 }) => (
   <div
     className={cn(
-      'surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-6 pt-6',
+      'surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-4 pt-2 md:px-6 md:pt-4',
       classes?.root,
     )}
     data-testid={dataTestId}
   >
     {title && (
       <h1
-        className="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
+        className="hidden"
         data-testid="title"
       >
         {title}
@@ -48,6 +48,7 @@ export const ViewShell: FC<ViewShellProps> = ({
         'flex min-h-0 w-full flex-1 flex-col',
         classes?.scrollableArea,
       )}
+      viewportClassName="pb-36 md:pb-6"
     >
       {children}
     </ScrollableArea>

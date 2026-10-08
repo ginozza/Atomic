@@ -31,6 +31,7 @@ fn maximize_for_gamescope(app: &tauri::App) {
     }
 }
 
+#[allow(dead_code)]
 fn typescript_export_config() -> specta_typescript::Typescript {
     specta_typescript::Typescript::default().header("/* eslint-disable */")
 }
@@ -38,6 +39,7 @@ fn typescript_export_config() -> specta_typescript::Typescript {
 fn specta_builder() -> tauri_specta::Builder<tauri::Wry> {
     tauri_specta::Builder::<tauri::Wry>::new().commands(tauri_specta::collect_commands![
         commands::is_flatpak,
+        commands::force_webview_gc,
         commands::copy_dir_recursive,
         commands::extract_zip,
         commands::download_file,
@@ -74,6 +76,7 @@ fn specta_builder() -> tauri_specta::Builder<tauri::Wry> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[allow(unused_variables)]
     let is_flatpak = std::env::var("FLATPAK_ID").is_ok();
 
     let profile = profile::parse_profile(std::env::args()).unwrap_or_else(|message| {
@@ -89,7 +92,7 @@ pub fn run() {
 
     let specta_builder = specta_builder();
 
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, not(any(target_os = "android", target_os = "ios"))))]
     specta_builder
         .export(
             typescript_export_config(),
@@ -100,6 +103,7 @@ pub fn run() {
         )
         .expect("failed to export typescript bindings");
 
+    #[allow(unused_mut)]
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
@@ -107,20 +111,24 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_upload::init())
-        .plugin(
+        .plugin(setup::log_plugin());
+
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        builder = builder.plugin(
             tauri_plugin_window_state::Builder::default()
                 .with_state_flags(
                     tauri_plugin_window_state::StateFlags::all()
                         .difference(tauri_plugin_window_state::StateFlags::VISIBLE),
                 )
                 .build(),
-        )
-        .plugin(setup::log_plugin());
+        );
 
-    if !is_flatpak {
-        builder = builder
-            .plugin(tauri_plugin_updater::Builder::new().build())
-            .plugin(tauri_plugin_process::init());
+        if !is_flatpak {
+            builder = builder
+                .plugin(tauri_plugin_updater::Builder::new().build())
+                .plugin(tauri_plugin_process::init());
+        }
     }
 
     builder

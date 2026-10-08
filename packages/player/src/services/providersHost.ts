@@ -132,7 +132,11 @@ const createProvidersHost = (): ProvidersHost => {
     },
 
     getActive(kind: ProviderKind) {
-      return useProvidersStore.getState().getActive(kind);
+      const active = useProvidersStore.getState().getActive(kind);
+      if (active && byId.has(active)) {
+        return active;
+      }
+      return firstOfKind(kind)?.id;
     },
 
     setActive(kind: ProviderKind, providerId: string) {
@@ -178,3 +182,6 @@ export const providersHost: ProvidersHost = createProvidersHost();
 setupStreamingPairingSync(providersHost);
 
 void initializeProvidersStore();
+
+import { youtubePlaylistProvider } from './youtubePlaylistProvider';
+providersHost.register(youtubePlaylistProvider);

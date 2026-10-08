@@ -38,6 +38,7 @@ export type BooleanSettingDefinition = {
   kind: 'boolean';
   default?: boolean;
   hidden?: boolean;
+  desktopOnly?: boolean;
   source?: SettingSource;
   widget?: BooleanWidget;
 };
@@ -50,6 +51,7 @@ export type NumberSettingDefinition = {
   kind: 'number';
   default?: number;
   hidden?: boolean;
+  desktopOnly?: boolean;
   source?: SettingSource;
   widget?: NumberWidget;
   min?: number;
@@ -68,6 +70,7 @@ export type StringSettingDefinition = {
   kind: 'string';
   default?: string;
   hidden?: boolean;
+  desktopOnly?: boolean;
   source?: SettingSource;
   widget?: StringWidget;
   format?: StringFormat;
@@ -87,6 +90,7 @@ export type EnumSettingDefinition = {
   options: EnumOption[];
   default?: string;
   hidden?: boolean;
+  desktopOnly?: boolean;
   source?: SettingSource;
   widget?: EnumWidget;
 };
@@ -100,6 +104,7 @@ export type CustomSettingDefinition = {
   widgetId: string;
   default?: SettingValue;
   hidden?: boolean;
+  desktopOnly?: boolean;
   source?: SettingSource;
 };
 

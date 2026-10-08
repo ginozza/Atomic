@@ -24,15 +24,36 @@ const isEnabled = () => getSetting(HISTORY_ENABLED_SETTING) !== false;
 
 const currentPositionMs = () => secondsToMs(useSoundStore.getState().seek);
 
-const buildSnapshot = (track: Track): TrackSnapshot => ({
-  title: track.title,
-  artists: track.artists.map((artist) => artist.name),
-  albumTitle: track.album?.title ?? null,
-  durationMs: track.durationMs ?? null,
+const getArtistsList = (artists: unknown): string[] => {
+  if (Array.isArray(artists)) {
+    return artists
+      .map((artist) => {
+        if (typeof artist === 'string') {
+          return artist;
+        }
+        if (artist && typeof artist === 'object' && 'name' in artist) {
+          const name = (artist as { name?: unknown }).name;
+          return typeof name === 'string' ? name : '';
+        }
+        return '';
+      })
+      .filter((name) => name.length > 0);
+  }
+  if (typeof artists === 'string' && artists.length > 0) {
+    return [artists];
+  }
+  return [];
+};
+
+export const buildSnapshot = (track: Track): TrackSnapshot => ({
+  title: track?.title ?? '',
+  artists: getArtistsList(track?.artists),
+  albumTitle: track?.album?.title ?? null,
+  durationMs: track?.durationMs ?? null,
   artworkUrl:
-    pickArtwork(track.artwork, 'thumbnail', ARTWORK_TARGET_PX)?.url ?? null,
-  provider: track.source.provider,
-  providerId: track.source.id,
+    pickArtwork(track?.artwork, 'thumbnail', ARTWORK_TARGET_PX)?.url ?? null,
+  provider: track?.source?.provider ?? 'unknown',
+  providerId: track?.source?.id ?? '',
 });
 
 const record = async (playId: string, fields: PlayEventFields) => {

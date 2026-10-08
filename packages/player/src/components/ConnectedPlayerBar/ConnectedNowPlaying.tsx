@@ -12,20 +12,20 @@ export const ConnectedNowPlaying: FC = () => {
   const { t } = useTranslation('playerBar');
   const { t: tTrack } = useTranslation('track');
   const navigate = useNavigate();
-  const currentItem = useQueueStore((s) => s.getCurrentItem());
+  const currentItem = useQueueStore((state) => state.getCurrentItem());
   const { isTrackFavorite, addTrack, removeTrack } = useFavoritesStore();
 
   const track = currentItem?.track;
-  const isFavorite = track ? isTrackFavorite(track.source) : false;
+  const isFavorite = Boolean(track?.source && isTrackFavorite(track.source));
 
   const artwork = pickArtwork(track?.artwork, 'thumbnail', 64);
   const title = track?.title ?? t('noTrackPlaying');
-  const artist = track?.artists[0]?.name ?? '';
-  const artistSource = track?.artists[0]?.source;
+  const artist = track?.artists?.[0]?.name ?? '';
+  const artistSource = track?.artists?.[0]?.source;
   const album = track?.album;
 
   const handleToggleFavorite = () => {
-    if (!track) {
+    if (!track?.source) {
       return;
     }
     if (isFavorite) {
@@ -58,7 +58,7 @@ export const ConnectedNowPlaying: FC = () => {
           : undefined
       }
       onTitleClick={
-        album
+        album?.source
           ? () =>
               navigate({
                 to: '/album/$providerId/$albumId',

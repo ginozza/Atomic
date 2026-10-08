@@ -56,13 +56,13 @@ const PluginStoreItemBase: FC<PluginStoreItemProps> = ({
       {...props}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-foreground inline-flex flex-row items-baseline gap-2 text-lg leading-tight font-bold select-none">
             <span data-testid="plugin-store-item-name">{name}</span>
-            <p className="text-muted-foreground text-sm font-normal select-none">
+            <span className="text-muted-foreground text-sm font-normal select-none">
               <span className="mr-1 opacity-60">{by}</span>
               <span data-testid="plugin-store-item-author">{author}</span>
-            </p>
+            </span>
           </h3>
           {version && (
             <Badge

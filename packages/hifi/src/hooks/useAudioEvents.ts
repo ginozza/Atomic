@@ -22,6 +22,11 @@ export const useAudioEvents = ({ onTimeUpdate, onError }: AudioEventsProps) => {
         const el = e.currentTarget as HTMLAudioElement & {
           error: MediaError | null;
         };
+        // MEDIA_ERR_ABORTED (code 1) means the browser stopped loading because
+        // the src was changed or load() was called — normal during skip/track change.
+        if (el.error?.code === MediaError.MEDIA_ERR_ABORTED) {
+          return;
+        }
         onError(new Error(el.error?.message || 'Unknown audio error'));
       }
     },

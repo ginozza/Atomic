@@ -35,7 +35,7 @@ export default defineConfig(() => ({
   ],
   clearScreen: false,
   server: {
-    host: process.env.VITE_HOST ?? 'localhost',
+    host: process.env.TAURI_DEV_HOST || process.env.VITE_HOST || '0.0.0.0',
     port: 5173,
     strictPort: true,
     watch: {

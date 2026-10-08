@@ -16,3 +16,19 @@ test-results
 flatpak/pnpm-sources.json
 flatpak/cargo-sources.json
 flatpak/.flatpak-cargo-generator.py
+
+# Android & Cargo build artifacts
+packages/player/src-tauri/.cargo/
+packages/player/src-tauri/gen/android/.gradle/
+packages/player/src-tauri/gen/android/.kotlin/
+packages/player/src-tauri/gen/android/build/
+packages/player/src-tauri/gen/android/app/build/
+packages/player/src-tauri/gen/android/local.properties
+packages/player/src-tauri/gen/android/.cxx/
+packages/player/src-tauri/gen/android/.idea/
+packages/player/src-tauri/gen/android/app/src/main/jniLibs/
+*.apk
+Atomic-debug.apk
+graphify-out/
+scratch/
+.agents/teamwork/

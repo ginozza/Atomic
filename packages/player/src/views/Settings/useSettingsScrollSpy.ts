@@ -20,7 +20,10 @@ const highlightedSection = (
   const viewportMiddle = viewport.scrollTop + viewport.clientHeight / 2;
   const lastSectionStartingAboveMiddle = findLast(
     sectionNames,
-    (name) => sections[name].offsetTop <= viewportMiddle,
+    (name) => {
+      const el = sections[name];
+      return el ? el.offsetTop <= viewportMiddle : false;
+    },
   );
   return lastSectionStartingAboveMiddle ?? sectionNames[0];
 };
@@ -43,7 +46,10 @@ export const useSettingsScrollSpy = () => {
   };
 
   useEffect(() => {
-    const viewport = viewportRef.current!;
+    const viewport = viewportRef.current;
+    if (!viewport || activeItemId !== null) {
+      return;
+    }
     const handleScroll = () => {
       selectItem(
         highlightedSection(sectionNames, sectionsRef.current, viewport),
@@ -52,21 +58,14 @@ export const useSettingsScrollSpy = () => {
 
     viewport.addEventListener('scroll', handleScroll);
     return () => viewport.removeEventListener('scroll', handleScroll);
-  }, [sectionNames, selectItem]);
+  }, [sectionNames, selectItem, activeItemId]);
 
   useEffect(() => {
     if (activeItemId === null) {
       return;
     }
-    const currentSection = highlightedSection(
-      sectionNames,
-      sectionsRef.current,
-      viewportRef.current!,
-    );
-    if (currentSection !== activeItemId) {
-      sectionsRef.current[activeItemId].scrollIntoView();
-    }
-  }, [sectionNames, activeItemId]);
+    sectionsRef.current[activeItemId]?.scrollIntoView();
+  }, [activeItemId]);
 
   return { viewportRef, registerSection };
 };

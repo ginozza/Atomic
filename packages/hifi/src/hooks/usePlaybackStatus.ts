@@ -2,15 +2,15 @@ import { RefObject, useEffect, useRef } from 'react';
 
 import { SoundStatus } from '../types';
 
-const HAVE_FUTURE_DATA = 3;
+const HAVE_CURRENT_DATA = 2;
 
 const isReadyToPlay = (audio: HTMLAudioElement): boolean =>
-  audio.readyState >= HAVE_FUTURE_DATA;
+  audio.readyState >= HAVE_CURRENT_DATA;
 
 export const usePlaybackStatus = (
   audioRef: RefObject<HTMLAudioElement | null>,
   status: SoundStatus,
-  srcUrl: string,
+  srcUrl: string | null,
   onError?: (error: Error) => void,
 ) => {
   const activeSrcRef = useRef(srcUrl);
@@ -18,6 +18,11 @@ export const usePlaybackStatus = (
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) {
+      return;
+    }
+
+    if (!srcUrl) {
+      audio.pause();
       return;
     }
 
@@ -31,22 +36,44 @@ export const usePlaybackStatus = (
         return;
       }
       activeSrcRef.current = srcUrl;
-      audio.play().then(undefined, (err: DOMException) => {
-        if (err.name === 'AbortError') {
+      audio.play().then(undefined, (domException: DOMException) => {
+        if (domException.name === 'AbortError') {
           return;
         }
-        onError?.(err);
+        onError?.(domException);
       });
     };
 
     switch (status) {
       case 'playing': {
-        if (!srcChanged) {
+        if (!srcChanged || isReadyToPlay(audio)) {
           tryPlay();
         }
-        const onCanPlay = () => tryPlay();
-        audio.addEventListener('canplay', onCanPlay);
-        return () => audio.removeEventListener('canplay', onCanPlay);
+        let pauseRetryTimeout: number | null = null;
+
+        const onReady = () => tryPlay();
+        const onPause = () => {
+          if (status === 'playing' && !audio.ended) {
+            pauseRetryTimeout = setTimeout(() => {
+              if (status === 'playing' && audio.paused) {
+                tryPlay();
+              }
+            }, 100);
+          }
+        };
+        audio.addEventListener('canplay', onReady);
+        audio.addEventListener('canplaythrough', onReady);
+        audio.addEventListener('loadeddata', onReady);
+        audio.addEventListener('pause', onPause);
+        return () => {
+          audio.removeEventListener('canplay', onReady);
+          audio.removeEventListener('canplaythrough', onReady);
+          audio.removeEventListener('loadeddata', onReady);
+          audio.removeEventListener('pause', onPause);
+          if (pauseRetryTimeout !== null) {
+            clearTimeout(pauseRetryTimeout);
+          }
+        };
       }
       case 'paused': {
         audio.pause();
@@ -60,3 +87,4 @@ export const usePlaybackStatus = (
     }
   }, [status, srcUrl, audioRef, onError]);
 };
+

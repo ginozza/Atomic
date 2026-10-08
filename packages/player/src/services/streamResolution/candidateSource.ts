@@ -9,9 +9,30 @@ import { streamVerification } from '../streamVerification';
 export const candidatesForTrack = async (
   track: Track,
 ): Promise<StreamCandidate[] | undefined> => {
-  const cached = track.streamCandidates;
-  if (cached?.length && !cached.some(isStreamExpired)) {
+  const cached = track.streamCandidates?.filter((candidate) => !candidate.failed);
+  if (cached && cached.length > 0 && !cached.some(isStreamExpired)) {
     return cached;
+  }
+
+  if (track.source?.provider === 'youtube' && track.source.id) {
+    return [
+      {
+        id: track.source.id,
+        title: track.title,
+        durationMs: track.durationMs || undefined,
+        failed: false,
+        source: track.source,
+        stream: {
+          url: `https://www.youtube.com/watch?v=${track.source.id}`,
+          container: 'youtube',
+          codec: 'youtube',
+          protocol: 'https' as const,
+          source: track.source,
+          durationMs: track.durationMs || undefined,
+        },
+        lastResolvedAtIso: new Date().toISOString(),
+      },
+    ];
   }
 
   const [result, verifiedStream] = await Promise.all([

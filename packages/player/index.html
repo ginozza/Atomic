@@ -3,9 +3,24 @@
 
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nuclear Player</title>
+    <link rel="icon" type="image/svg+xml" href="/atom-logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <title>Atomic</title>
+    <script>
+        // Suppress DOMException from Vite's preload-helper when dynamic imports
+        // are cancelled mid-flight (e.g. on track skip). This must run before
+        // any module loads so the listener is registered before Vite emits the event.
+        window.addEventListener('vite:preloadError', (event) => {
+            event.preventDefault();
+        }, true);
+
+        try {
+            Object.defineProperty(document, 'hidden', { get: () => false });
+            Object.defineProperty(document, 'visibilityState', { get: () => 'visible' });
+            window.addEventListener('visibilitychange', (e) => e.stopImmediatePropagation(), true);
+            document.addEventListener('visibilitychange', (e) => e.stopImmediatePropagation(), true);
+        } catch (_) {}
+    </script>
 </head>
 
 <body>

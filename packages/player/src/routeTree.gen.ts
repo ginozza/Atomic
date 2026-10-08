@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as QueueRouteImport } from './routes/queue'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SourcesRouteImport } from './routes/sources'
 import { Route as FavoritesAlbumsRouteImport } from './routes/favorites/albums'
@@ -36,6 +37,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueRoute = QueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
+  '/queue': typeof QueueRoute
   '/search': typeof SearchRoute
   '/sources': typeof SourcesRoute
   '/favorites/albums': typeof FavoritesAlbumsRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
+  '/queue': typeof QueueRoute
   '/search': typeof SearchRoute
   '/sources': typeof SourcesRoute
   '/favorites/albums': typeof FavoritesAlbumsRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
+  '/queue': typeof QueueRoute
   '/search': typeof SearchRoute
   '/sources': typeof SourcesRoute
   '/favorites/albums': typeof FavoritesAlbumsRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/history'
+    | '/queue'
     | '/search'
     | '/sources'
     | '/favorites/albums'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/history'
+    | '/queue'
     | '/search'
     | '/sources'
     | '/favorites/albums'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/history'
+    | '/queue'
     | '/search'
     | '/sources'
     | '/favorites/albums'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   HistoryRoute: typeof HistoryRoute
+  QueueRoute: typeof QueueRoute
   SearchRoute: typeof SearchRoute
   SourcesRoute: typeof SourcesRoute
   FavoritesAlbumsRoute: typeof FavoritesAlbumsRoute
@@ -222,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue': {
+      id: '/queue'
+      path: '/queue'
+      fullPath: '/queue'
+      preLoaderRoute: typeof QueueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   HistoryRoute: HistoryRoute,
+  QueueRoute: QueueRoute,
   SearchRoute: SearchRoute,
   SourcesRoute: SourcesRoute,
   FavoritesAlbumsRoute: FavoritesAlbumsRoute,

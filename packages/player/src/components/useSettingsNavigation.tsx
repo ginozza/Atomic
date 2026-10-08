@@ -1,6 +1,5 @@
 import {
   BlocksIcon,
-  KeyboardIcon,
   PaletteIcon,
   ScrollTextIcon,
   SparklesIcon,
@@ -11,7 +10,6 @@ import { useTranslation } from '@nuclearplayer/i18n';
 import { SettingsNavigationSection } from '@nuclearplayer/ui';
 
 import { useSettingsModalStore } from '../stores/settingsModalStore';
-import { KeyboardShortcuts } from '../views/KeyboardShortcuts';
 import { Logs } from '../views/Logs/Logs';
 import { Plugins } from '../views/Plugins/Plugins';
 import { Settings } from '../views/Settings/Settings';
@@ -21,14 +19,8 @@ import { WhatsNew } from '../views/WhatsNew';
 
 const APP_TABS = [
   {
-    id: 'shortcuts',
-    labelKey: 'shortcuts.title',
-    icon: <KeyboardIcon />,
-    view: <KeyboardShortcuts />,
-  },
-  {
     id: 'app-plugins',
-    labelKey: 'plugins.title',
+    labelKey: 'plugins.manager.title',
     icon: <BlocksIcon />,
     view: <Plugins />,
   },

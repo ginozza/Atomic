@@ -4,12 +4,19 @@ import { AudioSource } from '../types';
 
 export const useAudioLoader = (
   audioRef: RefObject<HTMLAudioElement | null>,
-  src: AudioSource,
+  src: AudioSource | null,
 ) => {
   const prevUrl = useRef<string | null>(null);
 
   useEffect(() => {
-    if (src.protocol === 'hls' || src.protocol === 'mse') {
+    if (!src) {
+      return;
+    }
+    if (
+      src.protocol === 'hls' ||
+      src.protocol === 'mse' ||
+      src.protocol === 'youtube'
+    ) {
       return;
     }
 

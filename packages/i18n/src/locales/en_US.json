@@ -1,7 +1,7 @@
 {
   "common": {
     "app": {
-      "name": "Nuclear",
+      "name": "Atomic",
       "description": "Music streaming app for your desktop"
     },
     "actions": {
@@ -244,7 +244,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "empty-state": "Welcome to Nuclear",
+    "empty-state": "Welcome to Atomic",
     "empty-state-description": "Install a plugin to see top tracks, new releases, and recommendations here.",
     "empty-state-action": "Browse plugins",
     "top-tracks": "Top Tracks",
@@ -260,6 +260,9 @@
   },
   "plugins": {
     "title": "Plugins",
+    "manager": {
+      "title": "Plugin Manager"
+    },
     "addPlugin": "Add Plugin",
     "tabs": {
       "installed": "Installed",
@@ -329,6 +332,9 @@
     },
     "plugins": {
       "title": "Plugins",
+      "manager": {
+        "title": "Plugin Manager"
+      },
       "auto-update": {
         "title": "Auto-update plugins",
         "description": "Automatically download and install new versions of store plugins on startup"
@@ -367,6 +373,10 @@
     },
     "appearance": {
       "title": "Appearance",
+      "dark": {
+        "title": "Dark mode",
+        "description": "Switch between dark and light appearance."
+      },
       "framelessWindow": {
         "title": "Frameless window",
         "description": "Hide the native title bar. Drag the top bar to move the window."
@@ -438,7 +448,7 @@
       "title": "Integrations",
       "jam": {
         "enabled": {
-          "title": "Nuclear Jam",
+          "title": "Atomic Jam",
           "description": "Start a local web server that lets you control Nuclear from other devices on your network."
         },
         "remoteUrl": {
@@ -613,7 +623,7 @@
     }
   },
   "titleBar": {
-    "title": "Nuclear Music Player",
+    "title": "Atomic Music Player",
     "minimize": "Minimize",
     "maximize": "Maximize",
     "close": "Close"

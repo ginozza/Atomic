@@ -1,4 +1,7 @@
-import { MouseEvent, useCallback, useMemo, useRef } from 'react';
+import { MouseEvent, PointerEvent, useCallback, useMemo, useRef } from 'react';
+
+const MIN_PERCENT = 0;
+const MAX_PERCENT = 100;
 
 type UseSeekBarParams = {
   progress: number;
@@ -11,32 +14,106 @@ export const useSeekBar = ({
   isLoading = false,
   onSeek,
 }: UseSeekBarParams) => {
-  const clamped = useMemo(
-    () => Math.max(0, Math.min(100, progress)),
-    [progress],
-  );
   const containerRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef<boolean>(false);
   const isInteractive = Boolean(onSeek) && !isLoading;
 
-  const handleClick = useCallback(
-    (e: MouseEvent) => {
+  const clamped = useMemo(
+    () => Math.max(MIN_PERCENT, Math.min(MAX_PERCENT, progress)),
+    [progress],
+  );
+
+  const calculatePercent = useCallback((clientX: number) => {
+    const target = containerRef.current;
+    if (!target) {
+      return MIN_PERCENT;
+    }
+    const rect = target.getBoundingClientRect();
+    const width = rect.width ?? 0;
+    if (width === 0) {
+      return MIN_PERCENT;
+    }
+    const left = rect.left ?? (rect as { x?: number }).x ?? 0;
+    const relativeX = clientX - left;
+    const rawPercent = (relativeX / width) * MAX_PERCENT;
+    return Math.max(MIN_PERCENT, Math.min(MAX_PERCENT, rawPercent));
+  }, []);
+
+  const handlePointerDown = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
       if (!isInteractive) {
         return;
       }
-      const target = containerRef.current;
-      if (!target) {
-        return;
+      isDraggingRef.current = true;
+      if (typeof event.currentTarget.setPointerCapture === 'function') {
+        event.currentTarget.setPointerCapture(event.pointerId);
       }
-      const rect = target.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percent = (x / rect.width) * 100;
-      const clampedPercent = Math.max(0, Math.min(100, percent));
-      onSeek?.(clampedPercent);
+      const percent = calculatePercent(event.clientX);
+      onSeek?.(percent);
     },
-    [isInteractive, onSeek],
+    [calculatePercent, isInteractive, onSeek],
   );
 
-  return { clamped, containerRef, handleClick, isInteractive } as const;
+  const handlePointerMove = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!isInteractive || !isDraggingRef.current) {
+        return;
+      }
+      const percent = calculatePercent(event.clientX);
+      onSeek?.(percent);
+    },
+    [calculatePercent, isInteractive, onSeek],
+  );
+
+  const handlePointerUp = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!isInteractive || !isDraggingRef.current) {
+        return;
+      }
+      isDraggingRef.current = false;
+      if (typeof event.currentTarget.releasePointerCapture === 'function') {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      const percent = calculatePercent(event.clientX);
+      onSeek?.(percent);
+    },
+    [calculatePercent, isInteractive, onSeek],
+  );
+
+  const handlePointerCancel = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!isInteractive || !isDraggingRef.current) {
+        return;
+      }
+      isDraggingRef.current = false;
+      if (typeof event.currentTarget.releasePointerCapture === 'function') {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    },
+    [isInteractive],
+  );
+
+  const handleClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      if (!isInteractive) {
+        return;
+      }
+      const percent = calculatePercent(event.clientX);
+      onSeek?.(percent);
+    },
+    [calculatePercent, isInteractive, onSeek],
+  );
+
+  return {
+    clamped,
+    containerRef,
+    handleClick,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handlePointerCancel,
+    isInteractive,
+  } as const;
 };
 
 export type UseSeekBarReturn = ReturnType<typeof useSeekBar>;

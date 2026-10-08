@@ -4,7 +4,6 @@ import {
   ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -113,138 +112,7 @@ interface BarProps {
   isScrolling: boolean;
 }
 
-const Scrollbar: FC<BarProps> = ({
-  orientation,
-  metrics,
-  containerRef,
-  fadeScrollbars,
-  isScrolling,
-}) => {
-  const {
-    scrollTop,
-    scrollLeft,
-    scrollHeight,
-    scrollWidth,
-    clientHeight,
-    clientWidth,
-  } = metrics;
-  const vertical = orientation === 'vertical';
-  const contentExtent = vertical ? scrollHeight : scrollWidth;
-  const viewportExtent = vertical ? clientHeight : clientWidth;
-  const scrollPos = vertical ? scrollTop : scrollLeft;
-
-  const needs = contentExtent > viewportExtent;
-  const [isDragging, setIsDragging] = useState(false);
-
-  const { thumbSize, thumbOffset } = useMemo(() => {
-    if (!needs || viewportExtent === 0 || contentExtent <= viewportExtent) {
-      return { thumbSize: 0, thumbOffset: 0 };
-    }
-    const trackSize = viewportExtent; // we size track to viewport extent
-    const size = Math.max(20, (viewportExtent / contentExtent) * trackSize);
-    const maxScroll = contentExtent - viewportExtent;
-    const ratio = maxScroll === 0 ? 0 : scrollPos / maxScroll;
-    const offset = ratio * (trackSize - size);
-    return { thumbSize: size, thumbOffset: offset };
-  }, [needs, viewportExtent, contentExtent, scrollPos]);
-
-  const show = needs && (!fadeScrollbars || isScrolling || isDragging);
-
-  const onTrackClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (!needs || !containerRef.current) {
-        return;
-      }
-      const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-      const clickPos = vertical ? e.clientY - rect.top : e.clientX - rect.left;
-      const trackSize = vertical ? rect.height : rect.width;
-      const maxScroll = contentExtent - viewportExtent;
-      const ratio = trackSize - thumbSize <= 0 ? 0 : clickPos / trackSize;
-      const target = ratio * maxScroll;
-      if (vertical) {
-        containerRef.current.scrollTop = target;
-      } else {
-        containerRef.current.scrollLeft = target;
-      }
-    },
-    [needs, containerRef, vertical, contentExtent, viewportExtent, thumbSize],
-  );
-
-  const onThumbMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      if (!containerRef.current) {
-        return;
-      }
-      e.preventDefault();
-      setIsDragging(true);
-      const startClient = vertical ? e.clientY : e.clientX;
-      const startScroll = vertical
-        ? containerRef.current.scrollTop
-        : containerRef.current.scrollLeft;
-      const maxScroll = contentExtent - viewportExtent;
-      const trackSize = viewportExtent; // track matches viewport
-      const move = (ev: MouseEvent) => {
-        if (!containerRef.current) {
-          return;
-        }
-        const currentClient = vertical ? ev.clientY : ev.clientX;
-        const deltaClient = currentClient - startClient;
-        const scrollDelta =
-          trackSize - thumbSize <= 0
-            ? 0
-            : (deltaClient / (trackSize - thumbSize)) * maxScroll;
-        const next = Math.max(
-          0,
-          Math.min(maxScroll, startScroll + scrollDelta),
-        );
-        if (vertical) {
-          containerRef.current.scrollTop = next;
-        } else {
-          containerRef.current.scrollLeft = next;
-        }
-      };
-      const up = () => {
-        setIsDragging(false);
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', up);
-      };
-      document.addEventListener('mousemove', move);
-      document.addEventListener('mouseup', up);
-    },
-    [containerRef, vertical, contentExtent, viewportExtent, thumbSize],
-  );
-
-  if (!needs) {
-    return null;
-  }
-
-  return (
-    <div
-      className={cn(
-        'absolute flex bg-transparent select-none',
-        vertical
-          ? 'top-0 right-0 bottom-0 w-3 flex-col items-center'
-          : 'right-0 bottom-0 left-0 h-3 flex-row items-center',
-      )}
-      onClick={onTrackClick}
-    >
-      <div
-        className={cn(
-          'bg-foreground/80 hover:bg-foreground cursor-pointer rounded-sm transition-opacity duration-200',
-          vertical ? 'w-2' : 'h-2',
-          show ? 'opacity-100' : 'opacity-0',
-        )}
-        style={{
-          [vertical ? 'height' : 'width']: `${thumbSize}px`,
-          transform: vertical
-            ? `translateY(${thumbOffset}px)`
-            : `translateX(${thumbOffset}px)`,
-        }}
-        onMouseDown={onThumbMouseDown}
-      />
-    </div>
-  );
-};
+const Scrollbar: FC<BarProps> = () => null;
 
 export const ScrollableArea: FC<ScrollableAreaProps> = ({
   children,

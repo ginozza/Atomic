@@ -6,6 +6,8 @@ import { getSetting } from '../../stores/settingsStore';
 import { useSoundStore } from '../../stores/soundStore';
 import { eventBus } from '../eventBus';
 
+const PREVIOUS_RESTART_THRESHOLD_SECONDS = 3;
+
 export type StartTrackOptions = {
   autoPlay: boolean;
 };
@@ -13,6 +15,14 @@ export type StartTrackOptions = {
 export class PlaybackManager {
   private mountedItemId: string | null = null;
   private playRequested = false;
+
+  constructor() {
+    useSoundStore.subscribe((state) => {
+      if (!state.src) {
+        this.mountedItemId = null;
+      }
+    });
+  }
 
   play = (): void => {
     const { status } = useSoundStore.getState();
@@ -50,6 +60,16 @@ export class PlaybackManager {
     this.play();
   };
 
+  previous = (): void => {
+    const { seek, status } = useSoundStore.getState();
+    if (status === 'playing' && seek > PREVIOUS_RESTART_THRESHOLD_SECONDS) {
+      useSoundStore.getState().seekTo(0);
+      return;
+    }
+
+    useQueueStore.getState().goToPrevious();
+  };
+
   startTrack = (
     item: QueueItem,
     source: AudioSource,
@@ -58,7 +78,9 @@ export class PlaybackManager {
     useSoundStore.getState().setSrc(source);
     this.mountedItemId = item.id;
 
-    const shouldPlay = options.autoPlay || this.playRequested;
+    const isExplicitlyPaused = useSoundStore.getState().status === 'paused';
+    const shouldPlay =
+      (options.autoPlay && !isExplicitlyPaused) || this.playRequested;
     this.playRequested = false;
 
     if (!shouldPlay) {
@@ -87,6 +109,21 @@ export class PlaybackManager {
     if (repeatMode === 'one') {
       useSoundStore.getState().seekTo(0);
       eventBus.emit('trackStarted', item.track);
+      return;
+    }
+
+    const shuffleEnabled =
+      (getSetting('core.playback.shuffle') as boolean) ?? false;
+    if (shuffleEnabled) {
+      useQueueStore.getState().goToNext();
+      return;
+    }
+
+    const { items, currentIndex } = useQueueStore.getState();
+    const isAtEnd = currentIndex >= items.length - 1 && repeatMode !== 'all';
+    if (isAtEnd) {
+      useSoundStore.getState().stop();
+      useSoundStore.getState().setSrc(null);
       return;
     }
 

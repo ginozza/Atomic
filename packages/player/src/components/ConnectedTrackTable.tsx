@@ -10,6 +10,7 @@ import {
 import { useQueueActions } from '../hooks/useQueueActions';
 import { useTrackActions } from '../hooks/useTrackActions';
 import { useTrackTableLabels } from '../hooks/useTrackTableLabels';
+import { playbackManager } from '../services/playback';
 import { ConnectedTrackContextMenu } from './ConnectedTrackContextMenu';
 
 type ConnectedTrackTableProps = Omit<
@@ -35,7 +36,24 @@ export const ConnectedTrackTable: FC<ConnectedTrackTableProps> = (props) => {
       }}
       actions={{
         onAddToQueue: trackActions.addToQueue,
-        onPlayNow: trackActions.playNow,
+        onPlayNow: (track: Track) => {
+          if (restProps.tracks && restProps.tracks.length > 0) {
+            const trackIndex = restProps.tracks.findIndex(
+              (candidate) =>
+                (candidate.source?.id && candidate.source.id === track.source?.id) ||
+                (candidate.title === track.title &&
+                  candidate.artists?.[0]?.name === track.artists?.[0]?.name),
+            );
+            queueActions.clearQueue();
+            queueActions.addToQueue(restProps.tracks);
+            if (trackIndex > 0) {
+              queueActions.goToIndex(trackIndex);
+            }
+            playbackManager.play();
+          } else {
+            trackActions.playNow(track);
+          }
+        },
         onPlayNext: trackActions.addNext,
         onToggleFavorite: trackActions.toggleFavorite,
         onRemove: externalActions?.onRemove,
@@ -43,6 +61,7 @@ export const ConnectedTrackTable: FC<ConnectedTrackTableProps> = (props) => {
         onPlayAll: () => {
           queueActions.clearQueue();
           queueActions.addToQueue(restProps.tracks);
+          playbackManager.play();
         },
         onAddAllToQueue: () => {
           queueActions.addToQueue(restProps.tracks);

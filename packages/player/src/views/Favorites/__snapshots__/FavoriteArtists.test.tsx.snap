@@ -2,7 +2,7 @@
 
 exports[`FavoriteArtists view > (Snapshot) renders empty state 1`] = `
 <main
-  class="surface-muted overflow-auto"
+  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -16,11 +16,11 @@ exports[`FavoriteArtists view > (Snapshot) renders empty state 1`] = `
       transition="[object Object]"
     >
       <div
-        class="surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-6 pt-6"
+        class="surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-4 pt-2 md:px-6 md:pt-4"
         data-testid="favorite-artists-view"
       >
         <h1
-          class="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
+          class="hidden"
           data-testid="title"
         >
           Favorite artists
@@ -29,7 +29,7 @@ exports[`FavoriteArtists view > (Snapshot) renders empty state 1`] = `
           class="relative h-full flex min-h-0 w-full flex-1 flex-col"
         >
           <div
-            class="scrollbar-hide flex h-full w-full flex-col overflow-auto"
+            class="scrollbar-hide flex h-full w-full flex-col overflow-auto pb-36 md:pb-6"
             style="scrollbar-width: none;"
           >
             <div
@@ -87,7 +87,7 @@ exports[`FavoriteArtists view > (Snapshot) renders empty state 1`] = `
 
 exports[`FavoriteArtists view > (Snapshot) renders with artists 1`] = `
 <main
-  class="surface-muted overflow-auto"
+  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -101,11 +101,11 @@ exports[`FavoriteArtists view > (Snapshot) renders with artists 1`] = `
       transition="[object Object]"
     >
       <div
-        class="surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-6 pt-6"
+        class="surface-background relative flex h-full min-h-0 w-full flex-1 flex-col items-start justify-start px-4 pt-2 md:px-6 md:pt-4"
         data-testid="favorite-artists-view"
       >
         <h1
-          class="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
+          class="hidden"
           data-testid="title"
         >
           Favorite artists
@@ -114,7 +114,7 @@ exports[`FavoriteArtists view > (Snapshot) renders with artists 1`] = `
           class="relative h-full flex min-h-0 w-full flex-1 flex-col"
         >
           <div
-            class="scrollbar-hide flex h-full w-full flex-col overflow-auto"
+            class="scrollbar-hide flex h-full w-full flex-col overflow-auto pb-36 md:pb-6"
             style="scrollbar-width: none;"
           >
             <div

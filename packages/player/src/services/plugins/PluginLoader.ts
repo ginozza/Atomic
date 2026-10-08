@@ -1,5 +1,5 @@
-import { join } from '@tauri-apps/api/path';
-import { readTextFile } from '@tauri-apps/plugin-fs';
+import { appDataDir, join, normalize } from '@tauri-apps/api/path';
+import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import React from 'react';
 import * as jsxRuntime from 'react/jsx-runtime';
 
@@ -28,10 +28,31 @@ export class PluginLoader {
     this.path = path;
   }
 
+  private async readFileContent(targetPath: string): Promise<string> {
+    try {
+      return await readTextFile(targetPath);
+    } catch (directError) {
+      try {
+        const appData = await appDataDir();
+        const normTarget = await normalize(targetPath);
+        const normAppData = await normalize(appData);
+        if (normTarget.startsWith(normAppData)) {
+          const relative = normTarget
+            .slice(normAppData.length)
+            .replace(/^[/\\]/, '');
+          return await readTextFile(relative, { baseDir: BaseDirectory.AppData });
+        }
+      } catch {
+        // Fallback failed
+      }
+      throw directError;
+    }
+  }
+
   private async readRawPackageJson(): Promise<unknown> {
     const packageJsonPath = await join(this.path, 'package.json');
     Logger.plugins.debug(`Reading package.json from ${packageJsonPath}`);
-    const packageJsonContent = await readTextFile(packageJsonPath);
+    const packageJsonContent = await this.readFileContent(packageJsonPath);
     return JSON.parse(packageJsonContent);
   }
 
@@ -83,7 +104,7 @@ export class PluginLoader {
     for (const candidate of candidates) {
       try {
         const full = await join(this.path, candidate);
-        await readTextFile(full);
+        await this.readFileContent(full);
         Logger.plugins.debug(`Entry path resolved to ${full}`);
         return full;
       } catch {
@@ -109,7 +130,7 @@ export class PluginLoader {
       return compiled;
     }
     Logger.plugins.debug(`Reading pre-compiled plugin code from ${entryPath}`);
-    this.pluginCode = await readTextFile(entryPath);
+    this.pluginCode = await this.readFileContent(entryPath);
     return this.pluginCode;
   }
 

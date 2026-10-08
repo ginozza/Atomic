@@ -216,4 +216,32 @@ describe('Queue panel actions', () => {
     expect(playlistEntries).toHaveLength(1);
     expect(playlistEntries[0]?.items).toHaveLength(3);
   });
+
+  it('handles rapid skipping without crashing (regression test for Android crash)', async () => {
+    // Create a queue with 10 tracks to allow multiple skips
+    const tracks = Array.from({ length: 10 }, (_, idx) =>
+      createQueueItem(`Track ${idx + 1}`)
+    );
+    QueueWrapper.initQueue(tracks);
+
+    await QueueWrapper.mount();
+    await QueueWrapper.waitForItems(10);
+
+    // Start playback of first track
+    await QueueWrapper.selectItem('Track 1');
+
+    // Import PlayerBarWrapper for skip simulation
+    const { PlayerBarWrapper } = await import('./PlayerBar.test-wrapper');
+
+    // Rapidly skip through tracks 10 times
+    // This simulates the crash scenario: user spamming Next button
+    for (let index = 0; index < 10; index++) {
+      await PlayerBarWrapper.nextButton.click();
+      // No delay between skips to simulate rapid clicking
+    }
+
+    // If we got here without crashing, the fix is working
+    // Verify the queue is still functional and intact
+    expect(QueueWrapper.items).toHaveLength(10);
+  });
 });

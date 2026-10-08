@@ -3,7 +3,7 @@ import type { FC } from 'react';
 
 import { useTranslation } from '@nuclearplayer/i18n';
 import type { Track } from '@nuclearplayer/model';
-import { Popover } from '@nuclearplayer/ui';
+import { Button } from '@nuclearplayer/ui';
 
 import { PlaylistActions } from '../Playlists/components/PlaylistActions';
 
@@ -19,17 +19,16 @@ export const PlaylistImportActions: FC<PlaylistImportActionsProps> = ({
   const { t } = useTranslation('playlists');
 
   return (
-    <PlaylistActions
-      tracks={tracks}
-      menuItems={
-        <Popover.Item
-          icon={<SaveIcon size={16} />}
-          onClick={onSaveLocally}
-          data-testid="save-locally-action"
-        >
-          {t('saveLocally')}
-        </Popover.Item>
-      }
-    />
+    <div className="flex items-center gap-2">
+      <Button
+        variant="default"
+        onClick={onSaveLocally}
+        data-testid="save-locally-action"
+      >
+        <SaveIcon size={16} />
+        {t('saveLocally')}
+      </Button>
+      <PlaylistActions tracks={tracks} />
+    </div>
   );
 };

@@ -6,6 +6,7 @@ export type QueueItem = {
   status: 'idle' | 'loading' | 'success' | 'error';
   error?: string;
   addedAtIso: string;
+  originalIndex?: number;
 };
 
 export type RepeatMode = 'off' | 'all' | 'one';

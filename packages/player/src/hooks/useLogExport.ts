@@ -29,7 +29,7 @@ export const generateExportContent = async (
   const appVersion = await getVersion();
 
   const header = [
-    '# Nuclear Music Player - Log Export',
+    '# Atomic Music Player (Nuclear) - Log Export',
     `# Version: ${appVersion}`,
     `# Platform: ${navigator.platform}`,
     `# Exported: ${new Date().toISOString()}`,

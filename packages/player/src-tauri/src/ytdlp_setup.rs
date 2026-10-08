@@ -36,11 +36,11 @@ fn release_filename() -> &'static str {
     {
         "yt-dlp_macos.zip"
     }
-    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    #[cfg(all(target_os = "linux", not(target_os = "android"), target_arch = "x86_64"))]
     {
         "yt-dlp_linux.zip"
     }
-    #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+    #[cfg(all(target_os = "linux", not(target_os = "android"), target_arch = "aarch64"))]
     {
         "yt-dlp_linux_aarch64.zip"
     }
@@ -52,6 +52,10 @@ fn release_filename() -> &'static str {
     {
         "yt-dlp_win_arm64.zip"
     }
+    #[cfg(target_os = "android")]
+    {
+        ""
+    }
 }
 
 fn binary_name() -> &'static str {
@@ -59,11 +63,11 @@ fn binary_name() -> &'static str {
     {
         "yt-dlp_macos"
     }
-    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    #[cfg(all(target_os = "linux", not(target_os = "android"), target_arch = "x86_64"))]
     {
         "yt-dlp_linux"
     }
-    #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+    #[cfg(all(target_os = "linux", not(target_os = "android"), target_arch = "aarch64"))]
     {
         "yt-dlp_linux_aarch64"
     }
@@ -74,6 +78,10 @@ fn binary_name() -> &'static str {
     #[cfg(all(target_os = "windows", target_arch = "aarch64"))]
     {
         "yt-dlp_win_arm64.exe"
+    }
+    #[cfg(target_os = "android")]
+    {
+        ""
     }
 }
 
@@ -322,36 +330,45 @@ async fn check_for_update(ytdlp_dir: &Path, binary_path: &Path) {
 #[command]
 #[specta::specta]
 pub async fn ytdlp_ensure_installed(app_handle: AppHandle) -> Result<bool, String> {
-    let ytdlp_dir = ytdlp_dir(&app_handle)?;
-    let binary_path = ytdlp_dir.join(binary_name());
-
-    let already_installed = binary_path.exists();
-
-    if !already_installed {
-        info!("[yt-dlp] Not found, downloading...");
-        download_and_extract(&ytdlp_dir, &binary_path).await?;
-        info!("[yt-dlp] Installed to {:?}", binary_path);
+    #[cfg(target_os = "android")]
+    {
+        let _ = app_handle;
+        return Ok(false);
     }
 
-    let path_str = binary_path
-        .to_str()
-        .ok_or("Invalid path encoding")?
-        .to_string();
-    crate::ytdlp::set_ytdlp_path(path_str);
+    #[cfg(not(target_os = "android"))]
+    {
+        let ytdlp_dir = ytdlp_dir(&app_handle)?;
+        let binary_path = ytdlp_dir.join(binary_name());
 
-    if already_installed {
-        debug!("[yt-dlp] Already installed at {:?}", binary_path);
-        check_for_update(&ytdlp_dir, &binary_path).await;
-    } else {
-        let tag = fetch_latest_release_tag().await.unwrap_or_else(|err| {
-            debug!(
-                "[yt-dlp] Could not fetch release tag after install: {}",
-                err
-            );
-            "unknown".to_string()
-        });
-        write_update_check(&ytdlp_dir, &UpdateCheck::now(tag));
+        let already_installed = binary_path.exists();
+
+        if !already_installed {
+            info!("[yt-dlp] Not found, downloading...");
+            download_and_extract(&ytdlp_dir, &binary_path).await?;
+            info!("[yt-dlp] Installed to {:?}", binary_path);
+        }
+
+        let path_str = binary_path
+            .to_str()
+            .ok_or("Invalid path encoding")?
+            .to_string();
+        crate::ytdlp::set_ytdlp_path(path_str);
+
+        if already_installed {
+            debug!("[yt-dlp] Already installed at {:?}", binary_path);
+            check_for_update(&ytdlp_dir, &binary_path).await;
+        } else {
+            let tag = fetch_latest_release_tag().await.unwrap_or_else(|err| {
+                debug!(
+                    "[yt-dlp] Could not fetch release tag after install: {}",
+                    err
+                );
+                "unknown".to_string()
+            });
+            write_update_check(&ytdlp_dir, &UpdateCheck::now(tag));
+        }
+
+        Ok(already_installed)
     }
-
-    Ok(already_installed)
 }

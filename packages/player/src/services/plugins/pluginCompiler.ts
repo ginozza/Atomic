@@ -19,17 +19,18 @@
  * - Cache compiled bundles per entry path, invalidated by re-hashing every file
  *   that participated in the previous build (see CompileCacheEntry below).
  */
-import { dirname, extname, isAbsolute, resolve } from '@tauri-apps/api/path';
-import { readTextFile } from '@tauri-apps/plugin-fs';
+import { appDataDir, dirname, extname, isAbsolute, normalize, resolve } from '@tauri-apps/api/path';
+import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import type * as EsbuildTypes from 'esbuild-wasm';
 import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
+import { transform } from 'sucrase';
 
 type EsbuildModule = typeof EsbuildTypes & { stop?: () => void };
 
 type EsbuildGlobal = {
   mod: EsbuildModule | null;
   initialized: boolean;
-  initPromise: Promise<void> | null;
+  initPromise: Promise<boolean> | null;
 };
 
 declare global {
@@ -92,43 +93,66 @@ const tryRead = async (path: string): Promise<string | null> => {
   try {
     return await readTextFile(path);
   } catch {
+    try {
+      const appData = await appDataDir();
+      const normTarget = await normalize(path);
+      const normAppData = await normalize(appData);
+      if (normTarget.startsWith(normAppData)) {
+        const relative = normTarget
+          .slice(normAppData.length)
+          .replace(/^[/\\]/, '');
+        return await readTextFile(relative, {
+          baseDir: BaseDirectory.AppData,
+        });
+      }
+    } catch {
+      // Ignore
+    }
     return null;
   }
 };
 
-/**
- * Initialize esbuild-wasm exactly once within this JS context.
- *
- * Why this pattern:
- * - esbuild-wasm throws if initialize() is called more than once per context.
- * - HMR re-executes this module. Local flags would reset, but esbuild remains
- *   initialized internally, so a naive second initialize() would crash.
- * - We keep the init state on a global singleton, and expose an initPromise so
- *   concurrent callers share the same in-flight initialization.
- */
-async function ensureInit() {
+const ESBUILD_TIMEOUT_MS = 2000;
+
+async function ensureInit(): Promise<boolean> {
   if (es.initialized) {
-    return;
+    return true;
   }
   if (!es.initPromise) {
     es.initPromise = (async () => {
-      if (!es.mod) {
-        es.mod = await import('esbuild-wasm');
+      try {
+        const initTask = (async () => {
+          if (!es.mod) {
+            es.mod = await import('esbuild-wasm');
+          }
+          await es.mod.initialize({ wasmURL: wasmUrl, worker: false });
+          es.initialized = true;
+          return true;
+        })();
+
+        const timeoutTask = new Promise<boolean>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('esbuild-wasm initialization timeout')),
+            ESBUILD_TIMEOUT_MS,
+          ),
+        );
+
+        return await Promise.race([initTask, timeoutTask]);
+      } catch {
+        return false;
       }
-      await es.mod.initialize({ wasmURL: wasmUrl, worker: false });
-      es.initialized = true;
     })();
   }
-  await es.initPromise;
+  try {
+    return (await es.initPromise) ?? false;
+  } catch {
+    return false;
+  }
 }
 
-/**
- * Wait for initialization and return the esbuild module instance.
- * Kept separate so call-sites don't need to remember to call ensureInit().
- */
-async function getEsbuild(): Promise<EsbuildModule> {
-  await ensureInit();
-  return es.mod!;
+async function getEsbuild(): Promise<EsbuildModule | null> {
+  const ok = await ensureInit();
+  return ok ? es.mod : null;
 }
 
 const simpleHash = (str: string) => {
@@ -163,19 +187,24 @@ export async function compilePlugin(
     return cached.code;
   }
 
-  const entrySource = await readTextFile(entryPath);
+  const entrySource = await tryRead(entryPath);
+  if (!entrySource) {
+    throw new Error(`Cannot read plugin entry file: ${entryPath}`);
+  }
 
   const inputHashes = new Map<string, string>([
     [entryPath, simpleHash(entrySource)],
   ]);
 
   const mod = await getEsbuild();
-  const entryDir = await dirname(entryPath);
-  const entryLoader: EsbuildTypes.Loader = entryPath.endsWith('.tsx')
-    ? 'tsx'
-    : entryPath.endsWith('.ts')
-      ? 'ts'
-      : 'js';
+  if (mod) {
+    try {
+      const entryDir = await dirname(entryPath);
+      const entryLoader: EsbuildTypes.Loader = entryPath.endsWith('.tsx')
+        ? 'tsx'
+        : entryPath.endsWith('.ts')
+          ? 'ts'
+          : 'js';
 
   const result = await mod.build({
     // Feed the entry file through "stdin" so esbuild never tries to open it
@@ -305,10 +334,140 @@ export async function compilePlugin(
       },
     ],
   });
-  if (!result.outputFiles || !result.outputFiles[0]) {
-    throw new Error('Plugin compile failed');
+      if (result.outputFiles && result.outputFiles[0]) {
+        const code = result.outputFiles[0].text;
+        cache.set(entryPath, { inputHashes, code });
+        return code;
+      }
+    } catch {
+      // Fall through to sucrase multi-file bundler
+    }
   }
-  const code = result.outputFiles[0].text;
-  cache.set(entryPath, { inputHashes, code });
-  return code;
+
+  const bundled = await bundleWithSucrase(entryPath, entrySource, inputHashes);
+  cache.set(entryPath, { inputHashes, code: bundled });
+  return bundled;
+}
+
+const resolveRelativeFile = async (
+  fromFile: string,
+  relPath: string,
+): Promise<string | null> => {
+  const normFrom = fromFile.replace(/\\/g, '/');
+  const dir = normFrom.substring(0, normFrom.lastIndexOf('/'));
+  const parts = dir.split('/').filter(Boolean);
+  const relParts = relPath.replace(/\\/g, '/').split('/').filter(Boolean);
+
+  for (const part of relParts) {
+    if (part === '.') continue;
+    if (part === '..') {
+      parts.pop();
+    } else {
+      parts.push(part);
+    }
+  }
+
+  const base = (normFrom.startsWith('/') ? '/' : '') + parts.join('/');
+  const candidates = [
+    base,
+    base + '.ts',
+    base + '.tsx',
+    base + '.js',
+    base + '/index.ts',
+    base + '/index.tsx',
+    base + '/index.js',
+  ];
+
+  for (const candidate of candidates) {
+    const content = await tryRead(candidate);
+    if (content !== null) {
+      return candidate;
+    }
+  }
+  return null;
+};
+
+async function bundleWithSucrase(
+  entryPath: string,
+  entrySource: string,
+  inputHashes: Map<string, string>,
+): Promise<string> {
+  const normEntry = entryPath.replace(/\\/g, '/');
+  const compiledFiles = new Map<string, string>();
+  const toProcess: Array<{ path: string; source: string }> = [
+    { path: normEntry, source: entrySource },
+  ];
+  const visited = new Set<string>([normEntry]);
+
+  while (toProcess.length > 0) {
+    const item = toProcess.shift()!;
+    inputHashes.set(item.path, simpleHash(item.source));
+
+    const isJsx = item.path.endsWith('.tsx') || item.path.endsWith('.jsx');
+    const { code } = transform(item.source, {
+      transforms: isJsx
+        ? ['typescript', 'imports', 'jsx']
+        : ['typescript', 'imports'],
+      production: true,
+    });
+
+    let rewritten = code;
+    const requireRegex = /require\s*\(\s*(['"])(\.[^'"]+)\1\s*\)/g;
+    const matches: Array<{ full: string; quote: string; rel: string }> = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = requireRegex.exec(code)) !== null) {
+      matches.push({ full: match[0], quote: match[1], rel: match[2] });
+    }
+
+    for (const matchItem of matches) {
+      const resolved = await resolveRelativeFile(item.path, matchItem.rel);
+      if (resolved) {
+        rewritten = rewritten
+          .split(matchItem.full)
+          .join(`require(${matchItem.quote}${resolved}${matchItem.quote})`);
+        if (!visited.has(resolved)) {
+          visited.add(resolved);
+          const subSource = await tryRead(resolved);
+          if (subSource !== null) {
+            toProcess.push({ path: resolved, source: subSource });
+          }
+        }
+      }
+    }
+
+    compiledFiles.set(item.path, rewritten);
+  }
+
+  if (compiledFiles.size === 1) {
+    return compiledFiles.get(normEntry)!;
+  }
+
+  const modulesObjParts: string[] = [];
+  for (const [modPath, modCode] of compiledFiles.entries()) {
+    modulesObjParts.push(
+      `${JSON.stringify(modPath)}: function(exports, require, module) {\n${modCode}\n}`,
+    );
+  }
+
+  return `(function() {
+  var __modules = {
+${modulesObjParts.join(',\n')}
+  };
+  var __cache = {};
+  function __require(id) {
+    if (Object.prototype.hasOwnProperty.call(__modules, id)) {
+      if (!__cache[id]) {
+        var m = { exports: {} };
+        __cache[id] = m;
+        __modules[id](m.exports, __require, m);
+      }
+      return __cache[id].exports;
+    }
+    return require(id);
+  }
+  var __entryMod = { exports: {} };
+  __modules[${JSON.stringify(normEntry)}](__entryMod.exports, __require, __entryMod);
+  module.exports = __entryMod.exports;
+})();`;
 }

@@ -21,7 +21,7 @@ export const QueueItemExpanded: FC<QueueItemProps> = ({
 }) => {
   const thumbnail = pickArtwork(track.artwork, 'thumbnail', 64);
   const duration = formatTimeMillis(track.durationMs);
-  const primaryArtist = track.artists[0]?.name;
+  const primaryArtist = track.artists?.[0]?.name;
 
   return (
     <Box
