@@ -37,10 +37,6 @@ class MainActivity : TauriActivity() {
         }
     }
 
-    override fun shouldPauseWebView(): Boolean {
-        return !(isMediaActive || isMediaPlaying)
-    }
-
     override fun onWebViewCreate(webView: WebView) {
         super.onWebViewCreate(webView)
         webViewRef = webView
