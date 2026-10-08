@@ -70,19 +70,18 @@ jobs:
         with:
           workspaces: packages/player/src-tauri
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: pnpm
+
+      - name: Setup pnpm
+        run: |
+          npm install -g pnpm@12.0.0 || npm install -g pnpm
+          pnpm --version
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build frontend
         run: pnpm --filter @nuclearplayer/player build:frontend
