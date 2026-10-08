@@ -39,8 +39,12 @@ describe('MobileNavigationBar (Apple Music Style)', () => {
 
     expect(screen.getByTestId('mobile-navigation-bar')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /playlists/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /favorites/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /playlists/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /favorites/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /queue/i })).toBeInTheDocument();
     expect(screen.getByTestId('mobile-search-button')).toBeInTheDocument();
   });
@@ -80,6 +84,9 @@ describe('MobileNavigationBar (Apple Music Style)', () => {
     const searchButton = screen.getByTestId('mobile-search-button');
     await user.click(searchButton);
 
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/search', search: { q: '' } });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/search',
+      search: { q: '' },
+    });
   });
 });

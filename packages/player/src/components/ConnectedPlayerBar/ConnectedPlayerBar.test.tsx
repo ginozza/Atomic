@@ -169,6 +169,34 @@ describe('ConnectedControls', () => {
       false,
     );
   });
+
+  it('renders shimmer loading button when current item status is loading', async () => {
+    const item = new Wrapper.QueueItemBuilder()
+      .withTitle('Loading Track')
+      .build();
+    item.status = 'loading';
+    Wrapper.seedQueueItem(item);
+    await Wrapper.mount();
+
+    const loadingBtn = Wrapper.controls.loadingButton.element;
+    expect(loadingBtn).toHaveAttribute('aria-busy', 'true');
+    expect(loadingBtn.className).toContain('surface-toxic-shimmer');
+    expect(loadingBtn.className).toContain('animate-toxic-glow');
+  });
+
+  it('renders regular pause button and not shimmer when playback starts', async () => {
+    const item = new Wrapper.QueueItemBuilder()
+      .withTitle('Playing Track')
+      .build();
+    item.status = 'success';
+    Wrapper.seedQueueItem(item);
+    useSoundStore.setState({ status: 'playing' });
+    await Wrapper.mount();
+
+    const pauseBtn = Wrapper.controls.pauseButton.element;
+    expect(pauseBtn).not.toHaveAttribute('aria-busy');
+    expect(pauseBtn.className).not.toContain('surface-toxic-shimmer');
+  });
 });
 
 describe('ConnectedVolume', () => {

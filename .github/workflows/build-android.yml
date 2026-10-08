@@ -88,7 +88,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
 
-      - name: Build Android APK (debug)
+      - name: Build Android APK
         run: pnpm --filter @nuclearplayer/player tauri android build --target aarch64 --debug --apk
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
@@ -99,10 +99,7 @@ jobs:
 
       - name: Locate and Rename APK
         run: |
-          APK_PATH=$(find packages/player/src-tauri/gen/android/app/build/outputs/apk -name "*debug.apk" | head -n 1)
-          if [ -z "$APK_PATH" ]; then
-            APK_PATH=$(find packages/player/src-tauri/gen/android/app/build/outputs/apk -name "*.apk" | head -n 1)
-          fi
+          APK_PATH=$(find packages/player/src-tauri/gen/android/app/build/outputs/apk -name "*.apk" | head -n 1)
           if [ -z "$APK_PATH" ]; then
             echo "Error: No APK file found in outputs/apk!"
             exit 1
@@ -111,7 +108,11 @@ jobs:
 
           VERSION=$(node -p "require('./packages/player/package.json').version")
           SHORT_SHA="${GITHUB_SHA::7}"
-          DEST_NAME="Atomic-v${VERSION}-${SHORT_SHA}-debug.apk"
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            DEST_NAME="Atomic-v${VERSION}.apk"
+          else
+            DEST_NAME="Atomic-v${VERSION}-${SHORT_SHA}.apk"
+          fi
 
           cp "$APK_PATH" "$DEST_NAME"
           echo "APK_NAME=$DEST_NAME" >> $GITHUB_ENV
@@ -119,11 +120,17 @@ jobs:
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
           echo "Prepared APK asset: $DEST_NAME"
 
-      - name: Upload APK artifact
+      - name: Generate Changelog & Release Notes
+        run: node packages/tools/src/generate-android-changelog.mjs
+
+      - name: Upload APK and Changelog artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APK_NAME }}
-          path: ${{ env.APK_NAME }}
+          path: |
+            ${{ env.APK_NAME }}
+            CHANGELOG.md
+            RELEASE_NOTES.md
           retention-days: 30
 
       - name: Publish GitHub Release
@@ -132,8 +139,11 @@ jobs:
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}-{1}', env.APP_VERSION, env.SHORT_SHA) }}
           name: ${{ startsWith(github.ref, 'refs/tags/v') && format('Atomic {0}', github.ref_name) || format('Atomic v{0} ({1})', env.APP_VERSION, env.SHORT_SHA) }}
-          files: ${{ env.APK_NAME }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            ${{ env.APK_NAME }}
+            CHANGELOG.md
           prerelease: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

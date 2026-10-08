@@ -11,6 +11,7 @@ process.env.TZ = 'UTC';
 Settings.defaultLocale = 'en-US';
 
 setupDomMocks();
+window.scrollTo = vi.fn();
 
 // Silences react's pointless warning spam
 // give it a rest already

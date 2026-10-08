@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { useEffect } from 'react';
 
 import { useNowPlayingModalStore } from '../stores/nowPlayingModalStore';
 import { useSettingsModalStore } from '../stores/settingsModalStore';

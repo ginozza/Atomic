@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import type { QueueItem } from '@nuclearplayer/model';
 
+import { playbackManager } from '../services/playback';
 import { streamResolution } from '../services/streamResolution';
 import { useQueueStore } from '../stores/queueStore';
 import { useStreamRecovery } from './useStreamRecovery';
@@ -23,20 +24,56 @@ export const useStreamResolution = (): void => {
         return;
       }
 
+      if (currentItem.status === 'loading') {
+        return;
+      }
+
+      if (currentItem.status === 'error') {
+        resolutionKeyRef.current = null;
+        return;
+      }
+
       const resolutionKey = buildResolutionKey(currentItem);
       if (resolutionKey === resolutionKeyRef.current) {
         return;
       }
       resolutionKeyRef.current = resolutionKey;
 
-      if (currentItem.status === 'loading') {
-        return;
-      }
-
       const autoPlay = !isFirstResolutionRef.current;
       isFirstResolutionRef.current = false;
       void streamResolution.resolve(currentItem, { autoPlay });
     };
+
+    const originalPlay = playbackManager.play;
+    playbackManager.play = () => {
+      const currentItem = useQueueStore.getState().getCurrentItem();
+      if (currentItem?.status === 'error') {
+        resolutionKeyRef.current = null;
+        void streamResolution.resolveWithFreshStreams(currentItem, {
+          autoPlay: true,
+        });
+        return;
+      }
+      originalPlay();
+    };
+
+    const originalGoToId = useQueueStore.getState().goToId;
+    useQueueStore.setState({
+      goToId: (selectedId: string) => {
+        const currentItem = useQueueStore.getState().getCurrentItem();
+        if (
+          currentItem &&
+          currentItem.id === selectedId &&
+          currentItem.status === 'error'
+        ) {
+          resolutionKeyRef.current = null;
+          void streamResolution.resolveWithFreshStreams(currentItem, {
+            autoPlay: true,
+          });
+        }
+        originalGoToId(selectedId);
+      },
+    });
 
     const unsubscribe = useQueueStore.subscribe((state) => {
       onCurrentItemChanged(state.getCurrentItem());
@@ -49,6 +86,10 @@ export const useStreamResolution = (): void => {
       onCurrentItemChanged(initialItem);
     }
 
-    return unsubscribe;
+    return () => {
+      playbackManager.play = originalPlay;
+      useQueueStore.setState({ goToId: originalGoToId });
+      unsubscribe();
+    };
   }, []);
 };

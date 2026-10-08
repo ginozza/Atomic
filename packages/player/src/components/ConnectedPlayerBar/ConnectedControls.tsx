@@ -26,6 +26,8 @@ export const ConnectedControls: FC = () => {
       goToNext: state.goToNext,
     })),
   );
+  const currentItem = useQueueStore((state) => state.getCurrentItem());
+  const isLoading = currentItem?.status === 'loading';
   const status = useSoundStore((state) => state.status);
 
   const handleToggleShuffle = () => {
@@ -46,6 +48,7 @@ export const ConnectedControls: FC = () => {
   return (
     <PlayerBar.Controls
       isPlaying={status === 'playing'}
+      isLoading={isLoading}
       isShuffleActive={Boolean(shuffleEnabled)}
       repeatMode={repeatMode ?? 'off'}
       onPlayPause={playbackManager.toggle}

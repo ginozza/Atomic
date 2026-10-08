@@ -90,6 +90,7 @@ export const setupDomMocks = () => {
   Element.prototype.setPointerCapture = vi.fn();
   Element.prototype.releasePointerCapture = vi.fn();
   Element.prototype.scrollIntoView = vi.fn();
+  window.scrollTo = vi.fn();
   globalThis.CSS = { supports: () => true } as unknown as typeof CSS;
   (SVGElement.prototype as SVGGraphicsElement).getBBox = vi
     .fn()

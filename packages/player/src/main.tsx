@@ -16,16 +16,20 @@ window.addEventListener('vite:preloadError', (event) => {
 });
 
 // Belt-and-suspenders: also suppress at the promise rejection level.
-window.addEventListener('unhandledrejection', (event) => {
-  const reason = event.reason;
-  if (
-    reason instanceof DOMException ||
-    (reason instanceof Error && reason.name === 'AbortError')
-  ) {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-  }
-}, true);
+window.addEventListener(
+  'unhandledrejection',
+  (event) => {
+    const reason = event.reason;
+    if (
+      reason instanceof DOMException ||
+      (reason instanceof Error && reason.name === 'AbortError')
+    ) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  },
+  true,
+);
 
 // Final safety net: suppress DOMException at the synchronous error level.
 // React 18 can re-dispatch caught errors synchronously via window.onerror.

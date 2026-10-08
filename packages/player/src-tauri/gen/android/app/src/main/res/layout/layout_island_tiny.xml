@@ -26,7 +26,7 @@
         android:marqueeRepeatLimit="marquee_forever"
         android:maxWidth="120dp"
         android:singleLine="true"
-        android:text="Nuclear Music"
+        android:text="Atomic"
         android:textColor="#FFFFFF"
         android:textSize="11sp"
         android:textStyle="bold" />

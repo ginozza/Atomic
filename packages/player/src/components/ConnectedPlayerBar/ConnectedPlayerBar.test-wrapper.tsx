@@ -201,6 +201,30 @@ export const ConnectedPlayerBarWrapper = {
         await user.click(this.element);
       },
     },
+    playButton: {
+      get element() {
+        return screen.getByTestId('player-play-button');
+      },
+      async click() {
+        await user.click(this.element);
+      },
+    },
+    pauseButton: {
+      get element() {
+        return screen.getByTestId('player-pause-button');
+      },
+      async click() {
+        await user.click(this.element);
+      },
+    },
+    loadingButton: {
+      get element() {
+        return screen.getByTestId('player-loading-button');
+      },
+      async click() {
+        await user.click(this.element);
+      },
+    },
   },
 
   volume: {

@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
+
 import { pickArtwork } from '@nuclearplayer/model';
+
 import { playbackManager } from '../services/playback';
 import { useQueueStore } from '../stores/queueStore';
 import { useSoundStore } from '../stores/soundStore';
@@ -13,7 +15,7 @@ declare global {
         coverUrl: string,
         isPlaying: boolean,
         positionMs: number,
-        durationMs: number
+        durationMs: number,
       ) => void;
       forceGC: () => void;
       isHyperOS: () => boolean;
@@ -36,19 +38,27 @@ export const useHyperIslandBridge = () => {
   }>({});
 
   useEffect(() => {
-    if (!window.NuclearAndroid) return;
+    if (!window.NuclearAndroid) {
+      return;
+    }
 
-    if (status === 'stopped') return;
+    if (status === 'stopped') {
+      return;
+    }
 
     const track = currentItem?.track;
-    if (!track) return;
+    if (!track) {
+      return;
+    }
 
     const isPlaying = status === 'playing';
     const title = track.title || 'Unknown Track';
     const artist = Array.isArray(track.artists)
       ? track.artists
           .map((artistCredit) =>
-            typeof artistCredit === 'string' ? artistCredit : artistCredit?.name,
+            typeof artistCredit === 'string'
+              ? artistCredit
+              : artistCredit?.name,
           )
           .filter(Boolean)
           .join(', ')
@@ -81,7 +91,9 @@ export const useHyperIslandBridge = () => {
     const trackChanged = prev.id !== currentItem?.id;
     const playStateChanged = prev.isPlaying !== isPlaying;
 
-    if (trackChanged && !isPlaying) return;
+    if (trackChanged && !isPlaying) {
+      return;
+    }
 
     const timeDeltaSec =
       !trackChanged && prev.posSec !== undefined && prev.timestamp
@@ -90,7 +102,7 @@ export const useHyperIslandBridge = () => {
     const isManualSeek =
       !trackChanged &&
       prev.posSec !== undefined &&
-      Math.abs((posSec - prev.posSec) - timeDeltaSec) > 3;
+      Math.abs(posSec - prev.posSec - timeDeltaSec) > 3;
 
     const shouldUpdate = trackChanged || playStateChanged || isManualSeek;
 
@@ -109,10 +121,13 @@ export const useHyperIslandBridge = () => {
           coverUrl,
           isPlaying,
           Math.round(seek * 1000),
-          Math.round(duration * 1000)
+          Math.round(duration * 1000),
         );
       } catch (error) {
-        console.error('[HyperIslandBridge] Error sending playback state:', error);
+        console.error(
+          '[HyperIslandBridge] Error sending playback state:',
+          error,
+        );
       }
     }
   }, [currentItem, status, seek, duration]);
@@ -121,7 +136,9 @@ export const useHyperIslandBridge = () => {
     const handleAction = (event: Event) => {
       const customEvent = event as CustomEvent<{ action: string }>;
       const action = customEvent.detail?.action;
-      if (!action) return;
+      if (!action) {
+        return;
+      }
 
       switch (action) {
         case 'toggle':
@@ -147,4 +164,3 @@ export const useHyperIslandBridge = () => {
     };
   }, []);
 };
-

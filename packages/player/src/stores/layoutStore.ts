@@ -24,7 +24,7 @@ export const useLayoutStore = create<LayoutState>()(
         width: 200,
       },
       rightSidebar: {
-        isCollapsed: true,
+        isCollapsed: false,
         width: 200,
       },
       toggleLeftSidebar: () =>

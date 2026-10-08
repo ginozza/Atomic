@@ -18,6 +18,38 @@ class NuclearMediaService : Service() {
     private var wifiLock: WifiManager.WifiLock? = null
     private var audioManager: AudioManager? = null
     private var audioFocusRequest: AudioFocusRequest? = null
+    private var playbackPausedByTransientLoss = false
+
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                playbackPausedByTransientLoss = false
+                if (MainActivity.isMediaPlaying) {
+                    MainActivity.dispatchActionToNuclear("toggle")
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                if (MainActivity.isMediaPlaying) {
+                    playbackPausedByTransientLoss = true
+                    MainActivity.dispatchActionToNuclear("toggle")
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                if (MainActivity.isMediaPlaying) {
+                    playbackPausedByTransientLoss = true
+                    MainActivity.dispatchActionToNuclear("toggle")
+                }
+            }
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if (playbackPausedByTransientLoss) {
+                    playbackPausedByTransientLoss = false
+                    if (!MainActivity.isMediaPlaying) {
+                        MainActivity.dispatchActionToNuclear("toggle")
+                    }
+                }
+            }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -39,6 +71,7 @@ class NuclearMediaService : Service() {
 
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Nuclear::AudioWakeLock")
+        wakeLock?.setReferenceCounted(false)
         wakeLock?.acquire(24 * 60 * 60 * 1000L)
 
         val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
@@ -58,14 +91,14 @@ class NuclearMediaService : Service() {
             val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                 .setAudioAttributes(audioAttributes)
                 .setAcceptsDelayedFocusGain(true)
-                .setOnAudioFocusChangeListener { }
+                .setOnAudioFocusChangeListener(audioFocusChangeListener)
                 .build()
             audioFocusRequest = request
             audioManager?.requestAudioFocus(request)
         } else {
             @Suppress("DEPRECATION")
             audioManager?.requestAudioFocus(
-                null,
+                audioFocusChangeListener,
                 AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN
             )
@@ -77,7 +110,7 @@ class NuclearMediaService : Service() {
             audioFocusRequest?.let { audioManager?.abandonAudioFocusRequest(it) }
         } else {
             @Suppress("DEPRECATION")
-            audioManager?.abandonAudioFocus(null)
+            audioManager?.abandonAudioFocus(audioFocusChangeListener)
         }
     }
 
@@ -88,6 +121,9 @@ class NuclearMediaService : Service() {
         val isPlaying = intent?.getBooleanExtra("isPlaying", true) ?: true
         val positionMs = intent?.getLongExtra("positionMs", 0L) ?: 0L
         val durationMs = intent?.getLongExtra("durationMs", 0L) ?: 0L
+
+        MainActivity.isMediaActive = true
+        MainActivity.isMediaPlaying = isPlaying
 
         HyperIslandNotificationManager.updateNotification(
             this,
@@ -112,6 +148,8 @@ class NuclearMediaService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        MainActivity.isMediaActive = false
+        MainActivity.isMediaPlaying = false
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }

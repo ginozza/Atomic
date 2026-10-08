@@ -14,8 +14,12 @@ import { Platform, PlatformProvider } from '@nuclearplayer/ui';
 import { routeTree } from './routeTree.gen';
 
 const isBenignError = (error: unknown): boolean => {
-  if (!error) return false;
-  if (error instanceof DOMException) return true;
+  if (!error) {
+    return false;
+  }
+  if (error instanceof DOMException) {
+    return true;
+  }
   const errorObj = error as {
     name?: string;
     message?: string;
@@ -27,7 +31,9 @@ const isBenignError = (error: unknown): boolean => {
     typeof errorObj.toString === 'function' ? errorObj.toString() : '';
   const combined = `${name} ${message} ${stringified}`.toLowerCase();
 
-  if (name === 'AbortError' || name === 'QuotaExceededError') return true;
+  if (name === 'AbortError' || name === 'QuotaExceededError') {
+    return true;
+  }
 
   if (
     combined.includes('domexception') ||
@@ -72,14 +78,16 @@ const RouterErrorFallback: FC<ErrorComponentProps> = ({ error, reset }) => {
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-6 text-center select-none">
-      <span className="text-sm font-medium text-muted-foreground">
-        {error instanceof Error ? error.message : 'An unexpected error occurred'}
+      <span className="text-muted-foreground text-sm font-medium">
+        {error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred'}
       </span>
       {reset && (
         <button
           type="button"
           onClick={() => reset()}
-          className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:opacity-90 active:scale-95 transition-transform"
+          className="bg-primary text-primary-foreground rounded-lg px-4 py-2 text-xs font-bold transition-transform hover:opacity-90 active:scale-95"
         >
           Retry
         </button>
@@ -101,7 +109,9 @@ declare module '@tanstack/react-router' {
 }
 
 const isRecoverableError = (error: unknown): boolean => {
-  if (isBenignError(error)) return true;
+  if (isBenignError(error)) {
+    return true;
+  }
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
     if (
@@ -152,8 +162,8 @@ class RootErrorBoundary extends Component<
     if (this.state.hasError) {
       if (isRecoverableError(this.state.error)) {
         return (
-          <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background p-6 text-foreground select-none">
-            <span className="text-sm font-medium text-muted-foreground">
+          <div className="bg-background text-foreground flex h-screen w-screen flex-col items-center justify-center gap-4 p-6 select-none">
+            <span className="text-muted-foreground text-sm font-medium">
               {this.state.error instanceof Error
                 ? this.state.error.message
                 : 'A temporary error occurred'}
@@ -161,7 +171,7 @@ class RootErrorBoundary extends Component<
             <button
               type="button"
               onClick={this.handleRecover}
-              className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:opacity-90 active:scale-95 transition-transform"
+              className="bg-primary text-primary-foreground rounded-lg px-4 py-2 text-xs font-bold transition-transform hover:opacity-90 active:scale-95"
             >
               Recover
             </button>

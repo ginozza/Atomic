@@ -23,6 +23,8 @@ class MainActivity : TauriActivity() {
 
     companion object {
         var instance: MainActivity? = null
+        var isMediaActive: Boolean = false
+        var isMediaPlaying: Boolean = false
 
         fun dispatchActionToNuclear(action: String) {
             instance?.runOnUiThread {
@@ -33,6 +35,10 @@ class MainActivity : TauriActivity() {
                 }
             }
         }
+    }
+
+    override fun shouldPauseWebView(): Boolean {
+        return !(isMediaActive || isMediaPlaying)
     }
 
     override fun onWebViewCreate(webView: WebView) {
@@ -77,31 +83,37 @@ class MainActivity : TauriActivity() {
     }
 
     fun keepWebViewActive() {
-        runOnUiThread {
+        val action = Runnable {
             val wv = webViewRef ?: findWebView()
             if (wv != null) {
                 wv.onResume()
                 wv.resumeTimers()
             }
         }
+        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            action.run()
+        } else {
+            runOnUiThread(action)
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        // WryActivity.onPause() calls mWebView.onPause() which suspends HTML5 audio.
-        // Immediately counteract it so background audio keeps playing.
-        keepWebViewActive()
+        if (isMediaActive || isMediaPlaying) {
+            keepWebViewActive()
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        // Ensure timers and JS execution are fully running after returning to app.
         keepWebViewActive()
     }
 
     override fun onStop() {
         super.onStop()
-        keepWebViewActive()
+        if (isMediaActive || isMediaPlaying) {
+            keepWebViewActive()
+        }
     }
 
     override fun onStart() {
@@ -111,12 +123,16 @@ class MainActivity : TauriActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        keepWebViewActive()
+        if (isMediaActive || isMediaPlaying) {
+            keepWebViewActive()
+        }
     }
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        keepWebViewActive()
+        if (isMediaActive || isMediaPlaying) {
+            keepWebViewActive()
+        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -170,6 +186,8 @@ class MainActivity : TauriActivity() {
             positionMs: Long,
             durationMs: Long
         ) {
+            isMediaActive = true
+            isMediaPlaying = isPlaying
             runOnUiThread {
                 try {
                     val intent = Intent(this@MainActivity, NuclearMediaService::class.java).apply {
@@ -217,6 +235,8 @@ class MainActivity : TauriActivity() {
         super.onDestroy()
         if (instance == this) {
             instance = null
+            isMediaActive = false
+            isMediaPlaying = false
         }
     }
 }

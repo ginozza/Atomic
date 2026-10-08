@@ -1,15 +1,5 @@
-import {
-  ChangeEvent,
-  FC,
-  useRef,
-} from 'react';
-import {
-  Check,
-  ImagePlus,
-  Maximize2,
-  RotateCw,
-  Trash2,
-} from 'lucide-react';
+import { Check, ImagePlus, Maximize2, RotateCw, Trash2 } from 'lucide-react';
+import { ChangeEvent, FC, useRef } from 'react';
 
 import { Button } from '@nuclearplayer/ui';
 
@@ -55,9 +45,9 @@ export const PlayerDecorationsOverlay: FC<PlayerDecorationsOverlayProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const activePointersRef = useRef<Map<number, { clientX: number; clientY: number }>>(
-    new Map(),
-  );
+  const activePointersRef = useRef<
+    Map<number, { clientX: number; clientY: number }>
+  >(new Map());
 
   const gestureStartRef = useRef<{
     type: 'move' | 'pinch';
@@ -380,44 +370,44 @@ export const PlayerDecorationsOverlay: FC<PlayerDecorationsOverlayProps> = ({
             }}
             className={`transition-shadow ${
               isEditMode
-                ? 'cursor-grab active:cursor-grabbing p-1 rounded-2xl select-none'
-                : 'select-none pointer-events-none'
+                ? 'cursor-grab rounded-2xl p-1 select-none active:cursor-grabbing'
+                : 'pointer-events-none select-none'
             } ${
               isSelected
-                ? 'ring-2 ring-primary ring-offset-2 ring-offset-black/50 shadow-2xl'
+                ? 'ring-primary shadow-2xl ring-2 ring-offset-2 ring-offset-black/50'
                 : ''
             }`}
           >
             <img
               src={item.dataUrl}
               alt={item.name}
-              className="max-w-[140px] max-h-[140px] object-contain drop-shadow-2xl select-none pointer-events-none"
+              className="pointer-events-none max-h-[140px] max-w-[140px] object-contain drop-shadow-2xl select-none"
               draggable={false}
             />
 
             {isSelected && isEditMode && (
               <>
-                <div className="absolute -top-11 left-1/2 -translate-x-1/2 flex flex-col items-center z-50 pointer-events-auto touch-none select-none">
+                <div className="pointer-events-auto absolute -top-11 left-1/2 z-50 flex -translate-x-1/2 touch-none flex-col items-center select-none">
                   <div
                     onPointerDown={(event) =>
                       handleRotateHandlePointerDown(event, item)
                     }
-                    className="p-2 rounded-full bg-primary text-primary-foreground shadow-2xl cursor-grab active:cursor-grabbing active:scale-125 transition-transform"
+                    className="bg-primary text-primary-foreground cursor-grab rounded-full p-2 shadow-2xl transition-transform active:scale-125 active:cursor-grabbing"
                     aria-label="Rotar elemento"
                   >
-                    <RotateCw className="w-4 h-4" />
+                    <RotateCw className="h-4 w-4" />
                   </div>
-                  <div className="w-0.5 h-3 bg-primary" />
+                  <div className="bg-primary h-3 w-0.5" />
                 </div>
 
                 <div
                   onPointerDown={(event) =>
                     handleScaleHandlePointerDown(event, item)
                   }
-                  className="absolute -bottom-3.5 -right-3.5 z-50 p-2 rounded-full bg-primary text-primary-foreground shadow-2xl cursor-nwse-resize active:scale-125 transition-transform pointer-events-auto touch-none select-none"
+                  className="bg-primary text-primary-foreground pointer-events-auto absolute -right-3.5 -bottom-3.5 z-50 cursor-nwse-resize touch-none rounded-full p-2 shadow-2xl transition-transform select-none active:scale-125"
                   aria-label="Escalar elemento"
                 >
-                  <Maximize2 className="w-4 h-4" />
+                  <Maximize2 className="h-4 w-4" />
                 </div>
               </>
             )}
@@ -426,30 +416,30 @@ export const PlayerDecorationsOverlay: FC<PlayerDecorationsOverlayProps> = ({
       })}
 
       {isEditMode && (!targetLayer || targetLayer === 'above-all') && (
-        <div className="fixed inset-x-0 bottom-0 z-50 p-4 bg-background/95 backdrop-blur-2xl border-t border-border/40 shadow-2xl flex flex-col gap-3 animate-in slide-in-from-bottom duration-200">
+        <div className="bg-background/95 border-border/40 animate-in slide-in-from-bottom fixed inset-x-0 bottom-0 z-50 flex flex-col gap-3 border-t p-4 shadow-2xl backdrop-blur-2xl duration-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-bold text-foreground truncate max-w-[140px]">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="text-foreground max-w-[140px] truncate text-xs font-bold">
                 {selectedDecoration
                   ? selectedDecoration.name
                   : 'Ninguna seleccionada'}
               </span>
               {selectedDecoration && (
-                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary shrink-0">
+                <span className="bg-primary/20 text-primary shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
                   {LAYER_LABELS[selectedDecoration.layer]}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex shrink-0 items-center gap-1.5">
               {selectedDecoration && (
                 <button
                   type="button"
                   onClick={() => removeDecoration(selectedDecoration.id)}
-                  className="p-2 rounded-xl text-destructive hover:bg-destructive/10 active:scale-95 transition-transform"
+                  className="text-destructive hover:bg-destructive/10 rounded-xl p-2 transition-transform active:scale-95"
                   aria-label="Eliminar elemento"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               )}
 
@@ -457,9 +447,9 @@ export const PlayerDecorationsOverlay: FC<PlayerDecorationsOverlayProps> = ({
                 variant="secondary"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1 text-xs py-1.5 px-3 rounded-xl font-semibold"
+                className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold"
               >
-                <ImagePlus className="w-4 h-4" />
+                <ImagePlus className="h-4 w-4" />
                 <span>+ GIF / PNG</span>
               </Button>
 
@@ -467,16 +457,16 @@ export const PlayerDecorationsOverlay: FC<PlayerDecorationsOverlayProps> = ({
                 variant="default"
                 size="sm"
                 onClick={onExitEditMode}
-                className="flex items-center gap-1 text-xs py-1.5 px-3.5 rounded-xl shadow-md font-bold"
+                className="flex items-center gap-1 rounded-xl px-3.5 py-1.5 text-xs font-bold shadow-md"
               >
-                <Check className="w-4 h-4" />
+                <Check className="h-4 w-4" />
                 <span>Listo</span>
               </Button>
             </div>
           </div>
 
           {selectedDecoration && (
-            <div className="grid grid-cols-4 gap-1.5 pt-1 border-t border-border/20">
+            <div className="border-border/20 grid grid-cols-4 gap-1.5 border-t pt-1">
               {(
                 [
                   'above-all',
@@ -493,7 +483,7 @@ export const PlayerDecorationsOverlay: FC<PlayerDecorationsOverlayProps> = ({
                       layer: layerKey,
                     })
                   }
-                  className={`py-2 px-1 rounded-xl text-[10px] font-bold text-center border transition-all active:scale-95 ${
+                  className={`rounded-xl border px-1 py-2 text-center text-[10px] font-bold transition-all active:scale-95 ${
                     selectedDecoration.layer === layerKey
                       ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                       : 'bg-card/60 text-muted-foreground border-border/30 hover:bg-card'

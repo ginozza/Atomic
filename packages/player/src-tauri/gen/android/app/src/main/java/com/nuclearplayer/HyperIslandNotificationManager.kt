@@ -58,10 +58,50 @@ object HyperIslandNotificationManager {
                                 PlaybackStateCompat.ACTION_PAUSE or
                                 PlaybackStateCompat.ACTION_PLAY_PAUSE or
                                 PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                                PlaybackStateCompat.ACTION_STOP
                         )
                         .build()
                 )
+                setCallback(object : MediaSessionCompat.Callback() {
+                    override fun onPlay() {
+                        if (!MainActivity.isMediaPlaying) {
+                            MainActivity.dispatchActionToNuclear("toggle")
+                        }
+                    }
+
+                    override fun onPause() {
+                        if (MainActivity.isMediaPlaying) {
+                            MainActivity.dispatchActionToNuclear("toggle")
+                        }
+                    }
+
+                    override fun onSkipToNext() {
+                        MainActivity.dispatchActionToNuclear("next")
+                    }
+
+                    override fun onSkipToPrevious() {
+                        MainActivity.dispatchActionToNuclear("previous")
+                    }
+
+                    override fun onStop() {
+                        MainActivity.dispatchActionToNuclear("stop")
+                    }
+
+                    override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
+                        val keyEvent = mediaButtonEvent?.getParcelableExtra<android.view.KeyEvent>(Intent.EXTRA_KEY_EVENT)
+                        if (keyEvent?.action == android.view.KeyEvent.ACTION_DOWN) {
+                            when (keyEvent.keyCode) {
+                                android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+                                android.view.KeyEvent.KEYCODE_HEADSETHOOK -> {
+                                    MainActivity.dispatchActionToNuclear("toggle")
+                                    return true
+                                }
+                            }
+                        }
+                        return super.onMediaButtonEvent(mediaButtonEvent)
+                    }
+                })
             }
         }
     }

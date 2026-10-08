@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 
-import { getSetting } from '../stores/settingsStore';
-import { useQueueStore } from '../stores/queueStore';
-import { useSoundStore } from '../stores/soundStore';
-import { candidatesForTrack } from '../services/streamResolution/candidateSource';
-import { streamingHost, isStreamExpired } from '../services/streamingHost';
 import { Logger } from '../services/logger';
+import { isStreamExpired, streamingHost } from '../services/streamingHost';
+import { candidatesForTrack } from '../services/streamResolution/candidateSource';
+import { useQueueStore } from '../stores/queueStore';
+import { getSetting } from '../stores/settingsStore';
+import { useSoundStore } from '../stores/soundStore';
 
 const PREFETCH_THRESHOLD_SECONDS = 30;
 
@@ -15,8 +15,7 @@ const getNextItem = () => {
 
   const shuffleEnabled =
     (getSetting('core.playback.shuffle') as boolean) ?? false;
-  const repeatMode =
-    (getSetting('core.playback.repeat') as string) ?? 'off';
+  const repeatMode = (getSetting('core.playback.repeat') as string) ?? 'off';
 
   if (shuffleEnabled && shuffleOrder.length > 0 && shufflePosition !== -1) {
     const nextPosition = shufflePosition + 1;
@@ -46,17 +45,29 @@ export const useNextTrackPrefetch = (): void => {
     const prefetchNext = async (): Promise<void> => {
       const { seek, duration, status } = useSoundStore.getState();
 
-      if (status !== 'playing') return;
-      if (!duration || duration <= 0) return;
+      if (status !== 'playing') {
+        return;
+      }
+      if (!duration || duration <= 0) {
+        return;
+      }
 
       const remaining = duration - seek;
-      if (remaining > PREFETCH_THRESHOLD_SECONDS) return;
+      if (remaining > PREFETCH_THRESHOLD_SECONDS) {
+        return;
+      }
 
       const nextItem = getNextItem();
-      if (!nextItem) return;
+      if (!nextItem) {
+        return;
+      }
 
-      if (nextItem.id === prefetchedItemIdRef.current) return;
-      if (isPrefetchingRef.current) return;
+      if (nextItem.id === prefetchedItemIdRef.current) {
+        return;
+      }
+      if (isPrefetchingRef.current) {
+        return;
+      }
 
       const existingCandidates = nextItem.track.streamCandidates?.filter(
         (candidate) => !candidate.failed && !isStreamExpired(candidate),
@@ -74,7 +85,9 @@ export const useNextTrackPrefetch = (): void => {
 
       try {
         const candidates = await candidatesForTrack(nextItem.track);
-        if (!candidates || candidates.length === 0) return;
+        if (!candidates || candidates.length === 0) {
+          return;
+        }
 
         const headCandidate = candidates[0];
         if (!headCandidate.stream || isStreamExpired(headCandidate)) {
@@ -94,7 +107,7 @@ export const useNextTrackPrefetch = (): void => {
             `Prefetch used cached candidates for: ${nextItem.track.title}`,
           );
         }
-      } catch (error) {
+      } catch {
         Logger.queue.warn(`Prefetch failed for ${nextItem.track.title}`);
       } finally {
         isPrefetchingRef.current = false;

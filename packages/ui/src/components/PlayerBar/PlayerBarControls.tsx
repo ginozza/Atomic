@@ -34,6 +34,7 @@ const REPEAT_LABEL_KEY: Record<RepeatMode, keyof PlayerBarControlsLabels> = {
 
 type PlayerBarControlsProps = {
   isPlaying?: boolean;
+  isLoading?: boolean;
   isShuffleActive?: boolean;
   isDiscoveryActive?: boolean;
   repeatMode?: RepeatMode;
@@ -50,6 +51,7 @@ type PlayerBarControlsProps = {
 
 export const PlayerBarControls: FC<PlayerBarControlsProps> = ({
   isPlaying = false,
+  isLoading = false,
   isShuffleActive = false,
   isDiscoveryActive = false,
   repeatMode = 'off',
@@ -83,9 +85,24 @@ export const PlayerBarControls: FC<PlayerBarControlsProps> = ({
     <Button
       size="icon"
       onClick={onPlayPause}
-      data-testid={isPlaying ? 'player-pause-button' : 'player-play-button'}
+      data-testid={
+        isLoading
+          ? 'player-loading-button'
+          : isPlaying
+            ? 'player-pause-button'
+            : 'player-play-button'
+      }
+      aria-busy={isLoading ? 'true' : undefined}
+      aria-label={isLoading ? 'Loading' : undefined}
+      className={cn(
+        isLoading && 'surface-toxic-shimmer text-black animate-toxic-glow',
+      )}
     >
-      {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+      {isPlaying ? (
+        <Pause size={16} />
+      ) : (
+        <Play size={16} className={cn(isLoading && 'animate-pulse')} />
+      )}
     </Button>
     <Button
       size="icon"

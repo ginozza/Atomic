@@ -1,7 +1,10 @@
 import { waitFor } from '@testing-library/react';
+import { toast } from 'sonner';
 import { vi } from 'vitest';
 
+import { playbackManager } from '../services/playback';
 import { providersHost } from '../services/providersHost';
+import { streamResolution } from '../services/streamResolution';
 import { useQueueStore } from '../stores/queueStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useSoundStore } from '../stores/soundStore';
@@ -22,6 +25,8 @@ vi.mock('@tauri-apps/api/core', () => ({
 
 describe('Stream Resolution Integration', () => {
   beforeEach(() => {
+    streamResolution.resetConfig();
+
     useQueueStore.setState({
       items: [],
       currentIndex: 0,
@@ -426,7 +431,6 @@ describe('Stream Resolution Integration', () => {
       await AlbumWrapper.addTrackToQueueByTitle('Countdown');
       await AlbumWrapper.addTrackToQueueByTitle('Giant Steps');
 
-      await StreamResolutionWrapper.waitForPlayback();
       expect(resolvedTracks).toContain('Countdown');
 
       await StreamResolutionWrapper.selectQueueItem('Giant Steps');
@@ -520,6 +524,129 @@ describe('Stream Resolution Integration', () => {
       const currentItem = StreamResolutionWrapper.getCurrentQueueItem();
       expect(currentItem?.track.title).toBe('Countdown');
       expect(currentItem?.status).toBe('success');
+    });
+  });
+
+  describe('when candidate or global timeouts occur', () => {
+    it('falls back to next candidate when first candidate times out', async () => {
+      setupMetadataProvider();
+      streamResolution.configure({ candidateTimeoutMs: 50 });
+
+      let callCount = 0;
+      const streamingProvider = new StreamingProviderBuilder()
+        .withSearchForTrack(async () => [
+          createMockCandidate('yt-slow', 'Slow Stream'),
+          createMockCandidate('yt-fast', 'Fast Stream'),
+        ])
+        .withGetStreamUrl(async (candidateId) => {
+          callCount++;
+          if (candidateId === 'yt-slow') {
+            await new Promise((resolvePromise) => setTimeout(resolvePromise, 150));
+            return createMockStream(candidateId);
+          }
+          return createMockStream(candidateId);
+        })
+        .build();
+
+      providersHost.register(streamingProvider);
+
+      await AlbumWrapper.mountDirectly();
+      await AlbumWrapper.addTrackToQueueByTitle('Countdown');
+
+      await StreamResolutionWrapper.waitForPlayback();
+
+      const currentItem = StreamResolutionWrapper.getCurrentQueueItem();
+      expect(currentItem?.status).toBe('success');
+      expect(currentItem?.track.streamCandidates).toHaveLength(1);
+      expect(currentItem?.track.streamCandidates?.[0].id).toBe('yt-fast');
+      expect(callCount).toBeGreaterThanOrEqual(2);
+    });
+
+    it('shows error state when global resolution timeout is reached', async () => {
+      setupMetadataProvider();
+      streamResolution.configure({ globalTimeoutMs: 50 });
+
+      const streamingProvider = new StreamingProviderBuilder()
+        .withSearchForTrack(async () => {
+          await new Promise((resolvePromise) => setTimeout(resolvePromise, 150));
+          return [createMockCandidate('yt-1', 'Candidate 1')];
+        })
+        .withGetStreamUrl(async (candidateId) => createMockStream(candidateId))
+        .build();
+
+      providersHost.register(streamingProvider);
+
+      await AlbumWrapper.mountDirectly();
+      await AlbumWrapper.addTrackToQueueByTitle('Countdown');
+
+      await StreamResolutionWrapper.waitForError();
+
+      const currentItem = StreamResolutionWrapper.getCurrentQueueItem();
+      expect(currentItem?.status).toBe('error');
+      expect(currentItem?.error).toBe('streaming:errors.allCandidatesFailed');
+    });
+
+    it('triggers a toast error notification when resolution fails', async () => {
+      const toastErrorSpy = vi.spyOn(toast, 'error');
+      setupMetadataProvider();
+
+      const streamingProvider = new StreamingProviderBuilder()
+        .withSearchForTrack(async () => [
+          createMockCandidate('yt-1', 'Candidate 1'),
+        ])
+        .withGetStreamUrl(async () => {
+          throw new Error('Stream error');
+        })
+        .build();
+
+      providersHost.register(streamingProvider);
+
+      await AlbumWrapper.mountDirectly();
+      await AlbumWrapper.addTrackToQueueByTitle('Countdown');
+
+      await StreamResolutionWrapper.waitForError();
+
+      expect(toastErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('All stream candidates failed'),
+        expect.objectContaining({
+          description: 'Countdown',
+        }),
+      );
+    });
+
+    it('re-triggers resolution when clicking play on an errored track', async () => {
+      setupMetadataProvider();
+
+      let streamAttempts = 0;
+      const streamingProvider = new StreamingProviderBuilder()
+        .withSearchForTrack(async (artist, title) => [
+          createMockCandidate(`yt-${title}`, `${artist} - ${title}`),
+        ])
+        .withGetStreamUrl(async (candidateId) => {
+          streamAttempts++;
+          if (streamAttempts === 1) {
+            throw new Error('Initial network error');
+          }
+          return createMockStream(candidateId);
+        })
+        .build();
+
+      providersHost.register(streamingProvider);
+
+      await AlbumWrapper.mountDirectly();
+      await AlbumWrapper.addTrackToQueueByTitle('Countdown');
+
+      await StreamResolutionWrapper.waitForError();
+      const erroredItem = StreamResolutionWrapper.getCurrentQueueItem();
+      expect(erroredItem?.status).toBe('error');
+
+      playbackManager.play();
+
+      await StreamResolutionWrapper.waitForPlayback();
+
+      const currentItem = StreamResolutionWrapper.getCurrentQueueItem();
+      expect(currentItem?.status).toBe('success');
+      expect(streamAttempts).toBe(2);
     });
   });
 });

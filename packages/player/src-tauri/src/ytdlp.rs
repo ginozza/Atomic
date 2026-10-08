@@ -286,11 +286,16 @@ async fn resolve_stream_invidious(video_id: &str) -> Result<YtdlpStreamInfo, Str
 
                         if let Some(best) = audio_formats.last() {
                             if let Some(stream_url) = best.get("url").and_then(|url_val| url_val.as_str()) {
+                                let full_url = if stream_url.starts_with('/') {
+                                    format!("{instance}{stream_url}")
+                                } else {
+                                    stream_url.to_string()
+                                };
                                 let container = best.get("container").and_then(|container_val| container_val.as_str()).map(|container_str| container_str.to_string()).or_else(|| Some("m4a".to_string()));
-                                let codec = best.get("encoding").and_then(|codec_val| codec_val.as_str()).map(|codec_str| codec_str.to_string());
+                                let codec = best.get("encoding").or_else(|| best.get("acodec")).and_then(|codec_val| codec_val.as_str()).map(|codec_str| codec_str.to_string());
 
                                 return Ok(YtdlpStreamInfo {
-                                    stream_url: stream_url.to_string(),
+                                    stream_url: full_url,
                                     duration,
                                     title,
                                     container,
@@ -309,6 +314,64 @@ async fn resolve_stream_invidious(video_id: &str) -> Result<YtdlpStreamInfo, Str
     }
 
     Err(format!("Could not resolve audio stream for video {video_id}"))
+}
+
+async fn resolve_stream_piped(video_id: &str) -> Result<YtdlpStreamInfo, String> {
+    let instances = [
+        "https://pipedapi.kavin.rocks",
+        "https://api.piped.privacydev.net",
+        "https://piped-api.lunar.icu",
+    ];
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(7))
+        .danger_accept_invalid_certs(true)
+        .build()
+        .map_err(|error| error.to_string())?;
+
+    for instance in instances {
+        let url = format!("{instance}/streams/{video_id}");
+        if let Ok(response) = client.get(&url).send().await {
+            if response.status().is_success() {
+                if let Ok(value) = response.json::<serde_json::Value>().await {
+                    let title = value.get("title").and_then(|title_value| title_value.as_str()).map(|title_string| title_string.to_string());
+                    let duration = value.get("duration").and_then(|duration_val| {
+                        duration_val.as_f64().or_else(|| duration_val.as_str()?.parse().ok())
+                    });
+                    let uploader = value.get("uploader").and_then(|uploader_val| uploader_val.as_str()).map(|uploader_str| uploader_str.to_string());
+                    let artists = uploader.clone().map(|single_uploader| vec![single_uploader]).unwrap_or_default();
+
+                    if let Some(audio_streams) = value.get("audioStreams").and_then(|streams_val| streams_val.as_array()) {
+                        let mut streams = audio_streams.clone();
+                        streams.sort_by_key(|stream_item| {
+                            stream_item.get("bitrate").and_then(|bitrate_val| bitrate_val.as_u64()).unwrap_or(0)
+                        });
+
+                        if let Some(best) = streams.last() {
+                            if let Some(stream_url) = best.get("url").and_then(|url_val| url_val.as_str()) {
+                                let format_str = best.get("format").and_then(|fmt_val| fmt_val.as_str()).unwrap_or("m4a").to_lowercase();
+                                let codec = best.get("codec").and_then(|codec_val| codec_val.as_str()).map(|codec_str| codec_str.to_string());
+
+                                return Ok(YtdlpStreamInfo {
+                                    stream_url: stream_url.to_string(),
+                                    duration,
+                                    title,
+                                    container: Some(format_str),
+                                    codec,
+                                    album: None,
+                                    artists: artists.clone(),
+                                    album_artists: artists,
+                                    upload_date: None,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Err(format!("Could not resolve piped audio stream for video {video_id}"))
 }
 
 #[command]
@@ -372,6 +435,8 @@ pub async fn ytdlp_get_stream(
         url.as_ref().and_then(|raw_url| {
             if raw_url.contains("v=") {
                 raw_url.split("v=").nth(1)?.split('&').next().map(|s| s.to_string())
+            } else if raw_url.contains("youtu.be/") {
+                raw_url.split("youtu.be/").nth(1)?.split('?').next().map(|s| s.to_string())
             } else if raw_url.len() == 11 {
                 Some(raw_url.clone())
             } else {
@@ -417,6 +482,18 @@ pub async fn ytdlp_get_stream(
     }
 
     if let Some(id) = video_identifier {
+        debug!("[yt-dlp] Attempting Invidious stream extraction for: {}", id);
+        if let Ok(stream_info) = resolve_stream_invidious(&id).await {
+            debug!("[yt-dlp] Resolved direct stream via Invidious: {}", stream_info.stream_url);
+            return Ok(stream_info);
+        }
+
+        debug!("[yt-dlp] Attempting Piped stream extraction for: {}", id);
+        if let Ok(stream_info) = resolve_stream_piped(&id).await {
+            debug!("[yt-dlp] Resolved direct stream via Piped: {}", stream_info.stream_url);
+            return Ok(stream_info);
+        }
+
         return Ok(YtdlpStreamInfo {
             stream_url: format!("https://www.youtube.com/watch?v={id}"),
             duration: None,
@@ -617,6 +694,33 @@ not json
         #[test]
         fn returns_empty_when_all_null() {
             assert!(normalize_album_artists(&empty_json()).is_empty());
+        }
+    }
+
+    mod get_stream_tests {
+        use super::*;
+
+        #[tokio::test]
+        async fn returns_error_when_neither_url_nor_video_id_provided() {
+            let result = ytdlp_get_stream(None, None).await;
+            assert!(result.is_err());
+            assert_eq!(
+                result.unwrap_err(),
+                "Either url or video_id must be provided"
+            );
+        }
+
+        #[tokio::test]
+        async fn falls_back_to_youtube_container_when_extraction_fails() {
+            let result = ytdlp_get_stream(None, Some("invalid_id_xyz".to_string())).await;
+            assert!(result.is_ok());
+            let info = result.unwrap();
+            assert_eq!(
+                info.stream_url,
+                "https://www.youtube.com/watch?v=invalid_id_xyz"
+            );
+            assert_eq!(info.container, Some("youtube".to_string()));
+            assert_eq!(info.codec, Some("youtube".to_string()));
         }
     }
 }

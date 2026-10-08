@@ -1,4 +1,8 @@
-import { useCanGoBack, useRouter, useRouterState } from '@tanstack/react-router';
+import {
+  useCanGoBack,
+  useRouter,
+  useRouterState,
+} from '@tanstack/react-router';
 import { ChevronLeftIcon, HistoryIcon, SettingsIcon } from 'lucide-react';
 import { FC } from 'react';
 
@@ -44,44 +48,44 @@ export const ConnectedTopBar: FC = () => {
   }
 
   return (
-    <header className="h-13 flex items-center justify-between px-4 select-none shrink-0 bg-transparent border-0">
-      <div className="flex items-center gap-2 min-w-0">
+    <header className="flex h-13 shrink-0 items-center justify-between border-0 bg-transparent px-4 select-none">
+      <div className="flex min-w-0 items-center gap-2">
         {showBackButton && (
           <button
             type="button"
             onClick={() => router.history.back()}
-            className="p-1.5 -ml-1 rounded-xl text-foreground hover:bg-muted active:scale-95 transition-transform shrink-0"
+            className="text-foreground hover:bg-muted -ml-1 shrink-0 rounded-xl p-1.5 transition-transform active:scale-95"
             aria-label="Back"
           >
-            <ChevronLeftIcon className="w-5 h-5" />
+            <ChevronLeftIcon className="h-5 w-5" />
           </button>
         )}
         <h1
           data-testid="topbar-section-title"
-          className="font-heading font-black text-xl tracking-tight text-foreground truncate"
+          className="font-heading text-foreground truncate text-xl font-black tracking-tight"
         >
           {sectionTitle}
         </h1>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex shrink-0 items-center gap-2">
         <button
           type="button"
           data-testid="topbar-history-button"
           onClick={() => router.navigate({ to: '/history' })}
-          className="p-1.5 rounded-xl text-foreground hover:bg-muted active:scale-95 transition-transform"
+          className="text-foreground hover:bg-muted rounded-xl p-1.5 transition-transform active:scale-95"
           aria-label="History"
         >
-          <HistoryIcon className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+          <HistoryIcon className="text-muted-foreground hover:text-foreground h-5 w-5" />
         </button>
         <JamQrCodeButton />
         <button
           type="button"
           data-testid="topbar-settings-button"
           onClick={() => openSettings()}
-          className="p-1.5 rounded-xl text-foreground hover:bg-muted active:scale-95 transition-transform"
+          className="text-foreground hover:bg-muted rounded-xl p-1.5 transition-transform active:scale-95"
           aria-label="Settings"
         >
-          <SettingsIcon className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+          <SettingsIcon className="text-muted-foreground hover:text-foreground h-5 w-5" />
         </button>
       </div>
     </header>

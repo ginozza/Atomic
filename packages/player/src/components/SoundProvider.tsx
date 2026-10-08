@@ -85,8 +85,16 @@ export const SoundProvider: FC<PropsWithChildren> = ({ children }) => {
       window.addEventListener('visibilitychange', suppressVisibility, true);
       document.addEventListener('visibilitychange', suppressVisibility, true);
       return () => {
-        window.removeEventListener('visibilitychange', suppressVisibility, true);
-        document.removeEventListener('visibilitychange', suppressVisibility, true);
+        window.removeEventListener(
+          'visibilitychange',
+          suppressVisibility,
+          true,
+        );
+        document.removeEventListener(
+          'visibilitychange',
+          suppressVisibility,
+          true,
+        );
       };
     } catch {
       return undefined;

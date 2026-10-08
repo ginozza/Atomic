@@ -221,6 +221,48 @@ describe('PlayerBarMobile', () => {
       fireEvent.click(seekBar, { clientX: 100 });
       expect(handleSeek).not.toHaveBeenCalled();
     });
+
+    it('applies shimmer loading styling and aria-busy to play button when loading', () => {
+      render(
+        <PlayerBarControls
+          isLoading={true}
+          labels={defaultLabels}
+          onPlayPause={vi.fn()}
+          onNext={vi.fn()}
+          onPrevious={vi.fn()}
+          onShuffleToggle={vi.fn()}
+          onRepeatToggle={vi.fn()}
+          showDiscovery={false}
+        />,
+      );
+
+      const loadingButton = screen.getByTestId('player-loading-button');
+      expect(loadingButton).toBeVisible();
+      expect(loadingButton).toHaveAttribute('aria-busy', 'true');
+      expect(loadingButton.className).toContain('surface-toxic-shimmer');
+      expect(loadingButton.className).toContain('animate-toxic-glow');
+    });
+
+    it('renders regular pause button and stops shimmer when playback starts', () => {
+      render(
+        <PlayerBarControls
+          isLoading={false}
+          isPlaying={true}
+          labels={defaultLabels}
+          onPlayPause={vi.fn()}
+          onNext={vi.fn()}
+          onPrevious={vi.fn()}
+          onShuffleToggle={vi.fn()}
+          onRepeatToggle={vi.fn()}
+          showDiscovery={false}
+        />,
+      );
+
+      const pauseButton = screen.getByTestId('player-pause-button');
+      expect(pauseButton).toBeVisible();
+      expect(pauseButton).not.toHaveAttribute('aria-busy');
+      expect(pauseButton.className).not.toContain('surface-toxic-shimmer');
+    });
   });
 
   describe('Tier 2: Boundary & Corner Cases', () => {

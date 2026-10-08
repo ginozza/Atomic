@@ -12,7 +12,5 @@ export const useActiveProvider = <K extends ProviderKind>(
   const providers = useProviders(kind);
   const activeId = useProvidersStore((state) => state.active[kind]);
 
-  return (
-    providers.find((provider) => provider.id === activeId) ?? providers[0]
-  );
+  return providers.find((provider) => provider.id === activeId) ?? providers[0];
 };

@@ -28,12 +28,14 @@ const DOWNLOAD_TIMEOUT_MS = 45000;
 
 export const useInstallPlugin = () => {
   const { t } = useTranslation('plugins');
-  const loadPluginFromPath = usePluginStore((state) => state.loadPluginFromPath);
+  const loadPluginFromPath = usePluginStore(
+    (state) => state.loadPluginFromPath,
+  );
   const enablePlugin = usePluginStore((state) => state.enablePlugin);
 
   return useMutation({
     mutationFn: async ({ plugin }: InstallPluginParams) => {
-      let extractedPath: string | null = null;
+      let extractedPath: string;
       let resolvedVersion = plugin.version ?? '0.1.2';
 
       try {
@@ -43,7 +45,9 @@ export const useInstallPlugin = () => {
 
           if (!downloadUrl || !version) {
             try {
-              const release = await pluginMarketplaceApi.getLatestRelease(plugin.repo);
+              const release = await pluginMarketplaceApi.getLatestRelease(
+                plugin.repo,
+              );
               downloadUrl = release.downloadUrl;
               version = release.version;
             } catch (error) {

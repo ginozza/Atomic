@@ -195,5 +195,57 @@ describe('Providers service', () => {
 
       expect(useProvidersStore.getState().active.streaming).toBe('stream-b');
     });
+
+    it('selects preferred defaults when no provider is persisted or persisted id is not registered', () => {
+      providersHost.register(createProvider('discogs', 'metadata', 'Discogs'));
+      providersHost.register(createProvider('spotify', 'metadata', 'Spotify'));
+      providersHost.register(
+        createProvider('invidious', 'streaming', 'Invidious'),
+      );
+      providersHost.register(createProvider('youtube', 'streaming', 'YouTube'));
+      providersHost.register(
+        createProvider('other-dashboard', 'dashboard', 'Other Dashboard'),
+      );
+      providersHost.register(
+        createProvider('deezer-dashboard', 'dashboard', 'Deezer Dashboard'),
+      );
+      providersHost.register(
+        createProvider('other-discovery', 'discovery', 'Other Discovery'),
+      );
+      providersHost.register(
+        createProvider('lastfm-discovery', 'discovery', 'Last.fm Discovery'),
+      );
+
+      useProvidersStore.setState({ active: {} });
+
+      providersHost.resolveActiveOnBootstrap();
+
+      expect(useProvidersStore.getState().active.metadata).toBe('spotify');
+      expect(useProvidersStore.getState().active.streaming).toBe('youtube');
+      expect(useProvidersStore.getState().active.dashboard).toBe(
+        'deezer-dashboard',
+      );
+      expect(useProvidersStore.getState().active.discovery).toBe(
+        'lastfm-discovery',
+      );
+    });
+
+    it('does not overwrite existing user choices with preferred defaults if already set', () => {
+      providersHost.register(createProvider('discogs', 'metadata', 'Discogs'));
+      providersHost.register(createProvider('spotify', 'metadata', 'Spotify'));
+      providersHost.register(
+        createProvider('invidious', 'streaming', 'Invidious'),
+      );
+      providersHost.register(createProvider('youtube', 'streaming', 'YouTube'));
+
+      useProvidersStore.setState({
+        active: { metadata: 'discogs', streaming: 'invidious' },
+      });
+
+      providersHost.resolveActiveOnBootstrap();
+
+      expect(useProvidersStore.getState().active.metadata).toBe('discogs');
+      expect(useProvidersStore.getState().active.streaming).toBe('invidious');
+    });
   });
 });

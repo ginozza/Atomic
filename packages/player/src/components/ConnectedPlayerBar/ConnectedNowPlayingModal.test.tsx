@@ -72,7 +72,9 @@ describe('ConnectedNowPlayingModal', () => {
     expect(screen.getByText('Queen')).toBeInTheDocument();
     expect(screen.getByText('A Night at the Opera')).toBeInTheDocument();
     expect(screen.getByTestId('now-playing-close-button')).toBeInTheDocument();
-    expect(screen.getByTestId('now-playing-play-pause-button')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('now-playing-play-pause-button'),
+    ).toBeInTheDocument();
   });
 
   it('closes modal when tapping close button', async () => {
@@ -106,5 +108,42 @@ describe('ConnectedNowPlayingModal', () => {
 
     await user.click(screen.getByTestId('now-playing-next-button'));
     expect(goToNextSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies shimmer loading styling and aria-busy when current track status is loading', () => {
+    useQueueStore.setState({
+      items: [{ ...mockQueueItem, status: 'loading' }],
+      currentIndex: 0,
+    });
+    useSoundStore.setState({
+      status: 'stopped',
+    });
+    useNowPlayingModalStore.setState({ isOpen: true });
+
+    render(<ConnectedNowPlayingModal />);
+
+    const playPauseBtn = screen.getByTestId('now-playing-play-pause-button');
+    expect(playPauseBtn).toHaveAttribute('aria-busy', 'true');
+    expect(playPauseBtn).toHaveAttribute('aria-label', 'Loading');
+    expect(playPauseBtn.className).toContain('surface-toxic-shimmer');
+    expect(playPauseBtn.className).toContain('animate-toxic-glow');
+  });
+
+  it('stops shimmer loading styling and shows regular pause when playback starts', () => {
+    useQueueStore.setState({
+      items: [{ ...mockQueueItem, status: 'success' }],
+      currentIndex: 0,
+    });
+    useSoundStore.setState({
+      status: 'playing',
+    });
+    useNowPlayingModalStore.setState({ isOpen: true });
+
+    render(<ConnectedNowPlayingModal />);
+
+    const playPauseBtn = screen.getByTestId('now-playing-play-pause-button');
+    expect(playPauseBtn).not.toHaveAttribute('aria-busy');
+    expect(playPauseBtn).toHaveAttribute('aria-label', 'Pause');
+    expect(playPauseBtn.className).not.toContain('surface-toxic-shimmer');
   });
 });

@@ -32,7 +32,7 @@ export const ViewShell: FC<ViewShellProps> = ({
   >
     {title && (
       <h1
-        className="hidden"
+        className="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
         data-testid="title"
       >
         {title}

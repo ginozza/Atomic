@@ -150,7 +150,7 @@ const RootComponent = () => {
       )}
       <SoundProvider>
         <PlayerWorkspace className="flex flex-col md:grid">
-          <div className="hidden md:contents">
+          <div className="contents max-md:hidden">
             <PlayerWorkspace.LeftSidebar
               width={leftSidebar.width}
               isCollapsed={leftSidebar.isCollapsed}
@@ -208,7 +208,7 @@ const RootComponent = () => {
             <RouteTransition />
           </PlayerWorkspace.Main>
 
-          <div className="hidden md:contents">
+          <div className="contents max-md:hidden">
             <PlayerWorkspace.RightSidebar
               width={rightSidebar.width}
               isCollapsed={rightSidebar.isCollapsed}

@@ -44,7 +44,7 @@
             android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:singleLine="true"
-            android:text="Nuclear Music Player"
+            android:text="Atomic Music Player"
             android:textColor="#00FFA3"
             android:textSize="12sp" />
 

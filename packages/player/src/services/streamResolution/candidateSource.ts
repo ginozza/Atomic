@@ -6,8 +6,44 @@ import { providersHost } from '../providersHost';
 import { isStreamExpired, streamingHost } from '../streamingHost';
 import { streamVerification } from '../streamVerification';
 
+const raceWithSignal = <ValueType>(
+  promise: Promise<ValueType>,
+  signal?: AbortSignal,
+): Promise<ValueType> => {
+  if (!signal) {
+    return promise;
+  }
+  if (signal.aborted) {
+    return Promise.reject(
+      signal.reason ?? new DOMException('Aborted', 'AbortError'),
+    );
+  }
+  return new Promise<ValueType>((resolve, reject) => {
+    const onAbort = () => {
+      signal.removeEventListener('abort', onAbort);
+      reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(error);
+      },
+    );
+  });
+};
+
+export type CandidateSourceOptions = {
+  signal?: AbortSignal;
+};
+
 export const candidatesForTrack = async (
   track: Track,
+  options?: CandidateSourceOptions,
 ): Promise<StreamCandidate[] | undefined> => {
   const cached = track.streamCandidates?.filter((candidate) => !candidate.failed);
   if (cached && cached.length > 0 && !cached.some(isStreamExpired)) {
@@ -35,12 +71,19 @@ export const candidatesForTrack = async (
     ];
   }
 
-  const [result, verifiedStream] = await Promise.all([
+  const signal = options?.signal;
+  if (signal?.aborted) {
+    return undefined;
+  }
+
+  const searchPromise = Promise.all([
     streamingHost.resolveCandidatesForTrack(track),
     streamVerification.getVerifiedStream(track),
   ]);
 
-  if (!result.success) {
+  const [result, verifiedStream] = await raceWithSignal(searchPromise, signal);
+
+  if (signal?.aborted || !result.success) {
     return undefined;
   }
 

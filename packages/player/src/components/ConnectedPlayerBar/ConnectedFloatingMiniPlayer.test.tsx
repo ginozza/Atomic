@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -61,8 +61,12 @@ describe('ConnectedFloatingMiniPlayer (Apple Music Style)', () => {
 
     expect(screen.getByTestId('floating-mini-player')).toBeInTheDocument();
     expect(screen.getByText('Not Playing')).toBeInTheDocument();
-    expect(screen.getByText('Tap a song to start listening')).toBeInTheDocument();
-    expect(screen.getByTestId('mini-player-play-pause-button')).toBeInTheDocument();
+    expect(
+      screen.getByText('Tap a song to start listening'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('mini-player-play-pause-button'),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('mini-player-next-button')).toBeInTheDocument();
   });
 
@@ -125,7 +129,43 @@ describe('ConnectedFloatingMiniPlayer (Apple Music Style)', () => {
     const pillBody = screen.getByRole('button', { name: /open now playing/i });
     await user.click(pillBody);
 
-    const { useNowPlayingModalStore } = await import('../../stores/nowPlayingModalStore');
+    const { useNowPlayingModalStore } =
+      await import('../../stores/nowPlayingModalStore');
     expect(useNowPlayingModalStore.getState().isOpen).toBe(true);
+  });
+
+  it('applies shimmer loading styling and aria-busy when current track status is loading', () => {
+    useQueueStore.setState({
+      items: [{ ...mockQueueItem, status: 'loading' }],
+      currentIndex: 0,
+    });
+    useSoundStore.setState({
+      status: 'stopped',
+    });
+
+    render(<ConnectedFloatingMiniPlayer />);
+
+    const playPauseBtn = screen.getByTestId('mini-player-play-pause-button');
+    expect(playPauseBtn).toHaveAttribute('aria-busy', 'true');
+    expect(playPauseBtn).toHaveAttribute('aria-label', 'Loading');
+    expect(playPauseBtn.className).toContain('surface-toxic-shimmer');
+    expect(playPauseBtn.className).toContain('animate-toxic-glow');
+  });
+
+  it('stops shimmer loading styling and shows regular pause when playback starts', () => {
+    useQueueStore.setState({
+      items: [{ ...mockQueueItem, status: 'success' }],
+      currentIndex: 0,
+    });
+    useSoundStore.setState({
+      status: 'playing',
+    });
+
+    render(<ConnectedFloatingMiniPlayer />);
+
+    const playPauseBtn = screen.getByTestId('mini-player-play-pause-button');
+    expect(playPauseBtn).not.toHaveAttribute('aria-busy');
+    expect(playPauseBtn).toHaveAttribute('aria-label', 'Pause');
+    expect(playPauseBtn.className).not.toContain('surface-toxic-shimmer');
   });
 });

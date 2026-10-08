@@ -9,6 +9,8 @@ export type TrackTableContextValue<T extends Track> = {
   features: NonNullable<TrackTableProps['features']>;
   actions: TrackTableActions<T>;
   labels: TrackTableLabels;
+  activeTrackId?: string;
+  isLoading?: boolean;
 };
 
 // any is unavoidable here due to the generics

@@ -160,4 +160,30 @@ describe('TrackTable', () => {
     await findByTestId('add-all-to-queue-button');
     expect(asFragment()).toMatchSnapshot();
   });
+
+  it('applies shimmer loading styling and aria-busy to active track row when isLoading is true', async () => {
+    const tracks = makeTracks(3);
+    const { findAllByTestId } = render(
+      <TrackTable
+        tracks={tracks}
+        labels={labels}
+        actions={{}}
+        meta={{
+          activeTrackId: tracks[0].source.id,
+          isLoading: true,
+        }}
+      />,
+    );
+
+    const rows = await findAllByTestId('track-row');
+    const activeRow = rows[0];
+    expect(activeRow).toHaveAttribute('aria-busy', 'true');
+    expect(activeRow).toHaveAttribute('data-loading', 'true');
+    expect(activeRow.className).toContain('surface-toxic-shimmer');
+    expect(activeRow.className).toContain('animate-toxic-glow');
+
+    // Inactive rows should not have shimmer loading
+    expect(rows[1]).not.toHaveAttribute('aria-busy');
+    expect(rows[1].className).not.toContain('surface-toxic-shimmer');
+  });
 });

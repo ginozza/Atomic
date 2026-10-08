@@ -117,6 +117,8 @@ function TrackTableBase<T extends Track = Track>({
         features: resolvedFeatures,
         actions,
         labels,
+        activeTrackId: meta?.activeTrackId,
+        isLoading: meta?.isLoading,
       }}
     >
       <div className="flex h-full flex-col">

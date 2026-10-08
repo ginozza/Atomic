@@ -1,4 +1,3 @@
-import { FC, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
   ChevronDown,
@@ -12,20 +11,26 @@ import {
   SkipBack,
   SkipForward,
 } from 'lucide-react';
+import { FC, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { pickArtwork } from '@nuclearplayer/model';
-import { FavoriteButton, formatTimeSeconds, MarqueeText } from '@nuclearplayer/ui';
 import { RepeatMode } from '@nuclearplayer/plugin-sdk';
+import {
+  cn,
+  FavoriteButton,
+  formatTimeSeconds,
+  MarqueeText,
+} from '@nuclearplayer/ui';
 
 import { useCoreSetting } from '../../hooks/useCoreSetting';
 import { playbackManager } from '../../services/playback';
 import { useFavoritesStore } from '../../stores/favoritesStore';
 import { useNowPlayingModalStore } from '../../stores/nowPlayingModalStore';
 import { usePlayerDecorationsStore } from '../../stores/playerDecorationsStore';
-import { PlayerDecorationsOverlay } from './PlayerDecorationsOverlay';
 import { useQueueStore } from '../../stores/queueStore';
 import { useSoundStore } from '../../stores/soundStore';
+import { PlayerDecorationsOverlay } from './PlayerDecorationsOverlay';
 
 const formatSafeTime = (seconds: number | undefined): string => {
   if (typeof formatTimeSeconds === 'function') {
@@ -36,7 +41,9 @@ const formatSafeTime = (seconds: number | undefined): string => {
     }
   }
   const safe =
-    Number.isFinite(seconds) && seconds && seconds > 0 ? Math.floor(seconds) : 0;
+    Number.isFinite(seconds) && seconds && seconds > 0
+      ? Math.floor(seconds)
+      : 0;
   const mins = Math.floor(safe / 60);
   const secs = safe % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -46,6 +53,7 @@ export const ConnectedNowPlayingModal: FC = () => {
   const { isOpen, close } = useNowPlayingModalStore();
 
   const currentItem = useQueueStore((state) => state.getCurrentItem());
+  const isLoading = currentItem?.status === 'loading';
   const { goToNext, goToPrevious } = useQueueStore(
     useShallow((state) => ({
       goToNext: state.goToNext,
@@ -76,7 +84,9 @@ export const ConnectedNowPlayingModal: FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     const handleBack = () => {
       if (isEditMode) {
         setEditMode(false);
@@ -118,7 +128,7 @@ export const ConnectedNowPlayingModal: FC = () => {
           .map((artistCredit) =>
             typeof artistCredit === 'string'
               ? artistCredit
-              : artistCredit?.name ?? '',
+              : (artistCredit?.name ?? ''),
           )
           .filter(Boolean)
           .join(', ')
@@ -131,11 +141,14 @@ export const ConnectedNowPlayingModal: FC = () => {
     'Queue';
 
   const safePosition = Number.isFinite(seek) && seek >= 0 ? seek : 0;
-  const safeDuration = Number.isFinite(duration) && duration >= 0 ? duration : 0;
+  const safeDuration =
+    Number.isFinite(duration) && duration >= 0 ? duration : 0;
 
   const isFavorite = Boolean(track?.source && isTrackFavorite(track.source));
   const handleToggleFavorite = () => {
-    if (!track?.source) return;
+    if (!track?.source) {
+      return;
+    }
     if (isFavorite) {
       removeTrack(track.source);
     } else {
@@ -162,7 +175,7 @@ export const ConnectedNowPlayingModal: FC = () => {
   return (
     <div
       data-testid="now-playing-modal"
-      className="fixed inset-0 z-50 flex flex-col justify-between bg-background/95 backdrop-blur-3xl px-6 pt-[max(env(safe-area-inset-top),2.5rem)] pb-[max(env(safe-area-inset-bottom),2.5rem)] select-none animate-in fade-in duration-200"
+      className="bg-background/95 animate-in fade-in fixed inset-0 z-50 flex flex-col justify-between px-6 pt-[max(env(safe-area-inset-top),2.5rem)] pb-[max(env(safe-area-inset-bottom),2.5rem)] backdrop-blur-3xl duration-200 select-none"
     >
       {/* Player Decorations Overlay */}
       <PlayerDecorationsOverlay
@@ -171,7 +184,7 @@ export const ConnectedNowPlayingModal: FC = () => {
       />
 
       {/* Top Bar */}
-      <div className="relative z-30 flex items-center justify-between shrink-0">
+      <div className="relative z-30 flex shrink-0 items-center justify-between">
         <button
           type="button"
           data-testid="now-playing-close-button"
@@ -181,17 +194,17 @@ export const ConnectedNowPlayingModal: FC = () => {
             }
             close();
           }}
-          className="p-2 -ml-2 rounded-full text-foreground/80 hover:text-foreground active:scale-90 transition-transform"
+          className="text-foreground/80 hover:text-foreground -ml-2 rounded-full p-2 transition-transform active:scale-90"
           aria-label="Close"
         >
-          <ChevronDown className="w-7 h-7" />
+          <ChevronDown className="h-7 w-7" />
         </button>
 
-        <div className="flex flex-col items-center min-w-0 px-2 text-center">
-          <span className="text-[10px] uppercase font-bold tracking-widest text-primary">
+        <div className="flex min-w-0 flex-col items-center px-2 text-center">
+          <span className="text-primary text-[10px] font-bold tracking-widest uppercase">
             {isEditMode ? 'Modo Decoración' : 'Playing From'}
           </span>
-          <span className="text-xs font-bold text-foreground truncate max-w-[200px]">
+          <span className="text-foreground max-w-[200px] truncate text-xs font-bold">
             {isEditMode ? 'Toca, arrastra, escala o rota' : albumName}
           </span>
         </div>
@@ -200,7 +213,7 @@ export const ConnectedNowPlayingModal: FC = () => {
           <button
             type="button"
             onClick={() => setEditMode(false)}
-            className="px-3 py-1 rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-md active:scale-95 transition-transform"
+            className="bg-primary text-primary-foreground rounded-xl px-3 py-1 text-xs font-bold shadow-md transition-transform active:scale-95"
           >
             Listo
           </button>
@@ -209,10 +222,10 @@ export const ConnectedNowPlayingModal: FC = () => {
             <button
               type="button"
               onClick={handleOpenQueue}
-              className="p-2 -mr-2 rounded-full text-foreground/80 hover:text-foreground active:scale-90 transition-transform"
+              className="text-foreground/80 hover:text-foreground -mr-2 rounded-full p-2 transition-transform active:scale-90"
               aria-label="Queue"
             >
-              <ListOrdered className="w-6 h-6" />
+              <ListOrdered className="h-6 w-6" />
             </button>
           </div>
         )}
@@ -220,27 +233,30 @@ export const ConnectedNowPlayingModal: FC = () => {
 
       {/* Album Artwork */}
       <div
-        className={`relative z-10 flex-1 flex items-center justify-center my-4 min-h-0 ${
+        className={`relative z-10 my-4 flex min-h-0 flex-1 items-center justify-center ${
           isEditMode ? 'pointer-events-none' : ''
         }`}
       >
-        <div className="relative w-full max-w-[340px] aspect-square rounded-3xl overflow-hidden shadow-2xl bg-muted/40 flex items-center justify-center">
+        <div className="bg-muted/40 relative flex aspect-square w-full max-w-[340px] items-center justify-center overflow-hidden rounded-3xl shadow-2xl">
           {artworkUrl ? (
             <img
               key={artworkUrl}
               src={artworkUrl}
               alt={title}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <Music key="modal-placeholder-music" className="w-20 h-20 text-muted-foreground/40" />
+            <Music
+              key="modal-placeholder-music"
+              className="text-muted-foreground/40 h-20 w-20"
+            />
           )}
         </div>
       </div>
 
       {/* Track Info & Like Button */}
       <div
-        className={`relative z-30 flex items-center justify-between gap-4 mb-4 shrink-0 ${
+        className={`relative z-30 mb-4 flex shrink-0 items-center justify-between gap-4 ${
           isEditMode ? 'pointer-events-none' : ''
         }`}
       >
@@ -248,12 +264,12 @@ export const ConnectedNowPlayingModal: FC = () => {
           <MarqueeText
             key="modal-title"
             text={title}
-            className="text-2xl font-black text-foreground tracking-tight"
+            className="text-foreground text-2xl font-black tracking-tight"
           />
           <MarqueeText
             key="modal-artist"
             text={artist}
-            className="text-sm font-semibold text-muted-foreground mt-0.5"
+            className="text-muted-foreground mt-0.5 text-sm font-semibold"
           />
         </div>
         {track?.source && (
@@ -269,18 +285,20 @@ export const ConnectedNowPlayingModal: FC = () => {
 
       {/* Scrubber / Progress Bar */}
       <div
-        className={`relative z-30 space-y-1 mb-6 shrink-0 ${
+        className={`relative z-30 mb-6 shrink-0 space-y-1 ${
           isEditMode ? 'pointer-events-none' : ''
         }`}
       >
-        <div className="relative w-full h-2 flex items-center">
+        <div className="relative flex h-2 w-full items-center">
           <input
             type="range"
             min={0}
             max={safeDuration || 1}
             value={safePosition}
-            onChange={(e) => useSoundStore.getState().seekTo(Number(e.target.value))}
-            className="w-full h-1.5 rounded-full appearance-none cursor-pointer focus:outline-none"
+            onChange={(e) =>
+              useSoundStore.getState().seekTo(Number(e.target.value))
+            }
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full focus:outline-none"
             style={{
               background: `linear-gradient(to right, var(--seekbar-track, var(--primary)) ${safeDuration > 0 ? (safePosition / safeDuration) * 100 : 0}%, color-mix(in srgb, var(--seekbar, var(--primary)) 20%, transparent) ${safeDuration > 0 ? (safePosition / safeDuration) * 100 : 0}%)`,
               accentColor: 'var(--seekbar-track, var(--primary))',
@@ -288,7 +306,7 @@ export const ConnectedNowPlayingModal: FC = () => {
             aria-label="Seek progress"
           />
         </div>
-        <div className="flex justify-between text-xs font-mono font-medium text-muted-foreground">
+        <div className="text-muted-foreground flex justify-between font-mono text-xs font-medium">
           <span>{formatSafeTime(safePosition)}</span>
           <span>{formatSafeTime(safeDuration)}</span>
         </div>
@@ -296,44 +314,54 @@ export const ConnectedNowPlayingModal: FC = () => {
 
       {/* Main Playback Controls */}
       <div
-        className={`relative z-30 flex items-center justify-between px-2 mb-4 shrink-0 ${
+        className={`relative z-30 mb-4 flex shrink-0 items-center justify-between px-2 ${
           isEditMode ? 'pointer-events-none' : ''
         }`}
       >
         <button
           type="button"
           onClick={handleToggleShuffle}
-          className={`p-3 rounded-full transition-transform active:scale-90 ${
+          className={`rounded-full p-3 transition-transform active:scale-90 ${
             shuffleEnabled
               ? 'text-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
           aria-label="Shuffle"
         >
-          <Shuffle className="w-5 h-5" />
+          <Shuffle className="h-5 w-5" />
         </button>
 
         <button
           type="button"
           data-testid="now-playing-previous-button"
           onClick={goToPrevious}
-          className="p-3 rounded-full text-foreground hover:text-primary active:scale-90 transition-transform"
+          className="text-foreground hover:text-primary rounded-full p-3 transition-transform active:scale-90"
           aria-label="Previous"
         >
-          <SkipBack className="w-7 h-7 fill-current" />
+          <SkipBack className="h-7 w-7 fill-current" />
         </button>
 
         <button
           type="button"
           data-testid="now-playing-play-pause-button"
           onClick={playbackManager.toggle}
-          className="w-16 h-16 rounded-full bg-foreground text-background flex items-center justify-center shadow-xl active:scale-90 transition-transform"
-          aria-label={isPlaying ? 'Pause' : 'Play'}
+          className={cn(
+            'bg-foreground text-background flex h-16 w-16 items-center justify-center rounded-full shadow-xl transition-transform active:scale-90',
+            isLoading &&
+              'surface-toxic-shimmer text-black ring-4 ring-primary shadow-[0_0_28px_rgba(0,255,163,0.7)] animate-toxic-glow',
+          )}
+          aria-label={isLoading ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
+          aria-busy={isLoading ? 'true' : undefined}
         >
           {isPlaying ? (
-            <Pause className="w-7 h-7 fill-current" />
+            <Pause className="h-7 w-7 fill-current" />
           ) : (
-            <Play className="w-7 h-7 fill-current ml-1" />
+            <Play
+              className={cn(
+                'ml-1 h-7 w-7 fill-current',
+                isLoading && 'animate-pulse',
+              )}
+            />
           )}
         </button>
 
@@ -341,16 +369,16 @@ export const ConnectedNowPlayingModal: FC = () => {
           type="button"
           data-testid="now-playing-next-button"
           onClick={goToNext}
-          className="p-3 rounded-full text-foreground hover:text-primary active:scale-90 transition-transform"
+          className="text-foreground hover:text-primary rounded-full p-3 transition-transform active:scale-90"
           aria-label="Next"
         >
-          <SkipForward className="w-7 h-7 fill-current" />
+          <SkipForward className="h-7 w-7 fill-current" />
         </button>
 
         <button
           type="button"
           onClick={handleToggleRepeat}
-          className={`p-3 rounded-full transition-transform active:scale-90 ${
+          className={`rounded-full p-3 transition-transform active:scale-90 ${
             repeatMode !== 'off'
               ? 'text-primary'
               : 'text-muted-foreground hover:text-foreground'
@@ -358,9 +386,9 @@ export const ConnectedNowPlayingModal: FC = () => {
           aria-label="Repeat"
         >
           {repeatMode === 'one' ? (
-            <Repeat1 className="w-5 h-5" />
+            <Repeat1 className="h-5 w-5" />
           ) : (
-            <Repeat className="w-5 h-5" />
+            <Repeat className="h-5 w-5" />
           )}
         </button>
       </div>

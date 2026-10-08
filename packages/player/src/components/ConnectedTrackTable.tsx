@@ -11,6 +11,7 @@ import { useQueueActions } from '../hooks/useQueueActions';
 import { useTrackActions } from '../hooks/useTrackActions';
 import { useTrackTableLabels } from '../hooks/useTrackTableLabels';
 import { playbackManager } from '../services/playback';
+import { useQueueStore } from '../stores/queueStore';
 import { ConnectedTrackContextMenu } from './ConnectedTrackContextMenu';
 
 type ConnectedTrackTableProps = Omit<
@@ -25,6 +26,13 @@ export const ConnectedTrackTable: FC<ConnectedTrackTableProps> = (props) => {
   const trackActions = useTrackActions();
   const queueActions = useQueueActions();
   const labels = useTrackTableLabels();
+  const currentItem = useQueueStore((state) => state.getCurrentItem());
+  const activeTrackId =
+    currentItem?.track?.source?.id ??
+    (currentItem?.track && 'id' in currentItem.track
+      ? (currentItem.track as { id?: string }).id
+      : undefined);
+  const isLoading = currentItem?.status === 'loading';
 
   return (
     <TrackTable
@@ -40,7 +48,8 @@ export const ConnectedTrackTable: FC<ConnectedTrackTableProps> = (props) => {
           if (restProps.tracks && restProps.tracks.length > 0) {
             const trackIndex = restProps.tracks.findIndex(
               (candidate) =>
-                (candidate.source?.id && candidate.source.id === track.source?.id) ||
+                (candidate.source?.id &&
+                  candidate.source.id === track.source?.id) ||
                 (candidate.title === track.title &&
                   candidate.artists?.[0]?.name === track.artists?.[0]?.name),
             );
@@ -70,6 +79,8 @@ export const ConnectedTrackTable: FC<ConnectedTrackTableProps> = (props) => {
       meta={{
         isTrackFavorite: trackActions.isFavorite,
         ContextMenuWrapper: ConnectedTrackContextMenu,
+        activeTrackId,
+        isLoading,
       }}
     />
   );

@@ -36,14 +36,16 @@ export const SettingsPanel: FC<SettingsPanelProps> = ({
   <DialogRoot
     isOpen={isOpen}
     onClose={onClose}
-    className="narrow:inset-0 narrow:rounded-none narrow:border-0 fixed inset-0 md:inset-8 flex flex-col md:flex-row w-auto max-w-none p-0 pt-[max(env(safe-area-inset-top),2.5rem)] md:pt-0 pb-16 md:pb-0"
+    className="narrow:inset-0 narrow:rounded-none narrow:border-0 fixed inset-0 flex w-auto max-w-none flex-col p-0 pt-[max(env(safe-area-inset-top),2.5rem)] pb-16 md:inset-8 md:flex-row md:pt-0 md:pb-0"
   >
-    <div className="md:hidden flex items-center justify-between px-4 py-2.5 border-b border-border bg-card shrink-0">
-      <span className="font-black text-sm uppercase tracking-wider">Settings</span>
+    <div className="border-border bg-card flex shrink-0 items-center justify-between border-b px-4 py-2.5 md:hidden">
+      <span className="text-sm font-black tracking-wider uppercase">
+        Settings
+      </span>
       <button
         type="button"
         onClick={onClose}
-        className="text-xs font-bold px-3 py-1 rounded-md bg-muted text-foreground border border-border active:scale-95 transition-transform"
+        className="bg-muted text-foreground border-border rounded-md border px-3 py-1 text-xs font-bold transition-transform active:scale-95"
       >
         Done
       </button>

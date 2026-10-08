@@ -78,7 +78,9 @@ const loadYouTubeApi = (): Promise<void> => {
       resolve();
     };
 
-    const existingScript = document.querySelector('script[src*="youtube.com/iframe_api"]');
+    const existingScript = document.querySelector(
+      'script[src*="youtube.com/iframe_api"]',
+    );
     if (!existingScript) {
       const scriptElement = document.createElement('script');
       scriptElement.src = 'https://www.youtube.com/iframe_api';
@@ -143,6 +145,7 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
             playerRef.current.pauseVideo();
           }
         } catch {
+          void 0;
         }
         return;
       }
@@ -210,6 +213,7 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
           },
         });
       } catch {
+        void 0;
       }
     });
 
@@ -219,6 +223,7 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
         playerRef.current?.stopVideo();
         playerRef.current?.destroy();
       } catch {
+        void 0;
       }
       playerRef.current = null;
       isReadyRef.current = false;
@@ -234,6 +239,7 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
         playerRef.current?.stopVideo();
         playerRef.current?.destroy();
       } catch {
+        void 0;
       }
       playerRef.current = null;
       isReadyRef.current = false;
@@ -258,6 +264,7 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
         playerRef.current.seekTo(0, true);
       }
     } catch {
+      void 0;
     }
   }, [status]);
 
@@ -322,13 +329,18 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
     }
 
     const keepAliveTimer = setInterval(() => {
-      if (statusRef.current === 'playing' && playerRef.current && isReadyRef.current) {
+      if (
+        statusRef.current === 'playing' &&
+        playerRef.current &&
+        isReadyRef.current
+      ) {
         try {
           const state = playerRef.current.getPlayerState?.();
           if (state === 2) {
             playerRef.current.playVideo();
           }
         } catch {
+          void 0;
         }
       }
     }, 1000);
@@ -340,10 +352,15 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
 
   useEffect(() => {
     const handleVisibilityOrBlur = () => {
-      if (statusRef.current === 'playing' && playerRef.current && isReadyRef.current) {
+      if (
+        statusRef.current === 'playing' &&
+        playerRef.current &&
+        isReadyRef.current
+      ) {
         try {
           playerRef.current?.playVideo();
         } catch {
+          void 0;
         }
       }
     };
@@ -359,7 +376,7 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
   return (
     <div
       ref={wrapperRef}
-      className="fixed bottom-0 right-0 w-1 h-1 pointer-events-none opacity-0 z-0 overflow-hidden"
+      className="pointer-events-none fixed right-0 bottom-0 z-0 h-1 w-1 overflow-hidden opacity-0"
     />
   );
 };

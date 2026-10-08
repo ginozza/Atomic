@@ -59,7 +59,10 @@ export const MarqueeText: FC<MarqueeTextProps> = ({
   return (
     <div
       ref={containerRef}
-      className={cn('relative w-full overflow-hidden whitespace-nowrap', className)}
+      className={cn(
+        'relative w-full overflow-hidden whitespace-nowrap',
+        className,
+      )}
       style={
         isOverflowing
           ? {
@@ -77,7 +80,7 @@ export const MarqueeText: FC<MarqueeTextProps> = ({
         <span
           key="static"
           ref={textRef}
-          className="inline-block truncate max-w-full align-middle"
+          className="inline-block max-w-full truncate align-middle"
           data-testid="marquee-static-text"
         >
           {safeText}

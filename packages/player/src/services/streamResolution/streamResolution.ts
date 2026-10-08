@@ -1,5 +1,7 @@
 import { omit } from 'lodash-es';
+import { toast } from 'sonner';
 
+import { i18n } from '@nuclearplayer/i18n';
 import type { QueueItem, StreamCandidate } from '@nuclearplayer/model';
 import { stripResolutionState } from '@nuclearplayer/model';
 
@@ -10,6 +12,14 @@ import { hasActiveStreamingProvider, streamingHost } from '../streamingHost';
 import { AudioSourceFactory } from './audioSource';
 import { candidatesForTrack } from './candidateSource';
 
+export const CANDIDATE_TIMEOUT_MS = 8000;
+export const GLOBAL_TIMEOUT_MS = 20000;
+
+export type StreamResolutionConfig = {
+  candidateTimeoutMs?: number;
+  globalTimeoutMs?: number;
+};
+
 export type ResolveOptions = {
   autoPlay: boolean;
   startPositionSeconds?: number;
@@ -18,11 +28,36 @@ export type ResolveOptions = {
 export class StreamResolution {
   private activeController: AbortController | null = null;
   private activeItemId: string | null = null;
+  private globalTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private candidateTimeoutMs = CANDIDATE_TIMEOUT_MS;
+  private globalTimeoutMs = GLOBAL_TIMEOUT_MS;
 
-  constructor(private readonly audioSourceFactory = new AudioSourceFactory()) {}
+  constructor(
+    private readonly audioSourceFactory = new AudioSourceFactory(),
+    config?: StreamResolutionConfig,
+  ) {
+    if (config) {
+      this.configure(config);
+    }
+  }
+
+  configure(config: StreamResolutionConfig): void {
+    if (config.candidateTimeoutMs !== undefined) {
+      this.candidateTimeoutMs = config.candidateTimeoutMs;
+    }
+    if (config.globalTimeoutMs !== undefined) {
+      this.globalTimeoutMs = config.globalTimeoutMs;
+    }
+  }
+
+  resetConfig(): void {
+    this.candidateTimeoutMs = CANDIDATE_TIMEOUT_MS;
+    this.globalTimeoutMs = GLOBAL_TIMEOUT_MS;
+  }
 
   async resolve(item: QueueItem, options: ResolveOptions): Promise<void> {
     const signal = this.supersedeActiveResolution(item.id);
+    this.startGlobalTimeout(item.id);
     const { updateItemState } = useQueueStore.getState();
 
     if (options.autoPlay) {
@@ -44,11 +79,21 @@ export class StreamResolution {
       return;
     }
 
-    const candidates = await candidatesForTrack(item.track);
+    let candidates: StreamCandidate[] | undefined;
+    try {
+      candidates = await candidatesForTrack(item.track, { signal });
+    } catch {
+      if (signal.aborted) {
+        return;
+      }
+      this.failItem(item.id, 'streaming:errors.noCandidatesFound');
+      return;
+    }
+
     if (signal.aborted) {
       return;
     }
-    if (!candidates) {
+    if (!candidates || candidates.length === 0) {
       this.failItem(item.id, 'streaming:errors.noCandidatesFound');
       return;
     }
@@ -73,6 +118,26 @@ export class StreamResolution {
     return this.resolve({ ...item, track }, options);
   }
 
+  private startGlobalTimeout(itemId: string): void {
+    this.clearGlobalTimeout();
+    this.globalTimeoutId = setTimeout(() => {
+      if (
+        this.activeItemId === itemId &&
+        this.activeController &&
+        !this.activeController.signal.aborted
+      ) {
+        this.failItem(itemId, 'streaming:errors.allCandidatesFailed');
+      }
+    }, this.globalTimeoutMs);
+  }
+
+  private clearGlobalTimeout(): void {
+    if (this.globalTimeoutId !== null) {
+      clearTimeout(this.globalTimeoutId);
+      this.globalTimeoutId = null;
+    }
+  }
+
   private async tryCandidatesInOrder(
     item: QueueItem,
     candidates: StreamCandidate[],
@@ -89,31 +154,87 @@ export class StreamResolution {
       return;
     }
 
-    // Check again before resolving, in case abort happened during the find
     if (signal.aborted) {
       return;
     }
 
-    const resolved = await streamingHost.resolveStreamForCandidate(candidate);
-    if (signal.aborted) {
-      return;
-    }
-    if (!resolved) {
-      this.failItem(item.id, 'streaming:errors.noProviderAvailable');
+    let resolved: StreamCandidate | undefined;
+    try {
+      resolved = await this.resolveCandidateWithTimeout(candidate, signal);
+    } catch {
+      if (signal.aborted) {
+        return;
+      }
+      this.handleCandidateFailure(item, candidate, candidates, signal, options);
       return;
     }
 
-    if (resolved.failed) {
-      useQueueStore.getState().removeCandidate(item.id, candidate.id);
-      const remaining = candidates.filter(
-        (current) => current.id !== candidate.id,
-      );
-      await this.tryCandidatesInOrder(item, remaining, signal, options);
+    if (signal.aborted) {
+      return;
+    }
+
+    if (!resolved || resolved.failed || !resolved.stream) {
+      this.handleCandidateFailure(item, candidate, candidates, signal, options);
       return;
     }
 
     useQueueStore.getState().updateCandidate(item.id, resolved);
     await this.startPlayback(item, resolved, signal, options);
+  }
+
+  private handleCandidateFailure(
+    item: QueueItem,
+    candidate: StreamCandidate,
+    candidates: StreamCandidate[],
+    signal: AbortSignal,
+    options: ResolveOptions,
+  ): void {
+    useQueueStore.getState().removeCandidate(item.id, candidate.id);
+    const remaining = candidates.filter(
+      (current) => current.id !== candidate.id,
+    );
+    void this.tryCandidatesInOrder(item, remaining, signal, options);
+  }
+
+  private async resolveCandidateWithTimeout(
+    candidate: StreamCandidate,
+    signal: AbortSignal,
+  ): Promise<StreamCandidate | undefined> {
+    const candidateController = new AbortController();
+    const timer = setTimeout(() => {
+      candidateController.abort(
+        new DOMException('Candidate resolution timeout', 'TimeoutError'),
+      );
+    }, this.candidateTimeoutMs);
+
+    const onParentAbort = () => {
+      candidateController.abort(signal.reason);
+    };
+
+    if (signal.aborted) {
+      clearTimeout(timer);
+      throw signal.reason ?? new Error('Aborted');
+    }
+
+    signal.addEventListener('abort', onParentAbort, { once: true });
+
+    try {
+      const abortPromise = new Promise<never>((_, reject) => {
+        candidateController.signal.addEventListener(
+          'abort',
+          () => reject(candidateController.signal.reason),
+          { once: true },
+        );
+      });
+
+      return await Promise.race([
+        streamingHost.resolveStreamForCandidate(candidate),
+        abortPromise,
+      ]);
+    } finally {
+      clearTimeout(timer);
+      signal.removeEventListener('abort', onParentAbort);
+    }
   }
 
   private async startPlayback(
@@ -122,42 +243,62 @@ export class StreamResolution {
     signal: AbortSignal,
     options: ResolveOptions,
   ): Promise<void> {
-    const audioSource = await this.audioSourceFactory.fromCandidate(candidate);
-    if (signal.aborted) {
-      return;
-    }
+    try {
+      const audioSource = await this.audioSourceFactory.fromCandidate(candidate);
+      if (signal.aborted) {
+        return;
+      }
 
-    if (options.startPositionSeconds !== undefined) {
-      audioSource.startPositionSeconds = options.startPositionSeconds;
-    }
+      if (options.startPositionSeconds !== undefined) {
+        audioSource.startPositionSeconds = options.startPositionSeconds;
+      }
 
-    useQueueStore.getState().updateItemState(item.id, { status: 'success' });
-    this.activeItemId = null;
-    playbackManager.startTrack(item, audioSource, {
-      autoPlay: options.autoPlay,
-    });
+      this.clearGlobalTimeout();
+      useQueueStore.getState().updateItemState(item.id, { status: 'success' });
+      this.activeItemId = null;
+      playbackManager.startTrack(item, audioSource, {
+        autoPlay: options.autoPlay,
+      });
+    } catch {
+      if (signal.aborted) {
+        return;
+      }
+      this.failItem(item.id, 'streaming:errors.allCandidatesFailed');
+    }
   }
 
   private failItem(itemId: string, errorKey: string): void {
+    this.clearGlobalTimeout();
+    if (this.activeController) {
+      this.activeController.abort();
+      this.activeController = null;
+    }
+    const item = useQueueStore.getState().getItemById(itemId);
     useQueueStore.getState().updateItemState(itemId, {
       status: 'error',
       error: errorKey,
+    });
+    const message = i18n.t(errorKey);
+    toast.error(message, {
+      description: item?.track.title,
     });
   }
 
   private supersedeActiveResolution(itemId: string): AbortSignal {
     if (this.activeController) {
       this.activeController.abort();
-      if (this.activeItemId) {
-        const { getItemById, updateItemState } = useQueueStore.getState();
-        const previousItem = getItemById(this.activeItemId);
-        if (previousItem) {
-          updateItemState(this.activeItemId, {
-            status: undefined,
-            error: undefined,
-            track: stripResolutionState(previousItem.track),
-          });
-        }
+      this.activeController = null;
+    }
+    this.clearGlobalTimeout();
+    if (this.activeItemId && this.activeItemId !== itemId) {
+      const { getItemById, updateItemState } = useQueueStore.getState();
+      const previousItem = getItemById(this.activeItemId);
+      if (previousItem) {
+        updateItemState(this.activeItemId, {
+          status: undefined,
+          error: undefined,
+          track: stripResolutionState(previousItem.track),
+        });
       }
     }
     this.activeController = new AbortController();

@@ -12,6 +12,7 @@ import {
   useProvidersStore,
 } from '../stores/providersStore';
 import { setupStreamingPairingSync } from './streamingPairingSync';
+import { youtubePlaylistProvider } from './youtubePlaylistProvider';
 
 const PROVIDER_KINDS: ProviderKind[] = [
   'metadata',
@@ -21,6 +22,15 @@ const PROVIDER_KINDS: ProviderKind[] = [
   'dashboard',
   'playlists',
 ];
+
+export const PREFERRED_PROVIDER_DEFAULTS: Partial<
+  Record<ProviderKind, string>
+> = {
+  metadata: 'spotify',
+  streaming: 'youtube',
+  dashboard: 'deezer-dashboard',
+  discovery: 'lastfm-discovery',
+};
 
 const createProvidersHost = (): ProvidersHost => {
   const byKind = new Map<ProviderKind, Map<string, ProviderDescriptor>>();
@@ -156,6 +166,11 @@ const createProvidersHost = (): ProvidersHost => {
       PROVIDER_KINDS.filter(
         (kind) => !isRegistered(store.getActive(kind)),
       ).forEach((kind) => {
+        const preferredId = PREFERRED_PROVIDER_DEFAULTS[kind];
+        if (preferredId && isRegistered(preferredId)) {
+          store.setActive(kind, preferredId);
+          return;
+        }
         const fallback = firstOfKind(kind);
         if (fallback) {
           store.setActive(kind, fallback.id);
@@ -183,5 +198,4 @@ setupStreamingPairingSync(providersHost);
 
 void initializeProvidersStore();
 
-import { youtubePlaylistProvider } from './youtubePlaylistProvider';
 providersHost.register(youtubePlaylistProvider);

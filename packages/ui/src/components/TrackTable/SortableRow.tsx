@@ -20,7 +20,7 @@ export function SortableRow<T extends Track = Track>({
   isReorderable = false,
   style: externalStyle,
 }: SortableRowProps<T>) {
-  const { actions } = useTrackTableContext<T>();
+  const { actions, activeTrackId, isLoading } = useTrackTableContext<T>();
   const {
     attributes,
     listeners,
@@ -33,6 +33,15 @@ export function SortableRow<T extends Track = Track>({
     disabled: !isReorderable,
   });
 
+  const isCurrent = Boolean(
+    activeTrackId &&
+      (itemId === activeTrackId ||
+        ('id' in row.original &&
+          (row.original as { id?: unknown }).id === activeTrackId) ||
+        row.original.source?.id === activeTrackId),
+  );
+  const isRowLoading = isCurrent && Boolean(isLoading);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -42,6 +51,8 @@ export function SortableRow<T extends Track = Track>({
   return (
     <tr
       data-testid="track-row"
+      data-loading={isRowLoading ? 'true' : undefined}
+      aria-busy={isRowLoading ? 'true' : undefined}
       ref={setNodeRef}
       style={style}
       onClick={() => {
@@ -56,6 +67,7 @@ export function SortableRow<T extends Track = Track>({
           'z-50': isDragging,
           'cursor-grab': isReorderable,
         },
+        isRowLoading && 'surface-toxic-shimmer animate-toxic-glow',
       )}
       {...attributes}
       {...listeners}
