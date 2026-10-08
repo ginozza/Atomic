@@ -22,7 +22,7 @@ export const SettingsPanelNavigation: FC<SettingsPanelNavigationProps> = ({
         const isActive = section.activeItemId === item.id;
         return (
           <Button
-            key={`${section.title ?? 'section'}-${item.id}`}
+            key={`${section.id}-${item.id}`}
             data-testid={`settings-navigation-item-${item.id}`}
             onClick={() => section.onSelect(item.id)}
             variant={isActive ? 'default' : 'secondary'}

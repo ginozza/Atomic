@@ -87,4 +87,3 @@ export const usePlaybackStatus = (
     }
   }, [status, srcUrl, audioRef, onError]);
 };
-

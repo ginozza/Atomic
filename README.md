@@ -22,66 +22,9 @@
   
 </div>
 
-## Screenshots
-
-### Android
-
-These screenshots are from Atomic running on Android. Atomic is a mobile-first fork of Nuclear, so the Android interface is the primary experience shown here.
-
-<p align="center">
-  <img src="packages/docs/.gitbook/assets/android/atomic-dashboard.png" alt="Atomic Music Player running on Android" width="32%">
-  <img src="packages/docs/.gitbook/assets/android/atomic-search.png" alt="Atomic Music Player search on Android" width="32%">
-</p>
-
-### Desktop reference
-
-The desktop screenshots below are inherited from Nuclear and document the shared desktop feature set.
-
-<p align="center">
-  <img src="packages/docs/.gitbook/assets/dashboard-main.png" alt="Atomic Music Player - Dashboard" width="100%">
-</p>
-
-Atomic comes with multiple built-in themes, with both light and dark modes:
-
-<p align="center">
-  <img src="packages/docs/.gitbook/assets/dashboard-aurora-light.png" alt="Aurora theme, light mode" width="32%">
-  <img src="packages/docs/.gitbook/assets/dashboard-ember-light.png" alt="Ember theme, light mode" width="32%">
-  <img src="packages/docs/.gitbook/assets/dashboard-lagoon-light.png" alt="Lagoon theme, light mode" width="32%">
-</p>
-<p align="center">
-  <img src="packages/docs/.gitbook/assets/dashboard-default-dark.png" alt="Default theme, dark mode" width="32%">
-  <img src="packages/docs/.gitbook/assets/dashboard-lagoon-dark.png" alt="Lagoon theme, dark mode" width="32%">
-  <img src="packages/docs/.gitbook/assets/dashboard-arctic-moss-dark.png" alt="Arctic Moss theme, dark mode" width="32%">
-</p>
-
-| | |
-|:---:|:---:|
-| ![Search artists](packages/docs/.gitbook/assets/search-artists.png) | ![Search albums](packages/docs/.gitbook/assets/search-albums.png) |
-| Artist search | Album search |
-| ![Search tracks](packages/docs/.gitbook/assets/search-tracks.png) | ![Artist page](packages/docs/.gitbook/assets/artist.png) |
-| Track search with recent searches | Artist page |
-| ![Album page](packages/docs/.gitbook/assets/album.png) | ![Favorite artists](packages/docs/.gitbook/assets/favorite-artists.png) |
-| Album page | Favorites |
-| ![Playlists](packages/docs/.gitbook/assets/playlists.png) | ![Playlist](packages/docs/.gitbook/assets/playlist-detail-view.png) |
-| Playlists | Playlist |
-| ![Listening history](packages/docs/.gitbook/assets/history.png) | ![Listening stats](packages/docs/.gitbook/assets/history-stats.png) |
-| Listening history | Listening stats |
-| ![Stream sources](packages/docs/.gitbook/assets/stream-candidates.png) | ![Plugin store](packages/docs/.gitbook/assets/plugin-store.png) |
-| Stream sources for a queued track | Plugin store |
-| ![Installed plugins](packages/docs/.gitbook/assets/installed-plugins.png) | ![Preferences](packages/docs/.gitbook/assets/preferences.png) |
-| Installed plugins | Preferences |
-| ![What's new](packages/docs/.gitbook/assets/whats-new.png) | ![Log viewer](packages/docs/.gitbook/assets/log-viewer.png) |
-| What's new | Log viewer |
-
-Control Atomic from your phone or browser with Atomic Jam:
-
-<p align="center">
-  <img src="packages/docs/.gitbook/assets/jam-remote.png" alt="Atomic Jam remote control on a phone" width="300">
-</p>
-
 ## Download
 
-Grab the latest release for your platform from the [Releases page](https://github.com/nukeop/nuclear/releases).
+Grab the latest release for your platform from the [Releases page](https://github.com/ginozza/Atomic/releases).
 
 | Platform | Formats |
 |----------|---------|
@@ -99,8 +42,6 @@ pnpm --filter @nuclearplayer/player tauri android build --debug --apk true
 ```
 
 The generated file is `packages/player/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk`.
-
-The Android screenshots in the README are captured from a physical device running Atomic. The desktop gallery above is kept as a reference for the shared Nuclear feature set.
 
 ## Features
 
@@ -180,8 +121,8 @@ Nuclear is a pnpm monorepo managed with Turborepo. The main app is built with Ta
 ### Getting started
 
 ```bash
-git clone https://github.com/nukeop/nuclear.git
-cd nuclear
+git clone https://github.com/ginozza/Atomic.git
+cd Atomic
 pnpm install
 pnpm dev
 ```

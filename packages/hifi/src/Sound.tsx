@@ -33,10 +33,7 @@ export const Sound: React.FC<SoundProps> = ({
     if (!audio) {
       return;
     }
-    try {
-      audio.pause();
-    } catch (_) {
-    }
+    audio.pause();
   }, [src]);
 
   useEffect(() => {
@@ -45,10 +42,7 @@ export const Sound: React.FC<SoundProps> = ({
       if (!audio) {
         return;
       }
-      try {
-        audio.pause();
-      } catch (_) {
-      }
+      audio.pause();
     };
   }, []);
 
