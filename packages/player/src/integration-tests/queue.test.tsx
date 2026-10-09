@@ -220,7 +220,7 @@ describe('Queue panel actions', () => {
   it('handles rapid skipping without crashing (regression test for Android crash)', async () => {
     // Create a queue with 10 tracks to allow multiple skips
     const tracks = Array.from({ length: 10 }, (_, idx) =>
-      createQueueItem(`Track ${idx + 1}`)
+      createQueueItem(`Track ${idx + 1}`),
     );
     QueueWrapper.initQueue(tracks);
 

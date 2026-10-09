@@ -59,10 +59,14 @@ export const useLayoutStore = create<LayoutState>()(
     {
       name: 'nuclear-layout-store',
       merge: (persistedState, currentState) => {
-        const state = { ...currentState, ...(persistedState as Partial<LayoutState>) };
+        const state = {
+          ...currentState,
+          ...(persistedState as Partial<LayoutState>),
+        };
         const isMobile =
           typeof window !== 'undefined' &&
-          (/android|iphone|ipad|ipod/i.test(navigator.userAgent) || window.innerWidth < 768);
+          (/android|iphone|ipad|ipod/i.test(navigator.userAgent) ||
+            window.innerWidth < 768);
         if (isMobile) {
           state.rightSidebar = {
             ...state.rightSidebar,

@@ -40,7 +40,9 @@ export class PluginLoader {
           const relative = normTarget
             .slice(normAppData.length)
             .replace(/^[/\\]/, '');
-          return await readTextFile(relative, { baseDir: BaseDirectory.AppData });
+          return await readTextFile(relative, {
+            baseDir: BaseDirectory.AppData,
+          });
         }
       } catch {
         // Fallback failed

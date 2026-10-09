@@ -2,6 +2,11 @@
 
 History of features, improvements, and fixes in Atomic for Android.
 
+## 2026-10-09
+
+- **[FIX]** YouTube stream resolution: Support InnerTube lockupViewModel format, pre-compile bundled YouTube plugin, and add Invidious/Piped fallbacks for search and direct audio streams. `[Streaming]` `[Android]`
+- **[IMPROVEMENT]** Background playback & CI/CD: Enhanced Android Foreground Service task persistence and fixed CI and coverage GitHub Actions workflows. `[Android]` `[CI]`
+
 ## 2026-10-08
 
 - **[FEATURE]** Atomic Android: Dedicated mobile touch UI with liquid-glass bottom navigation bar, floating mini-player, and swipe-down Now Playing sheet. `[Android]` `[UI]`

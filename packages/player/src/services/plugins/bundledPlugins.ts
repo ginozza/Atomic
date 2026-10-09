@@ -24,15 +24,14 @@ export type EssentialPluginId = (typeof ESSENTIAL_PLUGIN_IDS)[number];
 export const FALLBACK_PLUGINS: Record<string, FallbackPlugin> = {
   'nuclear-plugin-youtube': {
     version: '0.1.2',
-    main: 'src/index.ts',
+    main: 'dist/index.js',
     manifest: {
       name: 'nuclear-plugin-youtube',
       version: '0.1.2',
       description: 'YouTube streaming provider for Nuclear music player',
       author: 'nukeop',
       license: 'AGPL-3.0-only',
-      main: 'src/index.ts',
-      type: 'module',
+      main: 'dist/index.js',
       nuclear: {
         displayName: 'YouTube',
         category: 'streaming',
@@ -46,8 +45,8 @@ export const FALLBACK_PLUGINS: Record<string, FallbackPlugin> = {
         '@nuclearplayer/plugin-sdk': '^0.0.14',
       },
     },
-    code: "import type {\n  NuclearPlugin,\n  NuclearPluginAPI,\n  StreamingProvider,\n  YtdlpSearchResult,\n} from '@nuclearplayer/plugin-sdk';\n\nconst PROVIDER_ID = 'youtube';\n\nconst buildQuotedQuery = (artist: string, title: string): string => {\n  const safeTitle = title.replace(/\"/g, '');\n  return `${artist} \"${safeTitle}\"`;\n};\n\nconst dedupeById = (results: YtdlpSearchResult[]): YtdlpSearchResult[] => {\n  const seen = new Set<string>();\n  return results.filter((result) => {\n    if (seen.has(result.id)) {\n      return false;\n    }\n    seen.add(result.id);\n    return true;\n  });\n};\n\nconst valueOrEmpty = (\n  outcome: PromiseSettledResult<YtdlpSearchResult[]>,\n): YtdlpSearchResult[] => {\n  if (outcome.status === 'fulfilled') {\n    return outcome.value;\n  }\n  return [];\n};\n\nconst createProvider = (api: NuclearPluginAPI): StreamingProvider => ({\n  id: PROVIDER_ID,\n  kind: 'streaming',\n  name: 'YouTube',\n\n  searchForTrack: async (artist, title) => {\n    const [quotedOutcome, plainOutcome] = await Promise.allSettled([\n      api.Ytdlp.search(buildQuotedQuery(artist, title)),\n      api.Ytdlp.search(`${artist} ${title}`),\n    ]);\n\n    if (\n      quotedOutcome.status === 'rejected' &&\n      plainOutcome.status === 'rejected'\n    ) {\n      throw quotedOutcome.reason;\n    }\n\n    const results = dedupeById([\n      ...valueOrEmpty(quotedOutcome),\n      ...valueOrEmpty(plainOutcome),\n    ]);\n\n    return results.map((result) => ({\n      id: result.id,\n      title: result.title,\n      durationMs: result.duration ? result.duration * 1000 : undefined,\n      thumbnail: result.thumbnail ?? undefined,\n      failed: false,\n      source: { provider: PROVIDER_ID, id: result.id },\n    }));\n  },\n\n  getStreamUrl: async (candidateId) => {\n    const info = await api.Ytdlp.getStream(candidateId);\n\n    return {\n      url: info.stream_url,\n      protocol: 'https',\n      durationMs: info.duration ? info.duration * 1000 : undefined,\n      container: info.container ?? undefined,\n      codec: info.codec ?? undefined,\n      source: { provider: PROVIDER_ID, id: candidateId },\n    };\n  },\n});\n\nconst plugin: NuclearPlugin = {\n  onEnable(api: NuclearPluginAPI) {\n    api.Providers.register(createProvider(api));\n  },\n\n  onDisable(api: NuclearPluginAPI) {\n    api.Providers.unregister(PROVIDER_ID);\n  },\n};\n\nexport default plugin;\n",
-    isTs: true,
+    code: "\"use strict\";Object.defineProperty(exports, \"__esModule\", { value: true });var PROVIDER_ID = 'youtube';var buildQuotedQuery = function(artist, title) { var safeTitle = title.replace(/\\\"/g, ''); return artist + ' \\\"' + safeTitle + '\\\"'; };var dedupeById = function(results) { var seen = new Set(); return results.filter(function(result) { if (seen.has(result.id)) { return false; } seen.add(result.id); return true; }); };var valueOrEmpty = function(outcome) { if (outcome.status === 'fulfilled') { return outcome.value; } return []; };var createProvider = function(api) { return { id: PROVIDER_ID, kind: 'streaming', name: 'YouTube', searchForTrack: function(artist, title) { return Promise.allSettled([ api.Ytdlp.search(buildQuotedQuery(artist, title)), api.Ytdlp.search(artist + ' ' + title) ]).then(function(outcomes) { var quotedOutcome = outcomes[0]; var plainOutcome = outcomes[1]; if (quotedOutcome.status === 'rejected' && plainOutcome.status === 'rejected') { throw quotedOutcome.reason; } var results = dedupeById([].concat(valueOrEmpty(quotedOutcome), valueOrEmpty(plainOutcome))); return results.map(function(result) { return { id: result.id, title: result.title, durationMs: result.duration ? result.duration * 1000 : undefined, thumbnail: result.thumbnail || undefined, failed: false, source: { provider: PROVIDER_ID, id: result.id } }; }); }); }, getStreamUrl: function(candidateId) { return api.Ytdlp.getStream(candidateId).then(function(info) { return { url: info.stream_url, protocol: 'https', durationMs: info.duration ? info.duration * 1000 : undefined, container: info.container || undefined, codec: info.codec || undefined, source: { provider: PROVIDER_ID, id: candidateId } }; }); } }; };var plugin = { onEnable: function(api) { api.Providers.register(createProvider(api)); }, onDisable: function(api) { api.Providers.unregister(PROVIDER_ID); } };exports.default = plugin;module.exports = plugin;",
+    isTs: false,
   },
   'nuclear-plugin-something': {
     version: '0.3.0',

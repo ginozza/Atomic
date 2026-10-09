@@ -244,7 +244,8 @@ export class StreamResolution {
     options: ResolveOptions,
   ): Promise<void> {
     try {
-      const audioSource = await this.audioSourceFactory.fromCandidate(candidate);
+      const audioSource =
+        await this.audioSourceFactory.fromCandidate(candidate);
       if (signal.aborted) {
         return;
       }

@@ -32,7 +32,8 @@ export class AudioSourceFactory {
     const isDirectYoutube =
       stream.container === 'youtube' ||
       stream.codec === 'youtube' ||
-      (stream.url.includes('youtube.com') && !stream.url.includes('googlevideo.com')) ||
+      (stream.url.includes('youtube.com') &&
+        !stream.url.includes('googlevideo.com')) ||
       stream.url.includes('youtu.be');
 
     if (isDirectYoutube) {

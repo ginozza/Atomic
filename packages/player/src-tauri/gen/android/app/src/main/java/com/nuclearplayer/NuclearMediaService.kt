@@ -144,6 +144,9 @@ class NuclearMediaService : Service() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
+        if (!MainActivity.isMediaPlaying && !MainActivity.isMediaActive) {
+            stopSelf()
+        }
     }
 
     override fun onDestroy() {

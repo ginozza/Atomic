@@ -1,5 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -9,11 +16,10 @@ import type { SettingDefinition } from '@nuclearplayer/plugin-sdk';
 import { PluginStoreItem } from '@nuclearplayer/ui';
 
 import rawPackageJson from '../../../../package.json';
+import rawIndexHtml from '../../index.html?raw';
 import rawCargoToml from '../../src-tauri/Cargo.toml?raw';
 import rawStringsXml from '../../src-tauri/gen/android/app/src/main/res/values/strings.xml?raw';
 import tauriConfig from '../../src-tauri/tauri.conf.json';
-import rawIndexHtml from '../../index.html?raw';
-
 import {
   pluginMarketplaceApi,
   type MarketplacePlugin,
@@ -25,7 +31,10 @@ import { providersHost } from '../services/providersHost';
 import { usePluginStore } from '../stores/pluginStore';
 import { useQueueStore } from '../stores/queueStore';
 import { useSettingsModalStore } from '../stores/settingsModalStore';
-import { registerCoreSettings, useSettingsStore } from '../stores/settingsStore';
+import {
+  registerCoreSettings,
+  useSettingsStore,
+} from '../stores/settingsStore';
 import { useSoundStore } from '../stores/soundStore';
 import {
   createMockCandidate,
@@ -106,7 +115,9 @@ describe('Atomic E2E Integration Suite', () => {
     });
 
     it('verifies Atomic Android manifest and title definitions in strings.xml', () => {
-      expect(rawStringsXml).toContain('<string name="app_name">"Atomic"</string>');
+      expect(rawStringsXml).toContain(
+        '<string name="app_name">"Atomic"</string>',
+      );
       expect(rawStringsXml).toContain(
         '<string name="main_activity_title">"Atomic"</string>',
       );
@@ -157,11 +168,15 @@ describe('Atomic E2E Integration Suite', () => {
       expect(muteButton).toHaveAttribute('aria-label', 'Mute');
 
       await user.click(muteButton);
-      expect(useSettingsStore.getState().values['core.playback.muted']).toBe(true);
+      expect(useSettingsStore.getState().values['core.playback.muted']).toBe(
+        true,
+      );
       expect(muteButton).toHaveAttribute('aria-label', 'Unmute');
 
       await Wrapper.volume.changeValue(90);
-      expect(useSettingsStore.getState().values['core.playback.volume']).toBe(0.9);
+      expect(useSettingsStore.getState().values['core.playback.volume']).toBe(
+        0.9,
+      );
     });
 
     it('connects seek bar progress and interactions to sound store', async () => {
@@ -181,7 +196,9 @@ describe('Atomic E2E Integration Suite', () => {
     });
 
     it('handles plugin installation network timeout gracefully without hanging in pending state', async () => {
-      const toastErrorSpy = vi.spyOn(toast, 'error').mockReturnValue('toast-1' as unknown as number);
+      const toastErrorSpy = vi
+        .spyOn(toast, 'error')
+        .mockReturnValue('toast-1' as unknown as number);
       vi.spyOn(pluginMarketplaceApi, 'getLatestRelease').mockRejectedValue(
         new Error('Network request timed out after 15000ms'),
       );
@@ -218,9 +235,10 @@ describe('Atomic E2E Integration Suite', () => {
       vi.spyOn(pluginDownloader, 'downloadAndExtractPlugin').mockResolvedValue(
         '/tmp/plugins/extracted',
       );
-      vi.spyOn(usePluginStore.getState(), 'loadPluginFromPath').mockRejectedValue(
-        new Error('Failed to parse plugin bundle'),
-      );
+      vi.spyOn(
+        usePluginStore.getState(),
+        'loadPluginFromPath',
+      ).mockRejectedValue(new Error('Failed to parse plugin bundle'));
       const cleanupSpy = vi
         .spyOn(pluginDownloader, 'cleanupDownload')
         .mockResolvedValue(undefined);
@@ -283,9 +301,19 @@ describe('Atomic E2E Integration Suite', () => {
         useSettingsStore.getState().definitions,
       ).filter((definition) => !isDesktopOnlySetting(definition.id));
 
-      expect(mobileVisible.some((definition) => definition.id.includes('framelessWindow'))).toBe(false);
-      expect(mobileVisible.some((definition) => definition.id.includes('customTitleBar'))).toBe(false);
-      expect(mobileVisible.some((definition) => definition.id.includes('crossfade'))).toBe(true);
+      expect(
+        mobileVisible.some((definition) =>
+          definition.id.includes('framelessWindow'),
+        ),
+      ).toBe(false);
+      expect(
+        mobileVisible.some((definition) =>
+          definition.id.includes('customTitleBar'),
+        ),
+      ).toBe(false);
+      expect(
+        mobileVisible.some((definition) => definition.id.includes('crossfade')),
+      ).toBe(true);
     });
 
     it('preserves settings category selection without bouncing back to general', () => {
@@ -361,12 +389,19 @@ describe('Atomic E2E Integration Suite', () => {
         await user.click(muteButton);
       }
 
-      expect(useSettingsStore.getState().values['core.playback.muted']).toBe(true);
+      expect(useSettingsStore.getState().values['core.playback.muted']).toBe(
+        true,
+      );
     });
 
     it('simulates network timeout abort signal during plugin download and verifies clean cache recovery', async () => {
-      const abortError = new DOMException('The operation was aborted', 'AbortError');
-      vi.spyOn(pluginMarketplaceApi, 'getLatestRelease').mockRejectedValue(abortError);
+      const abortError = new DOMException(
+        'The operation was aborted',
+        'AbortError',
+      );
+      vi.spyOn(pluginMarketplaceApi, 'getLatestRelease').mockRejectedValue(
+        abortError,
+      );
 
       const { result } = renderHook(() => useInstallPlugin(), {
         wrapper: createQueryClientWrapper(),
@@ -411,7 +446,9 @@ describe('Atomic E2E Integration Suite', () => {
 
       const muteButton = screen.getByTestId('player-mute-button');
       await user.click(muteButton);
-      expect(useSettingsStore.getState().values['core.playback.muted']).toBe(true);
+      expect(useSettingsStore.getState().values['core.playback.muted']).toBe(
+        true,
+      );
 
       expect(useSoundStore.getState().status).toBe('playing');
     });
@@ -474,7 +511,9 @@ describe('Atomic E2E Integration Suite', () => {
       expect(tauriConfig.productName).toBe('Atomic');
       expect(tauriConfig.mainBinaryName).toBe('atomic-music-player');
       expect(rawPackageJson.name).toBe('atomic');
-      expect(rawStringsXml).toContain('<string name="app_name">"Atomic"</string>');
+      expect(rawStringsXml).toContain(
+        '<string name="app_name">"Atomic"</string>',
+      );
       expect(rawCargoToml).toContain('Atomic Music Player');
       expect(rawIndexHtml).toContain('<title>Atomic</title>');
     });
@@ -514,7 +553,9 @@ describe('Atomic E2E Integration Suite', () => {
 
       const muteButton = screen.getByTestId('player-mute-button');
       await user.click(muteButton);
-      expect(useSettingsStore.getState().values['core.playback.muted']).toBe(true);
+      expect(useSettingsStore.getState().values['core.playback.muted']).toBe(
+        true,
+      );
 
       const nextButton = screen.getByTestId('player-next-button');
       await user.click(nextButton);
@@ -522,7 +563,9 @@ describe('Atomic E2E Integration Suite', () => {
     });
 
     it('Scenario 3: YouTube streaming plugin discovery, installation timeout, and recovery workflow', async () => {
-      const toastSpy = vi.spyOn(toast, 'error').mockReturnValue('toast-id' as unknown as number);
+      const toastSpy = vi
+        .spyOn(toast, 'error')
+        .mockReturnValue('toast-id' as unknown as number);
       vi.spyOn(pluginMarketplaceApi, 'getLatestRelease').mockRejectedValue(
         new Error('Connection timed out'),
       );
@@ -551,7 +594,10 @@ describe('Atomic E2E Integration Suite', () => {
         .build();
 
       providersHost.register(streamingProvider);
-      const candidates = await streamingProvider.searchForTrack('Radiohead', 'Creep');
+      const candidates = await streamingProvider.searchForTrack(
+        'Radiohead',
+        'Creep',
+      );
       expect(candidates).toHaveLength(1);
       const stream = await streamingProvider.getStreamUrl(candidates[0].id);
       expect(stream).toBeDefined();
@@ -566,9 +612,15 @@ describe('Atomic E2E Integration Suite', () => {
       await useSettingsStore.getState().setValue('core.playback.shuffle', true);
       await useSettingsStore.getState().setValue('core.playback.repeat', 'all');
 
-      expect(useSettingsStore.getState().getValue('core.playback.volume')).toBe(0.95);
-      expect(useSettingsStore.getState().getValue('core.playback.shuffle')).toBe(true);
-      expect(useSettingsStore.getState().getValue('core.playback.repeat')).toBe('all');
+      expect(useSettingsStore.getState().getValue('core.playback.volume')).toBe(
+        0.95,
+      );
+      expect(
+        useSettingsStore.getState().getValue('core.playback.shuffle'),
+      ).toBe(true);
+      expect(useSettingsStore.getState().getValue('core.playback.repeat')).toBe(
+        'all',
+      );
 
       useSettingsModalStore.getState().close();
       expect(useSettingsModalStore.getState().isOpen).toBe(false);

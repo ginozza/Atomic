@@ -6,6 +6,7 @@ export default {
   trailingComma: 'all',
   singleQuote: true,
   tabWidth: 2,
+  endOfLine: 'auto',
   importOrder: [
     '<BUILTIN_MODULES>',
     '<THIRD_PARTY_MODULES>',

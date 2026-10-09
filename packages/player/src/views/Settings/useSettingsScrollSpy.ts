@@ -18,13 +18,10 @@ const highlightedSection = (
   }
 
   const viewportMiddle = viewport.scrollTop + viewport.clientHeight / 2;
-  const lastSectionStartingAboveMiddle = findLast(
-    sectionNames,
-    (name) => {
-      const el = sections[name];
-      return el ? el.offsetTop <= viewportMiddle : false;
-    },
-  );
+  const lastSectionStartingAboveMiddle = findLast(sectionNames, (name) => {
+    const el = sections[name];
+    return el ? el.offsetTop <= viewportMiddle : false;
+  });
   return lastSectionStartingAboveMiddle ?? sectionNames[0];
 };
 

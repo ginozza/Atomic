@@ -120,39 +120,52 @@ describe('bundledPlugins', () => {
       },
     };
 
-    // 1. Spotify
     const spotify = evaluatePlugin(
       FALLBACK_PLUGINS['nuclear-plugin-something'].code,
     );
     await spotify.onEnable(fakeApi as never);
     expect(
-      registered.some((p) => p.id === 'spotify' && p.kind === 'metadata'),
+      registered.some(
+        (provider) => provider.id === 'spotify' && provider.kind === 'metadata',
+      ),
     ).toBe(true);
 
-    // 2. Last.fm
     const lastfm = evaluatePlugin(
       FALLBACK_PLUGINS['nuclear-plugin-lastfm'].code,
     );
     await lastfm.onEnable(fakeApi as never);
     expect(
       registered.some(
-        (p) => p.id === 'lastfm-discovery' && p.kind === 'discovery',
+        (provider) =>
+          provider.id === 'lastfm-discovery' && provider.kind === 'discovery',
       ),
     ).toBe(true);
 
-    // 3. Deezer Dashboard
     const deezer = evaluatePlugin(
       FALLBACK_PLUGINS['nuclear-plugin-deezer-dashboard'].code,
     );
     await deezer.onEnable(fakeApi as never);
     expect(
       registered.some(
-        (p) => p.id === 'deezer-dashboard' && p.kind === 'dashboard',
+        (provider) =>
+          provider.id === 'deezer-dashboard' && provider.kind === 'dashboard',
       ),
     ).toBe(true);
     expect(
       registered.some(
-        (p) => p.id === 'deezer-playlists' && p.kind === 'playlists',
+        (provider) =>
+          provider.id === 'deezer-playlists' && provider.kind === 'playlists',
+      ),
+    ).toBe(true);
+
+    const youtube = evaluatePlugin(
+      FALLBACK_PLUGINS['nuclear-plugin-youtube'].code,
+    );
+    await youtube.onEnable(fakeApi as never);
+    expect(
+      registered.some(
+        (provider) =>
+          provider.id === 'youtube' && provider.kind === 'streaming',
       ),
     ).toBe(true);
   });

@@ -1,6 +1,5 @@
-#!/usr/bin/env node
 import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -11,7 +10,6 @@ const pkgPath = resolve(rootDir, 'packages/player/package.json');
 const changelog = JSON.parse(readFileSync(changelogPath, 'utf-8'));
 const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
 
-// Take the newest release entries (e.g., latest 15)
 const recentEntries = changelog.slice(0, 15);
 
 const typeHeaders = {
@@ -26,7 +24,9 @@ const typeHeaders = {
 const grouped = {};
 for (const entry of recentEntries) {
   const type = entry.type || 'improvement';
-  if (!grouped[type]) grouped[type] = [];
+  if (!grouped[type]) {
+    grouped[type] = [];
+  }
   grouped[type].push(entry);
 }
 
@@ -46,14 +46,15 @@ for (const [type, header] of Object.entries(typeHeaders)) {
   }
 }
 
-// Generate full CHANGELOG.md for distribution
 let fullChangelog = `# Atomic - Android Changelog\n\n`;
 fullChangelog += `History of features, improvements, and fixes in Atomic for Android.\n\n`;
 
 const entriesByDate = {};
 for (const entry of changelog) {
   const dateKey = entry.date ? entry.date.split('T')[0] : 'Earlier';
-  if (!entriesByDate[dateKey]) entriesByDate[dateKey] = [];
+  if (!entriesByDate[dateKey]) {
+    entriesByDate[dateKey] = [];
+  }
   entriesByDate[dateKey].push(entry);
 }
 

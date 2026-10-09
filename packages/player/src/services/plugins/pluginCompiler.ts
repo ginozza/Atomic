@@ -19,7 +19,14 @@
  * - Cache compiled bundles per entry path, invalidated by re-hashing every file
  *   that participated in the previous build (see CompileCacheEntry below).
  */
-import { appDataDir, dirname, extname, isAbsolute, normalize, resolve } from '@tauri-apps/api/path';
+import {
+  appDataDir,
+  dirname,
+  extname,
+  isAbsolute,
+  normalize,
+  resolve,
+} from '@tauri-apps/api/path';
 import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import type * as EsbuildTypes from 'esbuild-wasm';
 import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
@@ -206,134 +213,134 @@ export async function compilePlugin(
           ? 'ts'
           : 'js';
 
-  const result = await mod.build({
-    // Feed the entry file through "stdin" so esbuild never tries to open it
-    // from a real filesystem. In WASM/web there is no Node fs, and letting
-    // esbuild fall back to its default fs behavior will cause errors.
-    //
-    // - sourcefile: preserves meaningful file names in stack traces and is used
-    //   as the base for resolving relative imports.
-    // - resolveDir: tells esbuild where to resolve "./" and "../" from.
-    // - loader: matches the entry extension so esbuild parses TS/TSX correctly.
-    stdin: {
-      contents: entrySource,
-      sourcefile: entryPath,
-      loader: entryLoader,
-    },
-    bundle: true,
-    write: false,
-    format: 'cjs',
-    platform: 'browser',
-    target: ['es2022'],
-    sourcemap: 'inline',
-    // Use the automatic JSX runtime. The PluginLoader's require shim provides
-    // 'react/jsx-runtime', and the bare import esbuild emits for it gets
-    // externalized by our onResolve below. Without this, esbuild defaults to
-    // the classic transform (React.createElement), and any TSX plugin that
-    // doesn't manually `import React` compiles fine but explodes at eval time
-    // with "React is not defined".
-    jsx: 'automatic',
-    // Do not bundle our host SDK. Plugins import it at runtime from the app,
-    // not from the plugin bundle.
-    external: ['@nuclearplayer/plugin-sdk'],
-
-    // Keep a neutral working directory. Real resolution happens inside our
-    // virtual "tauri-fs" plugin (below).
-    absWorkingDir: '/',
-
-    // Inline tsconfig so esbuild doesn't try to read tsconfig.json from disk.
-    tsconfigRaw: { compilerOptions: {} },
-
-    logLevel: 'silent',
-
-    // A tiny "virtual filesystem" implemented with Tauri's readTextFile.
-    // The goal is to keep esbuild away from any Node fs code paths that
-    // don't exist in WASM/web.
-    plugins: [
-      {
-        name: 'tauri-fs',
-        setup(build) {
-          // Unify all "where is this import?" questions behind a single rule set,
-          // and force them into a custom namespace ("tauri-fs"). Anything that
-          // lands in this namespace will be loaded by our onLoad hook below,
-          // using Tauri's readTextFile instead of Node's fs.
-          build.onResolve({ filter: /.*/ }, async (args) => {
-            if (args.kind === 'entry-point') {
-              return { path: entryPath, namespace: 'tauri-fs' };
-            }
-
-            if (await isAbsolute(args.path)) {
-              return { path: args.path, namespace: 'tauri-fs' };
-            }
-
-            if (/^\.\.?[/\\]/.test(args.path)) {
-              const importerDir = args.importer
-                ? await dirname(args.importer)
-                : entryDir;
-              const resolved = await resolve(importerDir, args.path);
-              return { path: resolved, namespace: 'tauri-fs' };
-            }
-
-            return { path: args.path, external: true };
-          });
-          // Given a path in our "tauri-fs" namespace, fetch the file content
-          // via Tauri's filesystem API and tell esbuild how to treat it.
-          build.onLoad(
-            { filter: /.*/, namespace: 'tauri-fs' },
-            async (args) => {
-              if (args.path === entryPath) {
-                return {
-                  contents: entrySource,
-                  loader: entryLoader,
-                };
-              }
-
-              let hasExt = false;
-              try {
-                const ext = await extname(args.path);
-                hasExt = ext !== '';
-              } catch {
-                // Tauri's extname throws when the path has no extension
-              }
-              const candidates: string[] = [];
-
-              if (hasExt) {
-                candidates.push(args.path);
-              } else {
-                candidates.push(
-                  args.path + '.ts',
-                  args.path + '.tsx',
-                  args.path + '.js',
-                  args.path + '/index.ts',
-                  args.path + '/index.tsx',
-                  args.path + '/index.js',
-                );
-              }
-
-              for (const p of candidates) {
-                const contents = await tryRead(p);
-                if (contents != null) {
-                  // Record the resolved file in the freshness manifest so the
-                  // cache invalidates when this import changes, not just when
-                  // the entry does.
-                  inputHashes.set(p, simpleHash(contents));
-                  const loader: EsbuildTypes.Loader = p.endsWith('.tsx')
-                    ? 'tsx'
-                    : p.endsWith('.ts')
-                      ? 'ts'
-                      : 'js';
-                  return { contents, loader };
-                }
-              }
-
-              throw new Error(`Module not found (tauri-fs): ${args.path}`);
-            },
-          );
-          // Bare module specifiers are handled as external in the unified onResolve above.
+      const result = await mod.build({
+        // Feed the entry file through "stdin" so esbuild never tries to open it
+        // from a real filesystem. In WASM/web there is no Node fs, and letting
+        // esbuild fall back to its default fs behavior will cause errors.
+        //
+        // - sourcefile: preserves meaningful file names in stack traces and is used
+        //   as the base for resolving relative imports.
+        // - resolveDir: tells esbuild where to resolve "./" and "../" from.
+        // - loader: matches the entry extension so esbuild parses TS/TSX correctly.
+        stdin: {
+          contents: entrySource,
+          sourcefile: entryPath,
+          loader: entryLoader,
         },
-      },
-    ],
-  });
+        bundle: true,
+        write: false,
+        format: 'cjs',
+        platform: 'browser',
+        target: ['es2022'],
+        sourcemap: 'inline',
+        // Use the automatic JSX runtime. The PluginLoader's require shim provides
+        // 'react/jsx-runtime', and the bare import esbuild emits for it gets
+        // externalized by our onResolve below. Without this, esbuild defaults to
+        // the classic transform (React.createElement), and any TSX plugin that
+        // doesn't manually `import React` compiles fine but explodes at eval time
+        // with "React is not defined".
+        jsx: 'automatic',
+        // Do not bundle our host SDK. Plugins import it at runtime from the app,
+        // not from the plugin bundle.
+        external: ['@nuclearplayer/plugin-sdk'],
+
+        // Keep a neutral working directory. Real resolution happens inside our
+        // virtual "tauri-fs" plugin (below).
+        absWorkingDir: '/',
+
+        // Inline tsconfig so esbuild doesn't try to read tsconfig.json from disk.
+        tsconfigRaw: { compilerOptions: {} },
+
+        logLevel: 'silent',
+
+        // A tiny "virtual filesystem" implemented with Tauri's readTextFile.
+        // The goal is to keep esbuild away from any Node fs code paths that
+        // don't exist in WASM/web.
+        plugins: [
+          {
+            name: 'tauri-fs',
+            setup(build) {
+              // Unify all "where is this import?" questions behind a single rule set,
+              // and force them into a custom namespace ("tauri-fs"). Anything that
+              // lands in this namespace will be loaded by our onLoad hook below,
+              // using Tauri's readTextFile instead of Node's fs.
+              build.onResolve({ filter: /.*/ }, async (args) => {
+                if (args.kind === 'entry-point') {
+                  return { path: entryPath, namespace: 'tauri-fs' };
+                }
+
+                if (await isAbsolute(args.path)) {
+                  return { path: args.path, namespace: 'tauri-fs' };
+                }
+
+                if (/^\.\.?[/\\]/.test(args.path)) {
+                  const importerDir = args.importer
+                    ? await dirname(args.importer)
+                    : entryDir;
+                  const resolved = await resolve(importerDir, args.path);
+                  return { path: resolved, namespace: 'tauri-fs' };
+                }
+
+                return { path: args.path, external: true };
+              });
+              // Given a path in our "tauri-fs" namespace, fetch the file content
+              // via Tauri's filesystem API and tell esbuild how to treat it.
+              build.onLoad(
+                { filter: /.*/, namespace: 'tauri-fs' },
+                async (args) => {
+                  if (args.path === entryPath) {
+                    return {
+                      contents: entrySource,
+                      loader: entryLoader,
+                    };
+                  }
+
+                  let hasExt = false;
+                  try {
+                    const ext = await extname(args.path);
+                    hasExt = ext !== '';
+                  } catch {
+                    // Tauri's extname throws when the path has no extension
+                  }
+                  const candidates: string[] = [];
+
+                  if (hasExt) {
+                    candidates.push(args.path);
+                  } else {
+                    candidates.push(
+                      args.path + '.ts',
+                      args.path + '.tsx',
+                      args.path + '.js',
+                      args.path + '/index.ts',
+                      args.path + '/index.tsx',
+                      args.path + '/index.js',
+                    );
+                  }
+
+                  for (const p of candidates) {
+                    const contents = await tryRead(p);
+                    if (contents != null) {
+                      // Record the resolved file in the freshness manifest so the
+                      // cache invalidates when this import changes, not just when
+                      // the entry does.
+                      inputHashes.set(p, simpleHash(contents));
+                      const loader: EsbuildTypes.Loader = p.endsWith('.tsx')
+                        ? 'tsx'
+                        : p.endsWith('.ts')
+                          ? 'ts'
+                          : 'js';
+                      return { contents, loader };
+                    }
+                  }
+
+                  throw new Error(`Module not found (tauri-fs): ${args.path}`);
+                },
+              );
+              // Bare module specifiers are handled as external in the unified onResolve above.
+            },
+          },
+        ],
+      });
       if (result.outputFiles && result.outputFiles[0]) {
         const code = result.outputFiles[0].text;
         cache.set(entryPath, { inputHashes, code });
@@ -359,7 +366,9 @@ const resolveRelativeFile = async (
   const relParts = relPath.replace(/\\/g, '/').split('/').filter(Boolean);
 
   for (const part of relParts) {
-    if (part === '.') continue;
+    if (part === '.') {
+      continue;
+    }
     if (part === '..') {
       parts.pop();
     } else {

@@ -1,6 +1,13 @@
 import isEmpty from 'lodash-es/isEmpty';
 import { FC } from 'react';
 
+import { useTranslation } from '@nuclearplayer/i18n';
+import { pickArtwork } from '@nuclearplayer/model';
+
+import { ConnectedFavoriteButton } from '../../../components/ConnectedFavoriteButton';
+import { useArtistBio } from '../hooks/useArtistBio';
+import { ArtistBioHeaderSkeleton } from './ArtistBioHeaderSkeleton';
+
 const stripHtml = (html: string): string =>
   html
     .replace(/<[^>]*>/g, '')
@@ -11,13 +18,6 @@ const stripHtml = (html: string): string =>
     .replace(/&#039;/g, "'")
     .replace(/&nbsp;/g, ' ')
     .trim();
-
-import { useTranslation } from '@nuclearplayer/i18n';
-import { pickArtwork } from '@nuclearplayer/model';
-
-import { ConnectedFavoriteButton } from '../../../components/ConnectedFavoriteButton';
-import { useArtistBio } from '../hooks/useArtistBio';
-import { ArtistBioHeaderSkeleton } from './ArtistBioHeaderSkeleton';
 
 type ArtistBioHeaderProps = {
   providerId: string;

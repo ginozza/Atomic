@@ -35,10 +35,10 @@ export function SortableRow<T extends Track = Track>({
 
   const isCurrent = Boolean(
     activeTrackId &&
-      (itemId === activeTrackId ||
-        ('id' in row.original &&
-          (row.original as { id?: unknown }).id === activeTrackId) ||
-        row.original.source?.id === activeTrackId),
+    (itemId === activeTrackId ||
+      ('id' in row.original &&
+        (row.original as { id?: unknown }).id === activeTrackId) ||
+      row.original.source?.id === activeTrackId),
   );
   const isRowLoading = isCurrent && Boolean(isLoading);
 
@@ -61,7 +61,7 @@ export function SortableRow<T extends Track = Track>({
         }
       }}
       className={cn(
-        'border-border bg-muted group border-b-(length:--border-width) select-none cursor-pointer transition-colors hover:bg-white/5 active:bg-white/10',
+        'border-border bg-muted group cursor-pointer border-b-(length:--border-width) transition-colors select-none hover:bg-white/5 active:bg-white/10',
         {
           '': !isDragging,
           'z-50': isDragging,

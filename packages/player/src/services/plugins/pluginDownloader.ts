@@ -1,8 +1,8 @@
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { BaseDirectory, remove, writeFile } from '@tauri-apps/plugin-fs';
 
-import { Logger } from '../logger';
 import { ensureDir } from '../../utils/path';
+import { Logger } from '../logger';
 import { downloadFile, extractZip } from '../tauri/commands';
 
 const DOWNLOADS_DIR = 'plugins/.downloads';
@@ -34,7 +34,9 @@ export const downloadAndExtractPlugin = async ({
     if (res.ok) {
       const buffer = await res.arrayBuffer();
       const bytes = new Uint8Array(buffer);
-      await writeFile(relativeZipPath, bytes, { baseDir: BaseDirectory.AppData });
+      await writeFile(relativeZipPath, bytes, {
+        baseDir: BaseDirectory.AppData,
+      });
       downloaded = true;
       Logger.plugins.info(
         `Plugin ${pluginId} downloaded via fetch (${bytes.length} bytes)`,
@@ -56,7 +58,9 @@ export const downloadAndExtractPlugin = async ({
     // Ignore cleanup error of zip file
   }
 
-  Logger.plugins.info(`Plugin ${pluginId} downloaded and extracted successfully`);
+  Logger.plugins.info(
+    `Plugin ${pluginId} downloaded and extracted successfully`,
+  );
   return extractPath;
 };
 

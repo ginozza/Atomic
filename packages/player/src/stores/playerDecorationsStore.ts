@@ -1,10 +1,7 @@
 import { create } from 'zustand';
 
 export type DecorationLayer =
-  | 'above-all'
-  | 'behind-text'
-  | 'behind-cover'
-  | 'behind-all';
+  'above-all' | 'behind-text' | 'behind-cover' | 'behind-all';
 
 export type PlayerDecoration = {
   id: string;
@@ -30,10 +27,7 @@ type PlayerDecorationsStore = {
       layer?: DecorationLayer;
     },
   ) => string;
-  updateDecoration: (
-    id: string,
-    updates: Partial<PlayerDecoration>,
-  ) => void;
+  updateDecoration: (id: string, updates: Partial<PlayerDecoration>) => void;
   removeDecoration: (id: string) => void;
   toggleDecoration: (id: string) => void;
   clearDecorations: () => void;

@@ -20,10 +20,14 @@ export const useSettingsGroups = (): CategoryGroup[] => {
 
   return useMemo(() => {
     const visibleSettings = Object.values(definitions).filter(
-      (definition) => !definition.hidden && !(isMobile && definition.desktopOnly),
+      (definition) =>
+        !definition.hidden && !(isMobile && definition.desktopOnly),
     );
 
-    const grouped = groupBy(visibleSettings, (definition) => definition.category);
+    const grouped = groupBy(
+      visibleSettings,
+      (definition) => definition.category,
+    );
 
     return Object.entries(grouped)
       .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))

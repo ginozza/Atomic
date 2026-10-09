@@ -1,5 +1,6 @@
-import type { Track } from '@nuclearplayer/model';
 import { describe, expect, it } from 'vitest';
+
+import type { Track } from '@nuclearplayer/model';
 
 import { buildSnapshot } from './historyService';
 

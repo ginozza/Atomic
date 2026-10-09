@@ -110,7 +110,7 @@ const SearchContent: FC<{
 
   if (tabsItems.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground gap-2">
+      <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12 text-center">
         <p className="text-base font-semibold">No results found</p>
         <p className="text-sm">Try searching with different keywords</p>
       </div>
@@ -178,21 +178,25 @@ export const Search: FC = () => {
           e.preventDefault();
           handleSearchSubmit(inputValue);
         }}
-        className="mb-4 flex gap-2 w-full max-w-2xl"
+        className="mb-4 flex w-full max-w-2xl gap-2"
       >
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <SearchIcon className="text-muted-foreground absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2" />
           <input
             type="search"
             data-testid="search-box"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Search tracks, albums, artists..."
-            className="w-full pl-11 pr-4 py-3 rounded-xl border border-border bg-card text-foreground font-medium text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="border-border bg-card text-foreground focus:ring-primary w-full rounded-xl border py-3 pr-4 pl-11 text-base font-medium shadow-sm focus:ring-2 focus:outline-none"
             autoFocus={!q}
           />
         </div>
-        <Button type="submit" variant="default" className="px-5 py-3 rounded-xl font-bold">
+        <Button
+          type="submit"
+          variant="default"
+          className="rounded-xl px-5 py-3 font-bold"
+        >
           {t('common:actions.search') || 'Search'}
         </Button>
       </form>
@@ -210,16 +214,16 @@ export const Search: FC = () => {
           {recentSearches.length > 0 ? (
             <div className="mt-2 space-y-3">
               <div className="flex items-center justify-between px-1">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
+                <h3 className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
+                  <Clock className="h-3.5 w-3.5" />
                   Recent Searches
                 </h3>
                 <button
                   type="button"
                   onClick={clearRecentSearches}
-                  className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer"
+                  className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1 text-xs transition-colors"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="h-3.5 w-3.5" />
                   Clear
                 </button>
               </div>
@@ -227,13 +231,13 @@ export const Search: FC = () => {
                 {recentSearches.map((term) => (
                   <div
                     key={term}
-                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card/90 hover:bg-card border border-border hover:border-primary/50 text-sm font-medium transition-all cursor-pointer shadow-xs active:scale-95"
+                    className="group bg-card/90 hover:bg-card border-border hover:border-primary/50 inline-flex cursor-pointer items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium shadow-xs transition-all active:scale-95"
                     onClick={() => {
                       setInputValue(term);
                       handleSearchSubmit(term);
                     }}
                   >
-                    <SearchIcon className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <SearchIcon className="text-muted-foreground group-hover:text-primary h-3.5 w-3.5 transition-colors" />
                     <span className="text-foreground">{term}</span>
                     <button
                       type="button"
@@ -241,19 +245,21 @@ export const Search: FC = () => {
                         e.stopPropagation();
                         removeRecentSearch(term);
                       }}
-                      className="w-4 h-4 rounded-full hover:bg-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors ml-0.5"
+                      className="text-muted-foreground hover:text-foreground ml-0.5 flex h-4 w-4 items-center justify-center rounded-full transition-colors hover:bg-white/10"
                       aria-label={`Remove ${term}`}
                     >
-                      <X className="w-3 h-3" />
+                      <X className="h-3 w-3" />
                     </button>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground gap-3">
-              <SearchIcon className="w-12 h-12 stroke-[1.5] opacity-40" />
-              <p className="text-base font-medium">Type a search term above to find music across all sources.</p>
+            <div className="text-muted-foreground flex flex-col items-center justify-center gap-3 py-16 text-center">
+              <SearchIcon className="h-12 w-12 stroke-[1.5] opacity-40" />
+              <p className="text-base font-medium">
+                Type a search term above to find music across all sources.
+              </p>
             </div>
           )}
         </div>

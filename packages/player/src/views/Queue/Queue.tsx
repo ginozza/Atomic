@@ -16,10 +16,10 @@ export const Queue: FC = () => {
         scrollableArea: 'flex-1 min-h-0',
       }}
     >
-      <div className="flex items-center justify-end mb-2 shrink-0">
+      <div className="mb-2 flex shrink-0 items-center justify-end">
         <QueueHeaderActions />
       </div>
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 flex-1">
         <ConnectedQueuePanel isCollapsed={false} />
       </div>
     </ViewShell>

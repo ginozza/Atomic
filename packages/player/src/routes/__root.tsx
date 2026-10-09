@@ -32,13 +32,16 @@ import {
 } from '../components/ConnectedQueuePanel';
 import { ConnectedSettingsModal } from '../components/ConnectedSettingsModal';
 import { ConnectedStreamVerification } from '../components/ConnectedStreamVerification';
+import { ConnectedTitleBar } from '../components/ConnectedTitleBar';
 import { ConnectedTopBar } from '../components/ConnectedTopBar';
 import { DevTools } from '../components/DevTools';
+import { FlatpakWarningBanner } from '../components/FlatpakWarningBanner';
 import { MobileNavigationBar } from '../components/MobileNavigationBar';
 import { SoundProvider } from '../components/SoundProvider';
 import { StreamResolver } from '../components/StreamResolver';
 import { useAndroidBackHandler } from '../hooks/useAndroidBackHandler';
 import { useCoreSetting } from '../hooks/useCoreSetting';
+import { GlobalShortcuts } from '../shortcuts';
 import { useLayoutStore } from '../stores/layoutStore';
 import { useSettingsModalStore } from '../stores/settingsModalStore';
 import { useStartupStore } from '../stores/startupStore';
@@ -140,7 +143,12 @@ const RootComponent = () => {
   }, []);
   return (
     <PlayerShell onContextMenu={(e) => e.preventDefault()}>
-      <div className="pt-[max(env(safe-area-inset-top),2.5rem)]">
+      <GlobalShortcuts />
+      <div className="hidden md:block">
+        <ConnectedTitleBar />
+        <FlatpakWarningBanner />
+      </div>
+      <div className="pt-[max(env(safe-area-inset-top),2.5rem)] md:pt-0">
         <ConnectedTopBar />
       </div>
       {!isStartingUp && (
@@ -204,7 +212,7 @@ const RootComponent = () => {
             </PlayerWorkspace.LeftSidebar>
           </div>
 
-          <PlayerWorkspace.Main className="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0">
+          <PlayerWorkspace.Main className="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden md:pb-0">
             <RouteTransition />
           </PlayerWorkspace.Main>
 

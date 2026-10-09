@@ -66,7 +66,7 @@ export const PlayerBarSeekBar: FC<PlayerSeekBarProps> = ({
           )}
         >
           {/* Unplayed portion — lighter/dimmer fill */}
-          <div className="surface-seekbar absolute inset-0 opacity-20 rounded-full" />
+          <div className="surface-seekbar absolute inset-0 rounded-full opacity-20" />
           {isLoading && (
             <div className="bg-stripes-diagonal absolute inset-0 opacity-80" />
           )}

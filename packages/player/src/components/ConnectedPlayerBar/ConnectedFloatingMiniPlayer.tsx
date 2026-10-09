@@ -98,7 +98,7 @@ export const ConnectedFloatingMiniPlayer: FC = () => {
           className={cn(
             'text-foreground flex h-10 w-10 items-center justify-center rounded-full transition-all duration-150 hover:bg-white/10 focus:outline-none active:scale-90',
             isLoading &&
-              'surface-toxic-shimmer text-black ring-2 ring-primary/80 animate-toxic-glow',
+              'surface-toxic-shimmer ring-primary/80 animate-toxic-glow text-black ring-2',
           )}
           aria-label={isLoading ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
           aria-busy={isLoading ? 'true' : undefined}

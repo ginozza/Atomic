@@ -45,7 +45,7 @@ export const candidatesForTrack = async (
   track: Track,
   options?: CandidateSourceOptions,
 ): Promise<StreamCandidate[] | undefined> => {
-  const cached = track.streamCandidates?.filter((candidate) => !candidate.failed);
+  const cached = track.streamCandidates;
   if (cached && cached.length > 0 && !cached.some(isStreamExpired)) {
     return cached;
   }

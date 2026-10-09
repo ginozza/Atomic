@@ -143,6 +143,197 @@ fn normalize_album_artists(info: &YtdlpJson) -> Vec<String> {
         .unwrap_or_default()
 }
 
+fn parse_duration_string(duration_str: &str) -> Option<f64> {
+    let parts: Vec<&str> = duration_str.split(':').collect();
+    match parts.len() {
+        3 => {
+            let hours: f64 = parts[0].parse().ok()?;
+            let minutes: f64 = parts[1].parse().ok()?;
+            let seconds: f64 = parts[2].parse().ok()?;
+            Some(hours * 3600.0 + minutes * 60.0 + seconds)
+        }
+        2 => {
+            let minutes: f64 = parts[0].parse().ok()?;
+            let seconds: f64 = parts[1].parse().ok()?;
+            Some(minutes * 60.0 + seconds)
+        }
+        1 => parts[0].parse().ok(),
+        _ => None,
+    }
+}
+
+fn parse_search_item(item: &serde_json::Value) -> Option<YtdlpSearchResult> {
+    if let Some(video) = item.get("videoRenderer").or_else(|| item.get("compactVideoRenderer")) {
+        if let Some(id) = video.get("videoId").and_then(|video_id| video_id.as_str()) {
+            let title = video
+                .pointer("/title/runs/0/text")
+                .or_else(|| video.pointer("/title/simpleText"))
+                .and_then(|title_text| title_text.as_str())
+                .unwrap_or("Unknown")
+                .to_string();
+
+            let duration = video
+                .pointer("/lengthText/simpleText")
+                .and_then(|length_text| length_text.as_str())
+                .and_then(parse_duration_string);
+
+            let thumbnail = video
+                .pointer("/thumbnail/thumbnails")
+                .and_then(|thumbnails_value| thumbnails_value.as_array())
+                .and_then(|thumbnails_array| thumbnails_array.last())
+                .and_then(|thumbnail_item| thumbnail_item.get("url"))
+                .and_then(|url_str| url_str.as_str())
+                .map(|url_value| url_value.to_string());
+
+            let channel = video
+                .pointer("/ownerText/runs/0/text")
+                .or_else(|| video.pointer("/shortBylineText/runs/0/text"))
+                .and_then(|channel_text| channel_text.as_str())
+                .map(|channel_value| channel_value.to_string());
+
+            return Some(YtdlpSearchResult {
+                id: id.to_string(),
+                title,
+                duration,
+                thumbnail,
+                channel,
+            });
+        }
+    }
+
+    if let Some(lv) = item.get("lockupViewModel") {
+        if let Some(id) = lv.get("contentId").and_then(|video_id| video_id.as_str()) {
+            let meta = lv.pointer("/metadata/lockupMetadataViewModel");
+            let title = meta
+                .and_then(|m| m.pointer("/title/content"))
+                .and_then(|t| t.as_str())
+                .unwrap_or("Unknown")
+                .to_string();
+
+            let mut channel = None;
+            let mut duration = None;
+
+            if let Some(rows) = meta
+                .and_then(|m| m.pointer("/metadata/contentMetadataViewModel/metadataRows"))
+                .and_then(|r| r.as_array())
+            {
+                for row in rows {
+                    if let Some(parts) = row.get("metadataParts").and_then(|p| p.as_array()) {
+                        for part in parts {
+                            if let Some(content) = part.pointer("/text/content").and_then(|c| c.as_str()) {
+                                let trimmed = content.trim();
+                                if trimmed.contains(':')
+                                    && trimmed.chars().all(|character| character.is_ascii_digit() || character == ':')
+                                {
+                                    duration = parse_duration_string(trimmed);
+                                } else if channel.is_none()
+                                    && !trimmed.is_empty()
+                                    && !trimmed.contains("views")
+                                    && !trimmed.contains("ago")
+                                    && !trimmed.contains("vistas")
+                                    && !trimmed.contains("hace")
+                                {
+                                    channel = Some(trimmed.to_string());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            let thumbnail = lv
+                .pointer("/contentImage/thumbnailViewModel/image/sources")
+                .and_then(|sources_value| sources_value.as_array())
+                .and_then(|sources_array| sources_array.last())
+                .and_then(|source_item| source_item.get("url"))
+                .and_then(|url_str| url_str.as_str())
+                .map(|url_value| url_value.to_string())
+                .or_else(|| Some(format!("https://i.ytimg.com/vi/{id}/hqdefault.jpg")));
+
+            return Some(YtdlpSearchResult {
+                id: id.to_string(),
+                title,
+                duration,
+                thumbnail,
+                channel,
+            });
+        }
+    }
+
+    None
+}
+
+async fn search_invidious(
+    query: &str,
+    limit: u32,
+) -> Result<Vec<YtdlpSearchResult>, String> {
+    let instances = [
+        "https://invidious.f5.si",
+        "https://inv.nadeko.net",
+        "https://invidious.nerdvpn.de",
+        "https://yt.artemislena.eu",
+        "https://invidious.private.coffee",
+    ];
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(6))
+        .danger_accept_invalid_certs(true)
+        .build()
+        .map_err(|error| error.to_string())?;
+
+    let encoded_query = percent_encoding::utf8_percent_encode(query, percent_encoding::NON_ALPHANUMERIC);
+    for instance in instances {
+        let url = format!("{instance}/api/v1/search?q={encoded_query}&type=video");
+        if let Ok(response) = client.get(&url).send().await {
+            if response.status().is_success() {
+                if let Ok(value) = response.json::<serde_json::Value>().await {
+                    if let Some(items) = value.as_array() {
+                        let mut results = Vec::new();
+                        for item in items {
+                            if let Some(id) = item.get("videoId").and_then(|video_id| video_id.as_str()) {
+                                let title = item
+                                    .get("title")
+                                    .and_then(|title_val| title_val.as_str())
+                                    .unwrap_or("Unknown")
+                                    .to_string();
+                                let duration = item
+                                    .get("lengthSeconds")
+                                    .and_then(|duration_val| duration_val.as_f64());
+                                let thumbnail = item
+                                    .pointer("/videoThumbnails/0/url")
+                                    .and_then(|url_val| url_val.as_str())
+                                    .map(|url_string| url_string.to_string())
+                                    .or_else(|| Some(format!("https://i.ytimg.com/vi/{id}/hqdefault.jpg")));
+                                let channel = item
+                                    .get("author")
+                                    .and_then(|author_val| author_val.as_str())
+                                    .map(|author_string| author_string.to_string());
+
+                                results.push(YtdlpSearchResult {
+                                    id: id.to_string(),
+                                    title,
+                                    duration,
+                                    thumbnail,
+                                    channel,
+                                });
+
+                                if results.len() >= limit as usize {
+                                    return Ok(results);
+                                }
+                            }
+                        }
+                        if !results.is_empty() {
+                            return Ok(results);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(Vec::new())
+}
+
 async fn search_youtube_innertube(
     query: &str,
     limit: u32,
@@ -180,66 +371,19 @@ async fn search_youtube_innertube(
         for section in contents {
             if let Some(items) = section.pointer("/itemSectionRenderer/contents").and_then(|items_value| items_value.as_array()) {
                 for item in items {
-                    if let Some(video) = item.get("videoRenderer") {
-                        if let Some(id) = video.get("videoId").and_then(|video_id| video_id.as_str()) {
-                            let title = video
-                                .pointer("/title/runs/0/text")
-                                .or_else(|| video.pointer("/title/simpleText"))
-                                .and_then(|title_text| title_text.as_str())
-                                .unwrap_or("Unknown")
-                                .to_string();
-
-                            let duration = video
-                                .pointer("/lengthText/simpleText")
-                                .and_then(|length_text| length_text.as_str())
-                                .and_then(|duration_str| {
-                                    let parts: Vec<&str> = duration_str.split(':').collect();
-                                    match parts.len() {
-                                        3 => {
-                                            let hours: f64 = parts[0].parse().ok()?;
-                                            let minutes: f64 = parts[1].parse().ok()?;
-                                            let seconds: f64 = parts[2].parse().ok()?;
-                                            Some(hours * 3600.0 + minutes * 60.0 + seconds)
-                                        }
-                                        2 => {
-                                            let minutes: f64 = parts[0].parse().ok()?;
-                                            let seconds: f64 = parts[1].parse().ok()?;
-                                            Some(minutes * 60.0 + seconds)
-                                        }
-                                        1 => parts[0].parse().ok(),
-                                        _ => None,
-                                    }
-                                });
-
-                            let thumbnail = video
-                                .pointer("/thumbnail/thumbnails")
-                                .and_then(|thumbnails_value| thumbnails_value.as_array())
-                                .and_then(|thumbnails_array| thumbnails_array.last())
-                                .and_then(|thumbnail_item| thumbnail_item.get("url"))
-                                .and_then(|url_str| url_str.as_str())
-                                .map(|url_value| url_value.to_string());
-
-                            let channel = video
-                                .pointer("/ownerText/runs/0/text")
-                                .and_then(|channel_text| channel_text.as_str())
-                                .map(|channel_value| channel_value.to_string());
-
-                            results.push(YtdlpSearchResult {
-                                id: id.to_string(),
-                                title,
-                                duration,
-                                thumbnail,
-                                channel,
-                            });
-
-                            if results.len() >= limit as usize {
-                                return Ok(results);
-                            }
+                    if let Some(search_result) = parse_search_item(item) {
+                        results.push(search_result);
+                        if results.len() >= limit as usize {
+                            return Ok(results);
                         }
                     }
                 }
             }
         }
+    }
+
+    if results.is_empty() {
+        return search_invidious(query, limit).await;
     }
 
     Ok(results)

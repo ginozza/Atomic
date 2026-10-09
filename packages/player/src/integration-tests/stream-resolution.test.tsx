@@ -541,7 +541,9 @@ describe('Stream Resolution Integration', () => {
         .withGetStreamUrl(async (candidateId) => {
           callCount++;
           if (candidateId === 'yt-slow') {
-            await new Promise((resolvePromise) => setTimeout(resolvePromise, 150));
+            await new Promise((resolvePromise) =>
+              setTimeout(resolvePromise, 150),
+            );
             return createMockStream(candidateId);
           }
           return createMockStream(candidateId);
@@ -568,7 +570,9 @@ describe('Stream Resolution Integration', () => {
 
       const streamingProvider = new StreamingProviderBuilder()
         .withSearchForTrack(async () => {
-          await new Promise((resolvePromise) => setTimeout(resolvePromise, 150));
+          await new Promise((resolvePromise) =>
+            setTimeout(resolvePromise, 150),
+          );
           return [createMockCandidate('yt-1', 'Candidate 1')];
         })
         .withGetStreamUrl(async (candidateId) => createMockStream(candidateId))

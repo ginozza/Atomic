@@ -142,7 +142,9 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   buildShuffleDeck: (fixedCurrentIndex?: number) => {
     const { items } = get();
     const current = fixedCurrentIndex ?? get().currentIndex;
-    if (items.length === 0) return;
+    if (items.length === 0) {
+      return;
+    }
 
     const remaining = items
       .map((_, idx) => idx)
@@ -375,7 +377,8 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
 
   goToNext: withPersistence(() => {
     const state = get();
-    const shuffleEnabled = (getSetting('core.playback.shuffle') as boolean) ?? false;
+    const shuffleEnabled =
+      (getSetting('core.playback.shuffle') as boolean) ?? false;
     const repeatMode = (getSetting('core.playback.repeat') as string) ?? 'off';
 
     if (shuffleEnabled) {
@@ -394,7 +397,9 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
         emitSkip();
         resetPlaybackOnTrackChange();
         set({ currentIndex: nextIndex, shufflePosition: nextPosition });
-        Logger.queue.debug(`Shuffle: moved to deck position ${nextPosition} (track index ${nextIndex})`);
+        Logger.queue.debug(
+          `Shuffle: moved to deck position ${nextPosition} (track index ${nextIndex})`,
+        );
       } else if (repeatMode === 'all') {
         get().buildShuffleDeck(state.currentIndex);
         const freshOrder = get().shuffleOrder;
@@ -426,7 +431,8 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
 
   goToPrevious: withPersistence(() => {
     const state = get();
-    const shuffleEnabled = (getSetting('core.playback.shuffle') as boolean) ?? false;
+    const shuffleEnabled =
+      (getSetting('core.playback.shuffle') as boolean) ?? false;
 
     if (shuffleEnabled) {
       const { shuffleOrder, shufflePosition } = state;
@@ -437,7 +443,9 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
         emitSkip();
         resetPlaybackOnTrackChange();
         set({ currentIndex: prevIndex, shufflePosition: prevPosition });
-        Logger.queue.debug(`Shuffle: stepped back to deck position ${prevPosition} (track index ${prevIndex})`);
+        Logger.queue.debug(
+          `Shuffle: stepped back to deck position ${prevPosition} (track index ${prevIndex})`,
+        );
       }
       return;
     }

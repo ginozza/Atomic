@@ -17,14 +17,14 @@ describe('youtubePlaylistProvider', () => {
       ),
     ).toBe(true);
     expect(
-      isYoutubePlaylistUrl(
-        'https://youtu.be/watch?v=abc&list=PL12345',
-      ),
+      isYoutubePlaylistUrl('https://youtu.be/watch?v=abc&list=PL12345'),
     ).toBe(true);
     expect(isYoutubePlaylistUrl('PL1234567890abcdef')).toBe(true);
-    expect(isYoutubePlaylistUrl('https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M')).toBe(
-      false,
-    );
+    expect(
+      isYoutubePlaylistUrl(
+        'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M',
+      ),
+    ).toBe(false);
   });
 
   it('fetches and converts a YouTube playlist correctly', async () => {

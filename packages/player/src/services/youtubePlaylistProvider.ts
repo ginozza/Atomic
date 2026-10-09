@@ -1,5 +1,8 @@
 import type { Playlist } from '@nuclearplayer/model';
-import type { PlaylistProvider, YtdlpThumbnail } from '@nuclearplayer/plugin-sdk';
+import type {
+  PlaylistProvider,
+  YtdlpThumbnail,
+} from '@nuclearplayer/plugin-sdk';
 
 import { ytdlpHost } from './ytdlpHost';
 
@@ -22,7 +25,9 @@ const getBestThumbnailUrl = (
   if (thumbnails && thumbnails.length > 0) {
     return thumbnails[thumbnails.length - 1]?.url;
   }
-  return fallbackId ? `https://i.ytimg.com/vi/${fallbackId}/hq720.jpg` : undefined;
+  return fallbackId
+    ? `https://i.ytimg.com/vi/${fallbackId}/hq720.jpg`
+    : undefined;
 };
 
 export const youtubePlaylistProvider: PlaylistProvider = {
@@ -73,12 +78,12 @@ export const youtubePlaylistProvider: PlaylistProvider = {
                 },
               ]
             : []),
-          ...((entry.thumbnails ?? []).map((thumb) => ({
+          ...(entry.thumbnails ?? []).map((thumb) => ({
             url: thumb.url,
             width: thumb.width ?? undefined,
             height: thumb.height ?? undefined,
             purpose: 'thumbnail' as const,
-          }))),
+          })),
         ];
 
         return {
@@ -111,7 +116,9 @@ export const youtubePlaylistProvider: PlaylistProvider = {
                   codec: 'youtube',
                   protocol: 'https' as const,
                   source: { provider: 'youtube', id: entry.id },
-                  durationMs: entry.duration ? entry.duration * 1000 : undefined,
+                  durationMs: entry.duration
+                    ? entry.duration * 1000
+                    : undefined,
                 },
                 lastResolvedAtIso: now,
               },
