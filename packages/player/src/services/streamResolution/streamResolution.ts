@@ -1,4 +1,3 @@
-import { omit } from 'lodash-es';
 import { toast } from 'sonner';
 
 import { i18n } from '@nuclearplayer/i18n';
@@ -28,6 +27,7 @@ export type ResolveOptions = {
 export class StreamResolution {
   private activeController: AbortController | null = null;
   private activeItemId: string | null = null;
+  private lastFailedItemId: string | null = null;
   private globalTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private candidateTimeoutMs = CANDIDATE_TIMEOUT_MS;
   private globalTimeoutMs = GLOBAL_TIMEOUT_MS;
@@ -108,14 +108,66 @@ export class StreamResolution {
     item: QueueItem,
     options: ResolveOptions,
   ): Promise<void> {
-    const track = {
-      ...item.track,
-      streamCandidates: item.track.streamCandidates?.map((candidate) =>
-        omit(candidate, ['stream', 'lastResolvedAtIso']),
-      ),
-    };
-    useQueueStore.getState().updateItemState(item.id, { track });
-    return this.resolve({ ...item, track }, options);
+    const track = stripResolutionState(item.track);
+    useQueueStore.getState().updateItemState(item.id, {
+      status: 'idle',
+      error: undefined,
+      track,
+    });
+    return this.resolve(
+      { ...item, track, status: 'idle', error: undefined },
+      options,
+    );
+  }
+
+  async failCurrentCandidateAndTryNext(
+    itemId: string,
+    candidateId?: string,
+  ): Promise<void> {
+    const currentQueueItem = useQueueStore.getState().getItemById(itemId);
+    if (!currentQueueItem) {
+      return;
+    }
+
+    const candidates = currentQueueItem.track.streamCandidates ?? [];
+    if (candidates.length === 0) {
+      this.failItem(itemId, 'streaming:errors.allCandidatesFailed');
+      return;
+    }
+
+    const targetCandidate = candidateId
+      ? candidates.find((candidate) => candidate.id === candidateId)
+      : (candidates.find((candidate) => !candidate.failed) ?? candidates[0]);
+
+    if (!targetCandidate) {
+      this.failItem(itemId, 'streaming:errors.allCandidatesFailed');
+      return;
+    }
+
+    useQueueStore.getState().updateCandidate(itemId, {
+      ...targetCandidate,
+      failed: true,
+    });
+
+    const refreshedItem = useQueueStore.getState().getItemById(itemId);
+    const remaining = (refreshedItem?.track.streamCandidates ?? []).filter(
+      (candidate) => !candidate.failed && candidate.id !== targetCandidate.id,
+    );
+
+    if (remaining.length === 0) {
+      this.failItem(itemId, 'streaming:errors.allCandidatesFailed');
+      return;
+    }
+
+    useSoundStore.getState().setSrc(null);
+    const signal = this.supersedeActiveResolution(itemId);
+    this.startGlobalTimeout(itemId);
+    await this.tryCandidatesInOrder(
+      refreshedItem ?? currentQueueItem,
+      remaining,
+      signal,
+      { autoPlay: true },
+    );
   }
 
   private startGlobalTimeout(itemId: string): void {
@@ -274,6 +326,10 @@ export class StreamResolution {
       this.activeController.abort();
       this.activeController = null;
     }
+    this.lastFailedItemId = itemId;
+    this.activeItemId = null;
+    useSoundStore.getState().stop();
+    useSoundStore.getState().setSrc(null);
     const item = useQueueStore.getState().getItemById(itemId);
     useQueueStore.getState().updateItemState(itemId, {
       status: 'error',
@@ -291,17 +347,24 @@ export class StreamResolution {
       this.activeController = null;
     }
     this.clearGlobalTimeout();
-    if (this.activeItemId && this.activeItemId !== itemId) {
+    const previousId =
+      this.activeItemId && this.activeItemId !== itemId
+        ? this.activeItemId
+        : this.lastFailedItemId && this.lastFailedItemId !== itemId
+          ? this.lastFailedItemId
+          : null;
+    if (previousId) {
       const { getItemById, updateItemState } = useQueueStore.getState();
-      const previousItem = getItemById(this.activeItemId);
+      const previousItem = getItemById(previousId);
       if (previousItem) {
-        updateItemState(this.activeItemId, {
+        updateItemState(previousId, {
           status: undefined,
           error: undefined,
           track: stripResolutionState(previousItem.track),
         });
       }
     }
+    this.lastFailedItemId = null;
     this.activeController = new AbortController();
     this.activeItemId = itemId;
     return this.activeController.signal;

@@ -10,6 +10,7 @@ import { useHyperIslandBridge } from '../hooks/useHyperIslandBridge';
 import { eventBus } from '../services/eventBus';
 import { Logger } from '../services/logger';
 import { playbackManager } from '../services/playback';
+import { streamResolution } from '../services/streamResolution';
 import { useQueueStore } from '../stores/queueStore';
 import { useSoundStore } from '../stores/soundStore';
 import { errorMessage } from '../utils/errorMessage';
@@ -166,7 +167,10 @@ export const SoundProvider: FC<PropsWithChildren> = ({ children }) => {
       if (
         error.message.includes('MEDIA_ERR_ABORTED') ||
         error.message.includes('The operation was aborted') ||
-        error.message.includes('interrupted')
+        error.message.includes('interrupted') ||
+        (error instanceof SoundError && error.code === 'mseUnavailable') ||
+        error.message.includes('mseUnavailable') ||
+        error.message.includes('fetch failed')
       ) {
         return;
       }
@@ -175,9 +179,17 @@ export const SoundProvider: FC<PropsWithChildren> = ({ children }) => {
 
       const currentItem = useQueueStore.getState().getCurrentItem();
       if (currentItem) {
-        useQueueStore
-          .getState()
-          .updateItemState(currentItem.id, { status: 'error', error: message });
+        const candidates = currentItem.track.streamCandidates ?? [];
+        if (candidates.length > 0) {
+          void streamResolution.failCurrentCandidateAndTryNext(currentItem.id);
+        } else {
+          useQueueStore.getState().updateItemState(currentItem.id, {
+            status: 'error',
+            error: message,
+          });
+          useSoundStore.getState().stop();
+          useSoundStore.getState().setSrc(null);
+        }
       }
     },
     [source, t],

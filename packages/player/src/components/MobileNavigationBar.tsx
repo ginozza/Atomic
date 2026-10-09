@@ -5,11 +5,13 @@ import {
   ListMusicIcon,
   ListOrderedIcon,
   SearchIcon,
+  SettingsIcon,
 } from 'lucide-react';
 import { FC } from 'react';
 
 import { useLayoutStore } from '../stores/layoutStore';
 import { useQueueStore } from '../stores/queueStore';
+import { useSettingsModalStore } from '../stores/settingsModalStore';
 
 export const MobileNavigationBar: FC = () => {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ export const MobileNavigationBar: FC = () => {
   const toggleRightSidebar = useLayoutStore(
     (state) => state.toggleRightSidebar,
   );
+  const openSettings = useSettingsModalStore((state) => state.open);
 
   const isSearchActive = currentPath.startsWith('/search');
 
@@ -61,6 +64,13 @@ export const MobileNavigationBar: FC = () => {
         toggleRightSidebar();
         navigate({ to: '/queue' });
       },
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: <SettingsIcon className="h-5 w-5" />,
+      isActive: false,
+      onClick: () => openSettings(),
     },
   ];
 

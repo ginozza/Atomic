@@ -1,4 +1,5 @@
 import { normalize } from '@tauri-apps/api/path';
+import gt from 'semver/functions/gt';
 
 import { usePluginStore } from '../../stores/pluginStore';
 import { useStartupStore } from '../../stores/startupStore';
@@ -7,6 +8,7 @@ import { Logger } from '../logger';
 import { providersHost } from '../providersHost';
 import {
   ESSENTIAL_PLUGIN_IDS,
+  FALLBACK_PLUGINS,
   hasBundledPluginFallback,
   installBundledPluginFallback,
 } from './bundledPlugins';
@@ -76,6 +78,21 @@ export const hydratePluginsFromRegistry = async (): Promise<void> => {
   }
 
   for (const entry of entries) {
+    const fallback = FALLBACK_PLUGINS[entry.id];
+    if (fallback && gt(fallback.version, entry.version)) {
+      try {
+        Logger.plugins.info(
+          `Updating bundled plugin ${entry.id} from ${entry.version} to ${fallback.version}`,
+        );
+        await installAndEnableBundledPlugin(entry.id);
+        continue;
+      } catch (error) {
+        Logger.plugins.warn(
+          `Failed to auto-update bundled plugin ${entry.id}: ${errorMessage(error)}`,
+        );
+      }
+    }
+
     // TODO: Support non-managed paths (dev plugins)
     if (!(await isManagedPath(entry.path))) {
       continue;

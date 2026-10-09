@@ -2,7 +2,7 @@
 
 exports[`PlaylistDetail view > (Snapshot) renders playlist detail with tracks 1`] = `
 <main
-  class="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden md:pb-0"
+  class="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden pt-[max(env(safe-area-inset-top),1.5rem)] md:pt-0 md:pb-0"
   data-testid="player-workspace-main"
 >
   <div

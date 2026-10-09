@@ -20,7 +20,7 @@ export function SortableRow<T extends Track = Track>({
   isReorderable = false,
   style: externalStyle,
 }: SortableRowProps<T>) {
-  const { activeTrackId, isLoading } = useTrackTableContext<T>();
+  const { activeTrackId, isLoading, actions } = useTrackTableContext<T>();
   const {
     attributes,
     listeners,
@@ -55,6 +55,20 @@ export function SortableRow<T extends Track = Track>({
       aria-busy={isRowLoading ? 'true' : undefined}
       ref={setNodeRef}
       style={style}
+      onClick={(event) => {
+        if (isDragging) {
+          return;
+        }
+        const target = event.target as HTMLElement | null;
+        if (
+          target?.closest(
+            'button, a, input, select, textarea, [role="button"], [role="menuitem"]',
+          )
+        ) {
+          return;
+        }
+        actions.onPlayNow?.(row.original);
+      }}
       className={cn(
         'border-border bg-muted group cursor-pointer border-b-(length:--border-width) transition-colors select-none hover:bg-white/5 active:bg-white/10',
         {

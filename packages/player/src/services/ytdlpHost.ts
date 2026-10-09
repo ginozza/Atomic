@@ -154,9 +154,61 @@ const parseInnerTubeSearchItem = (
     };
   }
 
+  const vwc = item.videoWithContextRenderer as
+    Record<string, unknown> | undefined;
+  if (vwc) {
+    const nav = vwc.navigationEndpoint as Record<string, unknown> | undefined;
+    const watch = nav?.watchEndpoint as Record<string, unknown> | undefined;
+    const rawId =
+      (vwc.videoId as string | undefined) ??
+      (watch?.videoId as string | undefined);
+    if (rawId && /^[a-zA-Z0-9_-]{11}$/.test(rawId)) {
+      const headline = vwc.headline as Record<string, unknown> | undefined;
+      const headlineRuns = headline?.runs as
+        Record<string, unknown>[] | undefined;
+      const title =
+        (headlineRuns?.[0]?.text as string | undefined) ??
+        (headline?.simpleText as string | undefined) ??
+        'Unknown';
+      const lenObj = vwc.lengthText as Record<string, unknown> | undefined;
+      const lenRuns = lenObj?.runs as Record<string, unknown>[] | undefined;
+      const duration = parseDurationToSeconds(
+        (lenRuns?.[0]?.text as string | undefined) ??
+          (lenObj?.simpleText as string | undefined),
+      );
+      const thumbObj = vwc.thumbnail as Record<string, unknown> | undefined;
+      const rawThumbs =
+        (thumbObj?.thumbnails as Record<string, unknown>[] | undefined) ?? [];
+      const thumbnail =
+        rawThumbs.length > 0
+          ? (rawThumbs[rawThumbs.length - 1]?.url as string | undefined)
+          : `https://i.ytimg.com/vi/${rawId}/hqdefault.jpg`;
+      const byline = vwc.shortBylineText as Record<string, unknown> | undefined;
+      const bylineRuns = byline?.runs as Record<string, unknown>[] | undefined;
+      const channel =
+        (bylineRuns?.[0]?.text as string | undefined) ??
+        (byline?.simpleText as string | undefined);
+
+      return {
+        id: rawId,
+        title,
+        duration: duration ?? null,
+        thumbnail: thumbnail ?? null,
+        channel: channel ?? null,
+      };
+    }
+  }
+
   const lockup = item.lockupViewModel as Record<string, unknown> | undefined;
   if (lockup?.contentId) {
+    const contentType = lockup.contentType as string | undefined;
+    if (contentType && contentType !== 'LOCKUP_CONTENT_TYPE_VIDEO') {
+      return null;
+    }
     const videoId = lockup.contentId as string;
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+      return null;
+    }
     const meta = (lockup.metadata as Record<string, unknown> | undefined)
       ?.lockupMetadataViewModel as Record<string, unknown> | undefined;
     const titleObj = meta?.title as Record<string, unknown> | undefined;
@@ -229,7 +281,7 @@ const searchInvidiousFallback = async (
     try {
       const response = await safeFetch(
         `${instance}/api/v1/search?q=${encodeURIComponent(query)}&type=video`,
-        { signal: AbortSignal.timeout(5_000) },
+        { signal: AbortSignal.timeout(3_000) },
       );
       if (!response.ok) {
         continue;
@@ -269,7 +321,7 @@ const searchPipedFallback = async (
     try {
       const response = await safeFetch(
         `${instance}/search?q=${encodeURIComponent(query)}&filter=videos`,
-        { signal: AbortSignal.timeout(5_000) },
+        { signal: AbortSignal.timeout(3_000) },
       );
       if (!response.ok) {
         continue;
@@ -305,109 +357,6 @@ const searchPipedFallback = async (
   return [];
 };
 
-const resolveInvidiousStream = async (
-  videoId: string,
-): Promise<YtdlpStreamInfo | null> => {
-  for (const instance of INVIDIOUS_INSTANCES) {
-    try {
-      const response = await safeFetch(`${instance}/api/v1/videos/${videoId}`, {
-        signal: AbortSignal.timeout(6_000),
-      });
-      if (!response.ok) {
-        continue;
-      }
-      const data = await response.json<{
-        title?: string;
-        lengthSeconds?: number;
-        author?: string;
-        adaptiveFormats?: Array<{
-          type?: string;
-          bitrate?: number;
-          url?: string;
-          container?: string;
-          encoding?: string;
-        }>;
-      }>();
-      const formats = data?.adaptiveFormats ?? [];
-      const audioFormats = formats.filter(
-        (formatItem) => formatItem.type?.includes('audio') && formatItem.url,
-      );
-      audioFormats.sort(
-        (firstFormat, secondFormat) =>
-          (firstFormat.bitrate ?? 0) - (secondFormat.bitrate ?? 0),
-      );
-      const bestAudio = audioFormats[audioFormats.length - 1];
-      if (bestAudio?.url) {
-        const streamUrl = bestAudio.url.startsWith('/')
-          ? `${instance}${bestAudio.url}`
-          : bestAudio.url;
-        return {
-          stream_url: streamUrl,
-          duration: data.lengthSeconds ?? null,
-          title: data.title ?? null,
-          container: bestAudio.container ?? 'm4a',
-          codec: bestAudio.encoding ?? 'aac',
-          album: null,
-          artists: data.author ? [data.author] : [],
-          album_artists: data.author ? [data.author] : [],
-          upload_date: null,
-        };
-      }
-    } catch {
-      continue;
-    }
-  }
-  return null;
-};
-
-const resolvePipedStream = async (
-  videoId: string,
-): Promise<YtdlpStreamInfo | null> => {
-  for (const instance of PIPED_INSTANCES) {
-    try {
-      const response = await safeFetch(`${instance}/streams/${videoId}`, {
-        signal: AbortSignal.timeout(6_000),
-      });
-      if (!response.ok) {
-        continue;
-      }
-      const data = await response.json<{
-        title?: string;
-        duration?: number;
-        uploader?: string;
-        audioStreams?: Array<{
-          url?: string;
-          bitrate?: number;
-          format?: string;
-          codec?: string;
-        }>;
-      }>();
-      const streams = data?.audioStreams ?? [];
-      streams.sort(
-        (firstStream, secondStream) =>
-          (firstStream.bitrate ?? 0) - (secondStream.bitrate ?? 0),
-      );
-      const bestStream = streams[streams.length - 1];
-      if (bestStream?.url) {
-        return {
-          stream_url: bestStream.url,
-          duration: data.duration ?? null,
-          title: data.title ?? null,
-          container: bestStream.format?.toLowerCase() ?? 'm4a',
-          codec: bestStream.codec ?? 'aac',
-          album: null,
-          artists: data.uploader ? [data.uploader] : [],
-          album_artists: data.uploader ? [data.uploader] : [],
-          upload_date: null,
-        };
-      }
-    } catch {
-      continue;
-    }
-  }
-  return null;
-};
-
 const httpYoutubeSearch = async (
   query: string,
   maxResults: number,
@@ -417,7 +366,15 @@ const httpYoutubeSearch = async (
       'https://www.youtube.com/youtubei/v1/search',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          'X-YouTube-Client-Name': '1',
+          'X-YouTube-Client-Version': '2.20240101.00.00',
+          Origin: 'https://www.youtube.com',
+          Referer: 'https://www.youtube.com/',
+        },
         body: JSON.stringify({
           context: {
             client: {
@@ -439,10 +396,16 @@ const httpYoutubeSearch = async (
         ?.twoColumnSearchResultsRenderer as Record<string, unknown> | undefined;
       const primary = twoColumn?.primaryContents as
         Record<string, unknown> | undefined;
-      const sectionList = primary?.sectionListRenderer as
+      const primarySectionList = primary?.sectionListRenderer as
         Record<string, unknown> | undefined;
-      const sections =
-        (sectionList?.contents as Record<string, unknown>[] | undefined) ?? [];
+      const directSectionList = (
+        data?.contents as Record<string, unknown> | undefined
+      )?.sectionListRenderer as Record<string, unknown> | undefined;
+
+      const sections = [
+        ...((primarySectionList?.contents as Record<string, unknown>[]) ?? []),
+        ...((directSectionList?.contents as Record<string, unknown>[]) ?? []),
+      ];
 
       for (const section of sections) {
         const itemSection = section?.itemSectionRenderer as
@@ -458,6 +421,25 @@ const httpYoutubeSearch = async (
               return results;
             }
           }
+          if (item.shelfRenderer) {
+            const shelf = item.shelfRenderer as Record<string, unknown>;
+            const shelfContent = shelf.content as
+              Record<string, unknown> | undefined;
+            const verticalList = shelfContent?.verticalListRenderer as
+              Record<string, unknown> | undefined;
+            const shelfItems =
+              (verticalList?.items as Record<string, unknown>[] | undefined) ??
+              [];
+            for (const shelfItem of shelfItems) {
+              const parsedShelf = parseInnerTubeSearchItem(shelfItem);
+              if (parsedShelf) {
+                results.push(parsedShelf);
+                if (results.length >= maxResults) {
+                  return results;
+                }
+              }
+            }
+          }
         }
       }
 
@@ -467,6 +449,16 @@ const httpYoutubeSearch = async (
     }
   } catch (error) {
     Logger.streaming.error(`httpYoutubeSearch InnerTube failed: ${error}`);
+  }
+
+  if (query.includes('"')) {
+    const unquoted = query.replace(/["']/g, ' ').replace(/\s+/g, ' ').trim();
+    if (unquoted && unquoted !== query) {
+      const unquotedResults = await httpYoutubeSearch(unquoted, maxResults);
+      if (unquotedResults.length > 0) {
+        return unquotedResults;
+      }
+    }
   }
 
   const invidiousResults = await searchInvidiousFallback(query, maxResults);
@@ -481,16 +473,6 @@ const httpYoutubeGetStream = async (
   urlOrId: string,
 ): Promise<YtdlpStreamInfo> => {
   const videoId = extractVideoId(urlOrId);
-
-  const invidiousStream = await resolveInvidiousStream(videoId);
-  if (invidiousStream) {
-    return invidiousStream;
-  }
-
-  const pipedStream = await resolvePipedStream(videoId);
-  if (pipedStream) {
-    return pipedStream;
-  }
 
   return {
     stream_url: `https://www.youtube.com/watch?v=${videoId}`,

@@ -27,10 +27,8 @@ import { useCoreSetting } from '../../hooks/useCoreSetting';
 import { playbackManager } from '../../services/playback';
 import { useFavoritesStore } from '../../stores/favoritesStore';
 import { useNowPlayingModalStore } from '../../stores/nowPlayingModalStore';
-import { usePlayerDecorationsStore } from '../../stores/playerDecorationsStore';
 import { useQueueStore } from '../../stores/queueStore';
 import { useSoundStore } from '../../stores/soundStore';
-import { PlayerDecorationsOverlay } from './PlayerDecorationsOverlay';
 
 const formatSafeTime = (seconds: number | undefined): string => {
   if (typeof formatTimeSeconds === 'function') {
@@ -75,12 +73,6 @@ export const ConnectedNowPlayingModal: FC = () => {
     useCoreSetting<RepeatMode>('playback.repeat');
 
   const { isTrackFavorite, addTrack, removeTrack } = useFavoritesStore();
-  const { isEditMode, setEditMode } = usePlayerDecorationsStore(
-    useShallow((state) => ({
-      isEditMode: state.isEditMode,
-      setEditMode: state.setEditMode,
-    })),
-  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -88,15 +80,11 @@ export const ConnectedNowPlayingModal: FC = () => {
       return;
     }
     const handleBack = () => {
-      if (isEditMode) {
-        setEditMode(false);
-      } else {
-        close();
-      }
+      close();
     };
     window.addEventListener('nuclear:android:back', handleBack);
     return () => window.removeEventListener('nuclear:android:back', handleBack);
-  }, [isOpen, isEditMode, setEditMode, close]);
+  }, [isOpen, close]);
 
   if (!isOpen) {
     return null;
@@ -177,23 +165,12 @@ export const ConnectedNowPlayingModal: FC = () => {
       data-testid="now-playing-modal"
       className="bg-background/95 animate-in fade-in fixed inset-0 z-50 flex flex-col justify-between px-6 pt-[max(env(safe-area-inset-top),2.5rem)] pb-[max(env(safe-area-inset-bottom),2.5rem)] backdrop-blur-3xl duration-200 select-none"
     >
-      {/* Player Decorations Overlay */}
-      <PlayerDecorationsOverlay
-        isEditMode={isEditMode}
-        onExitEditMode={() => setEditMode(false)}
-      />
-
       {/* Top Bar */}
       <div className="relative z-30 flex shrink-0 items-center justify-between">
         <button
           type="button"
           data-testid="now-playing-close-button"
-          onClick={() => {
-            if (isEditMode) {
-              setEditMode(false);
-            }
-            close();
-          }}
+          onClick={close}
           className="text-foreground/80 hover:text-foreground -ml-2 rounded-full p-2 transition-transform active:scale-90"
           aria-label="Close"
         >
@@ -202,41 +179,27 @@ export const ConnectedNowPlayingModal: FC = () => {
 
         <div className="flex min-w-0 flex-col items-center px-2 text-center">
           <span className="text-primary text-[10px] font-bold tracking-widest uppercase">
-            {isEditMode ? 'Modo Decoración' : 'Playing From'}
+            Playing From
           </span>
           <span className="text-foreground max-w-[200px] truncate text-xs font-bold">
-            {isEditMode ? 'Toca, arrastra, escala o rota' : albumName}
+            {albumName}
           </span>
         </div>
 
-        {isEditMode ? (
+        <div className="flex items-center gap-1">
           <button
             type="button"
-            onClick={() => setEditMode(false)}
-            className="bg-primary text-primary-foreground rounded-xl px-3 py-1 text-xs font-bold shadow-md transition-transform active:scale-95"
+            onClick={handleOpenQueue}
+            className="text-foreground/80 hover:text-foreground -mr-2 rounded-full p-2 transition-transform active:scale-90"
+            aria-label="Queue"
           >
-            Listo
+            <ListOrdered className="h-6 w-6" />
           </button>
-        ) : (
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={handleOpenQueue}
-              className="text-foreground/80 hover:text-foreground -mr-2 rounded-full p-2 transition-transform active:scale-90"
-              aria-label="Queue"
-            >
-              <ListOrdered className="h-6 w-6" />
-            </button>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Album Artwork */}
-      <div
-        className={`relative z-10 my-4 flex min-h-0 flex-1 items-center justify-center ${
-          isEditMode ? 'pointer-events-none' : ''
-        }`}
-      >
+      <div className="relative z-10 my-4 flex min-h-0 flex-1 items-center justify-center">
         <div className="bg-muted/40 relative flex aspect-square w-full max-w-[340px] items-center justify-center overflow-hidden rounded-3xl shadow-2xl">
           {artworkUrl ? (
             <img
@@ -255,11 +218,7 @@ export const ConnectedNowPlayingModal: FC = () => {
       </div>
 
       {/* Track Info & Like Button */}
-      <div
-        className={`relative z-30 mb-4 flex shrink-0 items-center justify-between gap-4 ${
-          isEditMode ? 'pointer-events-none' : ''
-        }`}
-      >
+      <div className="relative z-30 mb-4 flex shrink-0 items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
           <MarqueeText
             key="modal-title"
@@ -284,11 +243,7 @@ export const ConnectedNowPlayingModal: FC = () => {
       </div>
 
       {/* Scrubber / Progress Bar */}
-      <div
-        className={`relative z-30 mb-6 shrink-0 space-y-1 ${
-          isEditMode ? 'pointer-events-none' : ''
-        }`}
-      >
+      <div className="relative z-30 mb-6 shrink-0 space-y-1">
         <div className="relative flex h-2 w-full items-center">
           <input
             type="range"
@@ -313,11 +268,7 @@ export const ConnectedNowPlayingModal: FC = () => {
       </div>
 
       {/* Main Playback Controls */}
-      <div
-        className={`relative z-30 mb-4 flex shrink-0 items-center justify-between px-2 ${
-          isEditMode ? 'pointer-events-none' : ''
-        }`}
-      >
+      <div className="relative z-30 mb-4 flex shrink-0 items-center justify-between px-2">
         <button
           type="button"
           onClick={handleToggleShuffle}

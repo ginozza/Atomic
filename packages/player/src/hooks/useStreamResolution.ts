@@ -21,6 +21,7 @@ export const useStreamResolution = (): void => {
   useEffect(() => {
     const onCurrentItemChanged = (currentItem: QueueItem | undefined): void => {
       if (!currentItem) {
+        resolutionKeyRef.current = null;
         return;
       }
 
@@ -37,6 +38,26 @@ export const useStreamResolution = (): void => {
       if (resolutionKey === resolutionKeyRef.current) {
         return;
       }
+
+      if (
+        currentItem.status === 'success' &&
+        resolutionKeyRef.current?.startsWith(`${currentItem.id}:`)
+      ) {
+        const previousCandidateId = resolutionKeyRef.current.split(':')[1];
+        const currentCandidateId = currentItem.track.streamCandidates?.[0]?.id;
+        const candidateChanged =
+          Boolean(currentCandidateId) &&
+          Boolean(previousCandidateId) &&
+          currentCandidateId !== previousCandidateId;
+
+        const candidateFailedChanged =
+          resolutionKeyRef.current !== resolutionKey && !candidateChanged;
+
+        if (!candidateChanged && !candidateFailedChanged) {
+          resolutionKeyRef.current = resolutionKey;
+          return;
+        }
+      }
       resolutionKeyRef.current = resolutionKey;
 
       const autoPlay = !isFirstResolutionRef.current;
@@ -50,6 +71,16 @@ export const useStreamResolution = (): void => {
       if (currentItem?.status === 'error') {
         resolutionKeyRef.current = null;
         void streamResolution.resolveWithFreshStreams(currentItem, {
+          autoPlay: true,
+        });
+        return;
+      }
+      if (
+        currentItem &&
+        (!currentItem.status || currentItem.status === 'idle')
+      ) {
+        resolutionKeyRef.current = null;
+        void streamResolution.resolve(currentItem, {
           autoPlay: true,
         });
         return;
@@ -75,6 +106,21 @@ export const useStreamResolution = (): void => {
       },
     });
 
+    const originalGoToIndex = useQueueStore.getState().goToIndex;
+    useQueueStore.setState({
+      goToIndex: (selectedIndex: number) => {
+        const { items, currentIndex } = useQueueStore.getState();
+        const item = items[selectedIndex];
+        if (item && selectedIndex === currentIndex && item.status === 'error') {
+          resolutionKeyRef.current = null;
+          void streamResolution.resolveWithFreshStreams(item, {
+            autoPlay: true,
+          });
+        }
+        originalGoToIndex(selectedIndex);
+      },
+    });
+
     const unsubscribe = useQueueStore.subscribe((state) => {
       onCurrentItemChanged(state.getCurrentItem());
     });
@@ -88,7 +134,10 @@ export const useStreamResolution = (): void => {
 
     return () => {
       playbackManager.play = originalPlay;
-      useQueueStore.setState({ goToId: originalGoToId });
+      useQueueStore.setState({
+        goToId: originalGoToId,
+        goToIndex: originalGoToIndex,
+      });
       unsubscribe();
     };
   }, []);
