@@ -1,3 +1,4 @@
+import path from 'path';
 import { mockIPC } from '@tauri-apps/api/mocks';
 
 import { getRegistryEntry } from '../services/plugins/pluginRegistry';
@@ -89,7 +90,7 @@ describe('usePluginStore', () => {
       const newCalls = removeMock.mock.calls.slice(callsBefore);
       expect(newCalls).toEqual([
         [
-          'plugins/removable/1.0.0',
+          path.join('plugins', 'removable', '1.0.0'),
           {
             baseDir: '/home/user/.local/share/com.nuclearplayer',
             recursive: true,
@@ -121,7 +122,7 @@ describe('usePluginStore', () => {
       const newCalls = removeMock.mock.calls.slice(callsBefore);
       expect(newCalls).toEqual([
         [
-          'plugins/orphan/1.0.0',
+          path.join('plugins', 'orphan', '1.0.0'),
           {
             baseDir: '/home/user/.local/share/com.nuclearplayer',
             recursive: true,

@@ -1,3 +1,5 @@
+import path from 'path';
+
 import '../../test/mocks/plugin-fs';
 
 import * as fs from '@tauri-apps/plugin-fs';
@@ -135,9 +137,12 @@ describe('Themes view', async () => {
       ]);
 
       expect(themes.applyAdvancedTheme).toHaveBeenCalledTimes(2);
-      expect(fs.readTextFile).toHaveBeenCalledWith('themes/my.json', {
-        baseDir: '/home/user/.local/share/com.nuclearplayer',
-      });
+      expect(fs.readTextFile).toHaveBeenCalledWith(
+        path.normalize('themes/my.json'),
+        {
+          baseDir: '/home/user/.local/share/com.nuclearplayer',
+        },
+      );
     });
 
     it('refreshes the theme list once for a burst of changes', async () => {

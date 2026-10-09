@@ -144,13 +144,9 @@ const RootComponent = () => {
   return (
     <PlayerShell onContextMenu={(e) => e.preventDefault()}>
       <GlobalShortcuts />
-      <div className="hidden md:block">
-        <ConnectedTitleBar />
-        <FlatpakWarningBanner />
-      </div>
-      <div className="pt-[max(env(safe-area-inset-top),2.5rem)] md:pt-0">
-        <ConnectedTopBar />
-      </div>
+      <ConnectedTitleBar />
+      <FlatpakWarningBanner />
+      <ConnectedTopBar />
       {!isStartingUp && (
         <SafeComponentBoundary name="StreamResolver">
           <StreamResolver />

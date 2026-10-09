@@ -2,7 +2,7 @@
 
 exports[`PlaylistDetail view > (Snapshot) renders playlist detail with tracks 1`] = `
 <main
-  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
+  class="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -147,7 +147,7 @@ exports[`PlaylistDetail view > (Snapshot) renders playlist detail with tracks 1`
                     aria-expanded="false"
                     class="cursor-pointer"
                     data-headlessui-state=""
-                    id="headlessui-popover-button-:r2:"
+                    id="headlessui-popover-button-:r5:"
                   >
                     <button
                       class="inline-flex cursor-pointer items-center rounded-md whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 surface-muted border-border shadow-shadow hover:translate-x-shadow-x hover:translate-y-shadow-y border-(length:--border-width) hover:shadow-none size-10 justify-center"
@@ -211,7 +211,7 @@ exports[`PlaylistDetail view > (Snapshot) renders playlist detail with tracks 1`
                       <input
                         class="border-border focus-visible:ring-ring focus-visible:ring-offset-muted w-full px-3 transition-colors focus-visible:outline-none surface-input placeholder:text-input-foreground/60 h-9 text-sm rounded-l border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         data-headlessui-state=""
-                        id="input-:r4:"
+                        id="input-:r7:"
                         placeholder="Filter tracks"
                         type="text"
                         value=""
@@ -398,7 +398,7 @@ exports[`PlaylistDetail view > (Snapshot) renders playlist detail with tracks 1`
                         aria-describedby="DndDescribedBy-0"
                         aria-disabled="false"
                         aria-roledescription="sortable"
-                        class="border-border bg-muted group border-b-(length:--border-width) select-none transition-colors hover:bg-white/5 active:bg-white/10 cursor-grab"
+                        class="border-border bg-muted group border-b-(length:--border-width) transition-colors select-none hover:bg-white/5 active:bg-white/10 cursor-grab"
                         data-testid="track-row"
                         role="button"
                         style="height: 42px;"
@@ -504,7 +504,7 @@ exports[`PlaylistDetail view > (Snapshot) renders playlist detail with tracks 1`
                                 data-headlessui-state=""
                                 data-state="closed"
                                 data-testid="track-context-menu-button"
-                                id="radix-:r7:"
+                                id="radix-:ra:"
                                 type="button"
                               >
                                 <svg
@@ -594,7 +594,7 @@ exports[`PlaylistDetail view > (Snapshot) renders playlist detail with tracks 1`
                         aria-describedby="DndDescribedBy-0"
                         aria-disabled="false"
                         aria-roledescription="sortable"
-                        class="border-border bg-muted group border-b-(length:--border-width) select-none transition-colors hover:bg-white/5 active:bg-white/10 cursor-grab"
+                        class="border-border bg-muted group border-b-(length:--border-width) transition-colors select-none hover:bg-white/5 active:bg-white/10 cursor-grab"
                         data-testid="track-row"
                         role="button"
                         style="height: 42px;"
@@ -700,7 +700,7 @@ exports[`PlaylistDetail view > (Snapshot) renders playlist detail with tracks 1`
                                 data-headlessui-state=""
                                 data-state="closed"
                                 data-testid="track-context-menu-button"
-                                id="radix-:r9:"
+                                id="radix-:rc:"
                                 type="button"
                               >
                                 <svg

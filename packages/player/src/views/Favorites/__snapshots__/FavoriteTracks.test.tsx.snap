@@ -2,7 +2,7 @@
 
 exports[`FavoriteTracks view > (Snapshot) renders empty state 1`] = `
 <main
-  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
+  class="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -20,7 +20,7 @@ exports[`FavoriteTracks view > (Snapshot) renders empty state 1`] = `
         data-testid="favorite-tracks-view"
       >
         <h1
-          class="hidden"
+          class="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
           data-testid="title"
         >
           Favorite tracks
@@ -92,7 +92,7 @@ exports[`FavoriteTracks view > (Snapshot) renders empty state 1`] = `
 
 exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
 <main
-  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
+  class="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -110,7 +110,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
         data-testid="favorite-tracks-view"
       >
         <h1
-          class="hidden"
+          class="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
           data-testid="title"
         >
           Favorite tracks
@@ -195,7 +195,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                       <input
                         class="border-border focus-visible:ring-ring focus-visible:ring-offset-muted w-full px-3 transition-colors focus-visible:outline-none surface-input placeholder:text-input-foreground/60 h-9 text-sm rounded-l border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         data-headlessui-state=""
-                        id="input-:r1:"
+                        id="input-:r7:"
                         placeholder="Filter tracks"
                         type="text"
                         value=""
@@ -334,7 +334,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                         aria-describedby=""
                         aria-disabled="true"
                         aria-roledescription="sortable"
-                        class="border-border bg-muted group border-b-(length:--border-width) select-none cursor-pointer transition-colors hover:bg-white/5 active:bg-white/10"
+                        class="border-border bg-muted group cursor-pointer border-b-(length:--border-width) transition-colors select-none hover:bg-white/5 active:bg-white/10"
                         data-testid="track-row"
                         role="button"
                         style="height: 42px;"
@@ -440,7 +440,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                                 data-headlessui-state=""
                                 data-state="closed"
                                 data-testid="track-context-menu-button"
-                                id="radix-:r4:"
+                                id="radix-:ra:"
                                 type="button"
                               >
                                 <svg
@@ -481,7 +481,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                         aria-describedby=""
                         aria-disabled="true"
                         aria-roledescription="sortable"
-                        class="border-border bg-muted group border-b-(length:--border-width) select-none cursor-pointer transition-colors hover:bg-white/5 active:bg-white/10"
+                        class="border-border bg-muted group cursor-pointer border-b-(length:--border-width) transition-colors select-none hover:bg-white/5 active:bg-white/10"
                         data-testid="track-row"
                         role="button"
                         style="height: 42px;"
@@ -587,7 +587,7 @@ exports[`FavoriteTracks view > (Snapshot) renders with tracks 1`] = `
                                 data-headlessui-state=""
                                 data-state="closed"
                                 data-testid="track-context-menu-button"
-                                id="radix-:r6:"
+                                id="radix-:rc:"
                                 type="button"
                               >
                                 <svg

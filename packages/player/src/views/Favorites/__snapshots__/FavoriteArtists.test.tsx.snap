@@ -2,7 +2,7 @@
 
 exports[`FavoriteArtists view > (Snapshot) renders empty state 1`] = `
 <main
-  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
+  class="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -20,7 +20,7 @@ exports[`FavoriteArtists view > (Snapshot) renders empty state 1`] = `
         data-testid="favorite-artists-view"
       >
         <h1
-          class="hidden"
+          class="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
           data-testid="title"
         >
           Favorite artists
@@ -87,7 +87,7 @@ exports[`FavoriteArtists view > (Snapshot) renders empty state 1`] = `
 
 exports[`FavoriteArtists view > (Snapshot) renders with artists 1`] = `
 <main
-  class="w-full flex-1 surface-background bg-background min-h-0 overflow-hidden md:pb-0"
+  class="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden md:pb-0"
   data-testid="player-workspace-main"
 >
   <div
@@ -105,7 +105,7 @@ exports[`FavoriteArtists view > (Snapshot) renders with artists 1`] = `
         data-testid="favorite-artists-view"
       >
         <h1
-          class="hidden"
+          class="mb-6 flex w-full flex-0 flex-row text-center text-3xl font-bold"
           data-testid="title"
         >
           Favorite artists

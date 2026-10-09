@@ -13,12 +13,12 @@ const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
 const recentEntries = changelog.slice(0, 15);
 
 const typeHeaders = {
-  feature: '🚀 New Features / Nuevas Características',
-  improvement: '⚡ Improvements / Mejoras',
-  fix: '🐛 Bug Fixes / Correcciones',
-  plugin: '🔌 Plugins',
-  chore: '🧹 Maintenance / Mantenimiento',
-  docs: '📚 Documentation / Documentación',
+  feature: 'New Features / Nuevas Características',
+  improvement: 'Improvements / Mejoras',
+  fix: 'Bug Fixes / Correcciones',
+  plugin: 'Plugins',
+  chore: 'Maintenance / Mantenimiento',
+  docs: 'Documentation / Documentación',
 };
 
 const grouped = {};
@@ -30,7 +30,7 @@ for (const entry of recentEntries) {
   grouped[type].push(entry);
 }
 
-let releaseNotes = `# Atomic v${pkg.version} (Android)\n\n`;
+let releaseNotes = `# 🎵 Atomic v${pkg.version} (Android)\n\n`;
 releaseNotes += `Free, open-source, and privacy-first music player for Android without ads or tracking.\n\n`;
 releaseNotes += `## Highlights & What's New\n\n`;
 
@@ -38,7 +38,9 @@ for (const [type, header] of Object.entries(typeHeaders)) {
   if (grouped[type] && grouped[type].length > 0) {
     releaseNotes += `### ${header}\n`;
     for (const item of grouped[type]) {
-      const tags = (item.tags || []).map((t) => `\`[${t.label}]\``).join(' ');
+      const tags = (item.tags || [])
+        .map((tag) => `\`[${tag.label}]\``)
+        .join(' ');
       const date = item.date ? item.date.split('T')[0] : '';
       releaseNotes += `- ${item.description} ${tags} ${date ? `*(${date})*` : ''}\n`;
     }
@@ -46,7 +48,7 @@ for (const [type, header] of Object.entries(typeHeaders)) {
   }
 }
 
-let fullChangelog = `# Atomic - Android Changelog\n\n`;
+let fullChangelog = `# 🎵 Atomic - Android Changelog\n\n`;
 fullChangelog += `History of features, improvements, and fixes in Atomic for Android.\n\n`;
 
 const entriesByDate = {};
@@ -62,7 +64,7 @@ for (const [date, items] of Object.entries(entriesByDate)) {
   fullChangelog += `## ${date}\n\n`;
   for (const item of items) {
     const badge = item.type ? `**[${item.type.toUpperCase()}]**` : '';
-    const tags = (item.tags || []).map((t) => `\`[${t.label}]\``).join(' ');
+    const tags = (item.tags || []).map((tag) => `\`[${tag.label}]\``).join(' ');
     fullChangelog += `- ${badge} ${item.description} ${tags}\n`;
   }
   fullChangelog += `\n`;

@@ -1,4 +1,4 @@
-# Atomic - Android Changelog
+# 🎵 Atomic - Android Changelog
 
 History of features, improvements, and fixes in Atomic for Android.
 

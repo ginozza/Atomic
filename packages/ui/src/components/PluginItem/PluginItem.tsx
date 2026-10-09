@@ -165,7 +165,7 @@ export const PluginItem: FC<PluginItemProps> = ({
           data-testid="plugin-action-reload"
           size="icon-sm"
           onClick={onReload}
-          disabled={reloadDisabled || disabled}
+          disabled={reloadDisabled}
         >
           <RotateCwIcon size={20} />
         </Button>

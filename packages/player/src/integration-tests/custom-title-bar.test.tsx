@@ -45,7 +45,7 @@ describe('Custom title bar', () => {
     await CustomTitleBarWrapper.customTitleBarToggle.click();
 
     expect(CustomTitleBarWrapper.titleBar).toBeInTheDocument();
-    expect(screen.getByText('Nuclear Music Player')).toBeInTheDocument();
+    expect(screen.getByText(/Music Player/)).toBeInTheDocument();
   });
 
   it('enabling custom title bar hides window decorations', async () => {

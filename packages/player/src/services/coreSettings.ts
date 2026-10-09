@@ -17,6 +17,38 @@ const LANGUAGE_OPTIONS = [
 
 export const CORE_SETTINGS: SettingDefinition[] = [
   {
+    id: 'appearance.framelessWindow',
+    title: 'preferences.appearance.framelessWindow.title',
+    description: 'preferences.appearance.framelessWindow.description',
+    category: 'appearance',
+    kind: 'boolean',
+    default: false,
+    widget: { type: 'toggle' },
+  },
+  {
+    id: 'appearance.customTitleBar',
+    title: 'preferences.appearance.customTitleBar.title',
+    description: 'preferences.appearance.customTitleBar.description',
+    category: 'appearance',
+    kind: 'boolean',
+    default: false,
+    widget: { type: 'toggle' },
+  },
+  {
+    id: 'appearance.titleBarStyle',
+    title: 'preferences.appearance.titleBarStyle.title',
+    description: 'preferences.appearance.titleBarStyle.description',
+    category: 'appearance',
+    kind: 'enum',
+    options: [
+      { value: 'auto', label: 'Auto' },
+      { value: 'macos', label: 'macOS' },
+      { value: 'windows', label: 'Windows / Linux' },
+    ],
+    default: 'auto',
+    widget: { type: 'select' },
+  },
+  {
     id: 'theme.active.type',
     title: 'preferences.theme.active.type.title',
     description: 'preferences.theme.active.type.description',
@@ -191,6 +223,26 @@ export const CORE_SETTINGS: SettingDefinition[] = [
     default: true,
     widget: { type: 'toggle' },
   },
+  {
+    id: 'layout.leftSidebarWidth',
+    title: 'preferences.layout.leftSidebarWidth.title',
+    description: 'preferences.layout.leftSidebarWidth.description',
+    category: 'layout',
+    kind: 'number',
+    default: 200,
+    hidden: true,
+    widget: { type: 'slider', min: 120, max: 480, step: 4, unit: 'px' },
+  },
+  {
+    id: 'layout.rightSidebarWidth',
+    title: 'preferences.layout.rightSidebarWidth.title',
+    description: 'preferences.layout.rightSidebarWidth.description',
+    category: 'layout',
+    kind: 'number',
+    default: 200,
+    hidden: true,
+    widget: { type: 'slider', min: 120, max: 480, step: 4, unit: 'px' },
+  },
 
   {
     id: 'general.language',
@@ -291,6 +343,15 @@ export const CORE_SETTINGS: SettingDefinition[] = [
     kind: 'string',
     default: 'mpd://127.0.0.1:6600',
     widget: { type: 'info' },
+  },
+  {
+    id: 'integrations.discord.enabled',
+    title: 'preferences.integrations.discord.enabled.title',
+    description: 'preferences.integrations.discord.enabled.description',
+    category: 'integrations',
+    kind: 'boolean',
+    default: false,
+    widget: { type: 'toggle' },
   },
 ];
 

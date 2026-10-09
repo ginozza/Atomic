@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { FC } from 'react';
 
+import { useLayoutStore } from '../stores/layoutStore';
 import { useQueueStore } from '../stores/queueStore';
 
 export const MobileNavigationBar: FC = () => {
@@ -16,6 +17,9 @@ export const MobileNavigationBar: FC = () => {
   const currentPath = routerState.location.pathname;
 
   const queueLength = useQueueStore((state) => state.items.length);
+  const toggleRightSidebar = useLayoutStore(
+    (state) => state.toggleRightSidebar,
+  );
 
   const isSearchActive = currentPath.startsWith('/search');
 
@@ -53,7 +57,10 @@ export const MobileNavigationBar: FC = () => {
         </div>
       ),
       isActive: currentPath.startsWith('/queue'),
-      onClick: () => navigate({ to: '/queue' }),
+      onClick: () => {
+        toggleRightSidebar();
+        navigate({ to: '/queue' });
+      },
     },
   ];
 

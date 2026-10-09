@@ -23,7 +23,12 @@ const reloadActiveAdvancedTheme = async (
     return;
   }
 
-  if (!changedPaths.some((path) => path.endsWith(activeTheme.path))) {
+  const normalizedActivePath = activeTheme.path.replace(/\\/g, '/');
+  if (
+    !changedPaths.some((path) =>
+      path.replace(/\\/g, '/').endsWith(normalizedActivePath),
+    )
+  ) {
     return;
   }
 

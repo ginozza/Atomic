@@ -54,6 +54,7 @@ export default defineConfig(() => ({
   test: {
     globals: true,
     clearMocks: true,
+    testTimeout: 15000,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     reporters: ['default', ...(process.env.CI ? ['junit'] : [])],

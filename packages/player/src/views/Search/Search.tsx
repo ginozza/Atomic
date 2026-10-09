@@ -184,7 +184,7 @@ export const Search: FC = () => {
           <SearchIcon className="text-muted-foreground absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2" />
           <input
             type="search"
-            data-testid="search-box"
+            data-testid="search-view-input"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Search tracks, albums, artists..."

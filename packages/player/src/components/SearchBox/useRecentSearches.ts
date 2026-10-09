@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const MAX_RECENT_SEARCHES = 10;
+const MAX_RECENT_SEARCHES = 5;
 
 type RecentSearchesState = {
   recentSearches: string[];

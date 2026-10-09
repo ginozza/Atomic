@@ -6,7 +6,7 @@ exports[`Themes view > (Snapshot) renders the themes view 1`] = `
   class="relative z-50"
   data-headlessui-state="open"
   data-open=""
-  id="headlessui-dialog-:r1:"
+  id="headlessui-dialog-:r4:"
   role="dialog"
   tabindex="-1"
 >
@@ -32,7 +32,7 @@ exports[`Themes view > (Snapshot) renders the themes view 1`] = `
         class="contents"
         data-headlessui-state="open"
         data-open=""
-        id="headlessui-dialog-panel-:r7:"
+        id="headlessui-dialog-panel-:ra:"
       >
         <button
           aria-label="Close"
@@ -459,16 +459,16 @@ exports[`Themes view > (Snapshot) renders the themes view 1`] = `
                   <div
                     aria-orientation="horizontal"
                     class="flex w-full items-center gap-2"
-                    id="tabs-:r8:-list"
+                    id="tabs-:rb:-list"
                     role="tablist"
                   >
                     <button
-                      aria-controls="headlessui-tabs-panel-:rd:"
+                      aria-controls="headlessui-tabs-panel-:rg:"
                       aria-selected="true"
                       class="inline-flex cursor-pointer items-center rounded-md whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 surface-primary border-border shadow-shadow hover:translate-x-shadow-x hover:translate-y-shadow-y border-(length:--border-width) hover:shadow-none h-10 px-4 py-2"
                       data-headlessui-state=""
                       data-selected=""
-                      id="headlessui-tabs-tab-:r9:"
+                      id="headlessui-tabs-tab-:rc:"
                       role="tab"
                       tabindex="0"
                       type="button"
@@ -476,11 +476,11 @@ exports[`Themes view > (Snapshot) renders the themes view 1`] = `
                       My themes
                     </button>
                     <button
-                      aria-controls="headlessui-tabs-panel-:rm:"
+                      aria-controls="headlessui-tabs-panel-:rp:"
                       aria-selected="false"
                       class="inline-flex cursor-pointer items-center rounded-md whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 px-4 py-2"
                       data-headlessui-state=""
-                      id="headlessui-tabs-tab-:rb:"
+                      id="headlessui-tabs-tab-:re:"
                       role="tab"
                       tabindex="-1"
                       type="button"
@@ -490,14 +490,14 @@ exports[`Themes view > (Snapshot) renders the themes view 1`] = `
                   </div>
                   <div
                     class="mt-2 flex flex-col flex-1 overflow-hidden"
-                    id="tabs-:r8:-panels"
+                    id="tabs-:rb:-panels"
                   >
                     <div
-                      aria-labelledby="headlessui-tabs-tab-:r9:"
+                      aria-labelledby="headlessui-tabs-tab-:rc:"
                       class="relative outline-none flex flex-1 overflow-hidden"
                       data-headlessui-state="selected"
                       data-selected=""
-                      id="headlessui-tabs-panel-:rd:"
+                      id="headlessui-tabs-panel-:rg:"
                       role="tabpanel"
                       tabindex="0"
                     >
@@ -739,7 +739,7 @@ exports[`Themes view > (Snapshot) renders the themes view 1`] = `
                                           aria-haspopup="listbox"
                                           class="border-border surface-primary focus-visible:ring-ring focus-visible:ring-offset-muted relative flex w-full items-center justify-between rounded-md border-(length:--border-width) text-left transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 px-3 py-2 text-sm"
                                           data-headlessui-state=""
-                                          id="select-:rf:"
+                                          id="select-:ri:"
                                           type="button"
                                         >
                                           <span
@@ -771,7 +771,7 @@ exports[`Themes view > (Snapshot) renders the themes view 1`] = `
                                         </button>
                                         <p
                                           class="text-foreground/60 text-sm select-none"
-                                          id="select-:rf:-description"
+                                          id="select-:ri:-description"
                                         >
                                           Themes found in your app data themes directory
                                         </p>
@@ -787,8 +787,8 @@ exports[`Themes view > (Snapshot) renders the themes view 1`] = `
                     </div>
                     <span
                       aria-hidden="true"
-                      aria-labelledby="headlessui-tabs-tab-:rb:"
-                      id="headlessui-tabs-panel-:rm:"
+                      aria-labelledby="headlessui-tabs-tab-:re:"
+                      id="headlessui-tabs-panel-:rp:"
                       role="tabpanel"
                       style="position: fixed; top: 1px; left: 1px; width: 1px; height: 0px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; border-width: 0px;"
                       tabindex="-1"
