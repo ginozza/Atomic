@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { Button } from '..';
@@ -28,6 +28,11 @@ describe('Popover', () => {
     );
     await userEvent.click(screen.getByText('Open Popover'));
     await screen.findByText('Popover Content');
+    await waitFor(() => {
+      expect(screen.getByTestId('popover-backdrop')).not.toHaveAttribute(
+        'data-transition',
+      );
+    });
     expect(document.body).toMatchSnapshot();
   });
 

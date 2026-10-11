@@ -281,7 +281,7 @@ const searchInvidiousFallback = async (
     try {
       const response = await safeFetch(
         `${instance}/api/v1/search?q=${encodeURIComponent(query)}&type=video`,
-        { signal: AbortSignal.timeout(3_000) },
+        { signal: AbortSignal.timeout(1_500) },
       );
       if (!response.ok) {
         continue;
@@ -321,7 +321,7 @@ const searchPipedFallback = async (
     try {
       const response = await safeFetch(
         `${instance}/search?q=${encodeURIComponent(query)}&filter=videos`,
-        { signal: AbortSignal.timeout(3_000) },
+        { signal: AbortSignal.timeout(1_500) },
       );
       if (!response.ok) {
         continue;
@@ -357,6 +357,98 @@ const searchPipedFallback = async (
   return [];
 };
 
+const extractSearchResultsFromSections = (
+  sections: Record<string, unknown>[],
+  maxResults: number,
+): YtdlpSearchResult[] => {
+  const results: YtdlpSearchResult[] = [];
+  for (const section of sections) {
+    const itemSection = section?.itemSectionRenderer as
+      Record<string, unknown> | undefined;
+    const items =
+      (itemSection?.contents as Record<string, unknown>[] | undefined) ?? [];
+    for (const item of items) {
+      const parsed = parseInnerTubeSearchItem(item);
+      if (parsed) {
+        results.push(parsed);
+        if (results.length >= maxResults) {
+          return results;
+        }
+      }
+      if (item.shelfRenderer) {
+        const shelf = item.shelfRenderer as Record<string, unknown>;
+        const shelfContent = shelf.content as
+          Record<string, unknown> | undefined;
+        const verticalList = shelfContent?.verticalListRenderer as
+          Record<string, unknown> | undefined;
+        const shelfItems =
+          (verticalList?.items as Record<string, unknown>[] | undefined) ?? [];
+        for (const shelfItem of shelfItems) {
+          const parsedShelf = parseInnerTubeSearchItem(shelfItem);
+          if (parsedShelf) {
+            results.push(parsedShelf);
+            if (results.length >= maxResults) {
+              return results;
+            }
+          }
+        }
+      }
+    }
+  }
+  return results;
+};
+
+const scrapeYoutubeHtml = async (
+  query: string,
+  maxResults: number,
+): Promise<YtdlpSearchResult[]> => {
+  try {
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&hl=en`;
+    const response = await safeFetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(6_000),
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const html = await response.text();
+    const match =
+      html.match(/var ytInitialData = ({.*?});<\/script>/s) ??
+      html.match(/ytInitialData = ({.*?});/s);
+    if (!match?.[1]) {
+      return [];
+    }
+
+    const data = JSON.parse(match[1]) as Record<string, unknown>;
+    const twoColumn = (data?.contents as Record<string, unknown> | undefined)
+      ?.twoColumnSearchResultsRenderer as Record<string, unknown> | undefined;
+    const primary = twoColumn?.primaryContents as
+      Record<string, unknown> | undefined;
+    const primarySectionList = primary?.sectionListRenderer as
+      Record<string, unknown> | undefined;
+    const directSectionList = (
+      data?.contents as Record<string, unknown> | undefined
+    )?.sectionListRenderer as Record<string, unknown> | undefined;
+
+    const sections = [
+      ...((primarySectionList?.contents as Record<string, unknown>[]) ?? []),
+      ...((directSectionList?.contents as Record<string, unknown>[]) ?? []),
+    ];
+
+    return extractSearchResultsFromSections(sections, maxResults);
+  } catch (error) {
+    Logger.streaming.debug(`scrapeYoutubeHtml failed: ${error}`);
+    return [];
+  }
+};
+
 const httpYoutubeSearch = async (
   query: string,
   maxResults: number,
@@ -384,14 +476,12 @@ const httpYoutubeSearch = async (
           },
           query,
         }),
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(6_000),
       },
     );
 
     if (response.ok) {
       const data = await response.json<Record<string, unknown>>();
-      const results: YtdlpSearchResult[] = [];
-
       const twoColumn = (data?.contents as Record<string, unknown> | undefined)
         ?.twoColumnSearchResultsRenderer as Record<string, unknown> | undefined;
       const primary = twoColumn?.primaryContents as
@@ -407,48 +497,18 @@ const httpYoutubeSearch = async (
         ...((directSectionList?.contents as Record<string, unknown>[]) ?? []),
       ];
 
-      for (const section of sections) {
-        const itemSection = section?.itemSectionRenderer as
-          Record<string, unknown> | undefined;
-        const items =
-          (itemSection?.contents as Record<string, unknown>[] | undefined) ??
-          [];
-        for (const item of items) {
-          const parsed = parseInnerTubeSearchItem(item);
-          if (parsed) {
-            results.push(parsed);
-            if (results.length >= maxResults) {
-              return results;
-            }
-          }
-          if (item.shelfRenderer) {
-            const shelf = item.shelfRenderer as Record<string, unknown>;
-            const shelfContent = shelf.content as
-              Record<string, unknown> | undefined;
-            const verticalList = shelfContent?.verticalListRenderer as
-              Record<string, unknown> | undefined;
-            const shelfItems =
-              (verticalList?.items as Record<string, unknown>[] | undefined) ??
-              [];
-            for (const shelfItem of shelfItems) {
-              const parsedShelf = parseInnerTubeSearchItem(shelfItem);
-              if (parsedShelf) {
-                results.push(parsedShelf);
-                if (results.length >= maxResults) {
-                  return results;
-                }
-              }
-            }
-          }
-        }
-      }
-
+      const results = extractSearchResultsFromSections(sections, maxResults);
       if (results.length > 0) {
         return results;
       }
     }
   } catch (error) {
     Logger.streaming.error(`httpYoutubeSearch InnerTube failed: ${error}`);
+  }
+
+  const scraped = await scrapeYoutubeHtml(query, maxResults);
+  if (scraped.length > 0) {
+    return scraped;
   }
 
   if (query.includes('"')) {

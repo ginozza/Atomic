@@ -144,11 +144,9 @@ const RootComponent = () => {
   return (
     <PlayerShell onContextMenu={(e) => e.preventDefault()}>
       <GlobalShortcuts />
-      <div className="hidden md:block">
-        <ConnectedTitleBar />
-        <FlatpakWarningBanner />
-        <ConnectedTopBar />
-      </div>
+      <ConnectedTitleBar />
+      <FlatpakWarningBanner />
+      <ConnectedTopBar />
       {!isStartingUp && (
         <SafeComponentBoundary name="StreamResolver">
           <StreamResolver />
@@ -210,7 +208,7 @@ const RootComponent = () => {
             </PlayerWorkspace.LeftSidebar>
           </div>
 
-          <PlayerWorkspace.Main className="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden pt-[max(env(safe-area-inset-top),1.5rem)] md:pt-0 md:pb-0">
+          <PlayerWorkspace.Main className="surface-background bg-background min-h-0 w-full flex-1 overflow-hidden md:pb-0">
             <RouteTransition />
           </PlayerWorkspace.Main>
 

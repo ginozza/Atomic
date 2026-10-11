@@ -55,6 +55,7 @@ const PopoverImpl: FC<PopoverProps> = ({
                 {backdrop && (
                   <PopoverBackdrop
                     transition
+                    data-testid="popover-backdrop"
                     className="bg-overlay fixed inset-0 transition duration-150 ease-out data-closed:opacity-0"
                   />
                 )}
