@@ -7,6 +7,7 @@ import { Logger } from '../logger';
 import { providersHost } from '../providersHost';
 import {
   ESSENTIAL_PLUGIN_IDS,
+  FALLBACK_PLUGINS,
   hasBundledPluginFallback,
   installBundledPluginFallback,
 } from './bundledPlugins';
@@ -56,11 +57,10 @@ export const hydratePluginsFromRegistry = async (): Promise<void> => {
       new Date(a.installedAt).getTime() - new Date(b.installedAt).getTime(),
   );
 
-  if (entries.length === 0) {
-    Logger.plugins.info(
-      'Clean install detected: installing and enabling essential bundled plugins',
-    );
-    for (const pluginId of ESSENTIAL_PLUGIN_IDS) {
+  for (const pluginId of ESSENTIAL_PLUGIN_IDS) {
+    const existing = entries.find((entry) => entry.id === pluginId);
+    const bundled = FALLBACK_PLUGINS[pluginId];
+    if (!existing) {
       try {
         await installAndEnableBundledPlugin(pluginId);
       } catch (error) {
@@ -68,12 +68,24 @@ export const hydratePluginsFromRegistry = async (): Promise<void> => {
           `Failed to install essential plugin ${pluginId}: ${errorMessage(error)}`,
         );
       }
+    } else if (bundled && bundled.version !== existing.version) {
+      Logger.plugins.info(
+        `Upgrading essential plugin ${pluginId} from ${existing.version} to bundled ${bundled.version}`,
+      );
+      try {
+        await installAndEnableBundledPlugin(pluginId);
+      } catch (error) {
+        Logger.plugins.error(
+          `Failed to upgrade essential plugin ${pluginId}: ${errorMessage(error)}`,
+        );
+      }
     }
-    entries = (await listRegistryEntries()).sort(
-      (a, b) =>
-        new Date(a.installedAt).getTime() - new Date(b.installedAt).getTime(),
-    );
   }
+
+  entries = (await listRegistryEntries()).sort(
+    (a, b) =>
+      new Date(a.installedAt).getTime() - new Date(b.installedAt).getTime(),
+  );
 
   for (const entry of entries) {
     // TODO: Support non-managed paths (dev plugins)

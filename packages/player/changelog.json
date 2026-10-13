@@ -1,5 +1,21 @@
 [
   {
+    "date": "2026-10-13T01:00",
+    "description": "Search & Dashboard Reliability: Resilient multi-category metadata searches via Promise.allSettled, safe playlist artwork mapping in Spotify plugin, automatic bundled plugin upgrades on startup, and reqwest gzip/brotli decompression for Deezer dashboard APIs.",
+    "type": "fix",
+    "contributors": ["atomic"],
+    "tags": [
+      {
+        "label": "Search",
+        "color": "cyan"
+      },
+      {
+        "label": "Plugins",
+        "color": "purple"
+      }
+    ]
+  },
+  {
     "date": "2026-10-13T00:00",
     "description": "Xiaomi HyperOS Dynamic Island: Pure native black media widget with real-time continuous seekbar progress interpolation, action seeking, and simplified release build pipeline.",
     "type": "fix",

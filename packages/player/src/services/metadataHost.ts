@@ -17,6 +17,8 @@ import {
   type MetadataProvider,
 } from '@nuclearplayer/plugin-sdk';
 
+import { errorMessage } from '../utils/errorMessage';
+import { Logger } from './logger';
 import { providersHost } from './providersHost';
 
 const ALL_CATEGORIES: SearchCategory[] = [
@@ -75,12 +77,22 @@ const executeMetadataSearch = async (
       ? provider.searchPlaylists({ query: params.query, limit: params.limit })
       : undefined;
 
-  const [artists, albums, tracks, playlists] = await Promise.all([
-    artistsPromise ?? Promise.resolve(undefined),
-    albumsPromise ?? Promise.resolve(undefined),
-    tracksPromise ?? Promise.resolve(undefined),
-    playlistsPromise ?? Promise.resolve(undefined),
-  ]);
+  const [artistsResult, albumsResult, tracksResult, playlistsResult] =
+    await Promise.allSettled([
+      artistsPromise ?? Promise.resolve(undefined),
+      albumsPromise ?? Promise.resolve(undefined),
+      tracksPromise ?? Promise.resolve(undefined),
+      playlistsPromise ?? Promise.resolve(undefined),
+    ]);
+
+  const artists =
+    artistsResult.status === 'fulfilled' ? artistsResult.value : undefined;
+  const albums =
+    albumsResult.status === 'fulfilled' ? albumsResult.value : undefined;
+  const tracks =
+    tracksResult.status === 'fulfilled' ? tracksResult.value : undefined;
+  const playlists =
+    playlistsResult.status === 'fulfilled' ? playlistsResult.value : undefined;
 
   const result: SearchResults = {};
   if (artists) {
@@ -95,6 +107,24 @@ const executeMetadataSearch = async (
   if (playlists) {
     result.playlists = playlists;
   }
+
+  const activeResults = [
+    artistsPromise && artistsResult,
+    albumsPromise && albumsResult,
+    tracksPromise && tracksResult,
+    playlistsPromise && playlistsResult,
+  ].filter(Boolean) as PromiseSettledResult<unknown>[];
+
+  if (
+    activeResults.length > 0 &&
+    activeResults.every((res) => res.status === 'rejected')
+  ) {
+    const firstRejected = activeResults.find(
+      (res) => res.status === 'rejected',
+    ) as PromiseRejectedResult;
+    throw firstRejected.reason;
+  }
+
   return result;
 };
 
@@ -130,7 +160,14 @@ export const createMetadataHost = (): MetadataHost => {
       if (!provider) {
         throw new Error('No metadata provider available');
       }
-      return executeMetadataSearch(provider, params);
+      try {
+        return await executeMetadataSearch(provider, params);
+      } catch (error) {
+        Logger.metadata.error(
+          `Search failed for provider "${provider.name}" and query "${params.query}": ${errorMessage(error)}`,
+        );
+        throw error;
+      }
     },
 
     fetchArtistBio: withArtistCapability<ArtistBio>(
