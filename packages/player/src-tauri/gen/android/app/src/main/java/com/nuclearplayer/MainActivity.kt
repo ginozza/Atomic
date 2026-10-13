@@ -102,14 +102,14 @@ class MainActivity : TauriActivity() {
         } else {
             runOnUiThread(action)
         }
+        window?.decorView?.post(action)
     }
 
     override fun onPause() {
+        super.onPause()
         if (isMediaActive || isMediaPlaying) {
             keepWebViewActive()
-            return
         }
-        super.onPause()
     }
 
     override fun onResume() {
@@ -118,11 +118,10 @@ class MainActivity : TauriActivity() {
     }
 
     override fun onStop() {
+        super.onStop()
         if (isMediaActive || isMediaPlaying) {
             keepWebViewActive()
-            return
         }
-        super.onStop()
     }
 
     override fun onStart() {
@@ -131,11 +130,10 @@ class MainActivity : TauriActivity() {
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
         if (!hasFocus && (isMediaActive || isMediaPlaying)) {
             keepWebViewActive()
-            return
         }
-        super.onWindowFocusChanged(hasFocus)
     }
 
     override fun onUserLeaveHint() {

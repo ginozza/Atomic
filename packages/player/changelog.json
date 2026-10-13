@@ -1,5 +1,21 @@
 [
   {
+    "date": "2026-10-13T01:30",
+    "description": "Android Stability: Fix SuperNotCalledException crash on pause/stop when exiting app during active music playback, and ensure continuous background WebView execution.",
+    "type": "fix",
+    "contributors": ["atomic"],
+    "tags": [
+      {
+        "label": "Android",
+        "color": "cyan"
+      },
+      {
+        "label": "Playback",
+        "color": "green"
+      }
+    ]
+  },
+  {
     "date": "2026-10-13T01:00",
     "description": "Search & Dashboard Reliability: Resilient multi-category metadata searches via Promise.allSettled, safe playlist artwork mapping in Spotify plugin, automatic bundled plugin upgrades on startup, and reqwest gzip/brotli decompression for Deezer dashboard APIs.",
     "type": "fix",
