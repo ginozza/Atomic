@@ -33,7 +33,7 @@
     "longDescription": "Atomic is a free, open-source mobile-first music player fork of Nuclear Music Player without ads or tracking. Search for any song or artist, build playlists, and start listening.",
     "copyright": "Copyright 2025-2026 nukeop",
     "homepage": "https://nuclearplayer.com",
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": false,
     "targets": "all",
     "icon": [
       "icons/icon.png",
