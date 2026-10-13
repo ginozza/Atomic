@@ -970,14 +970,14 @@ exports[`Album view > (Snapshot) renders the album view 1`] = `
                       >
                         <div
                           aria-label="Tracks"
-                          class="flex flex-col gap-1 w-full"
+                          class="flex w-full flex-col gap-1"
                           role="table"
                         >
                           <div
                             aria-describedby=""
                             aria-disabled="true"
                             aria-roledescription="sortable"
-                            class="group flex items-center gap-3.5 px-3 py-2.5 rounded-xl transition-all cursor-pointer select-none border-b border-border/20 last:border-b-0 hover:bg-white/5 active:bg-white/10"
+                            class="group border-border/20 flex cursor-pointer items-center gap-3.5 rounded-xl border-b px-3 py-2.5 transition-all select-none last:border-b-0 hover:bg-white/5 active:bg-white/10"
                             data-testid="track-row"
                             role="row"
                             tabindex="0"
@@ -996,13 +996,13 @@ exports[`Album view > (Snapshot) renders the album view 1`] = `
                               class="flex min-w-0 flex-1 flex-col justify-center gap-0.5"
                             >
                               <span
-                                class="truncate text-sm font-semibold leading-tight text-foreground"
+                                class="truncate text-sm leading-tight font-semibold text-foreground"
                                 data-testid="track-title"
                               >
                                 Going Solo
                               </span>
                               <div
-                                class="text-muted-foreground flex items-center gap-1.5 text-xs truncate"
+                                class="text-muted-foreground flex items-center gap-1.5 truncate text-xs"
                               >
                                 <span
                                   class="truncate"
@@ -1113,7 +1113,7 @@ exports[`Album view > (Snapshot) renders the album view 1`] = `
                             aria-describedby=""
                             aria-disabled="true"
                             aria-roledescription="sortable"
-                            class="group flex items-center gap-3.5 px-3 py-2.5 rounded-xl transition-all cursor-pointer select-none border-b border-border/20 last:border-b-0 hover:bg-white/5 active:bg-white/10"
+                            class="group border-border/20 flex cursor-pointer items-center gap-3.5 rounded-xl border-b px-3 py-2.5 transition-all select-none last:border-b-0 hover:bg-white/5 active:bg-white/10"
                             data-testid="track-row"
                             role="row"
                             tabindex="0"
@@ -1132,13 +1132,13 @@ exports[`Album view > (Snapshot) renders the album view 1`] = `
                               class="flex min-w-0 flex-1 flex-col justify-center gap-0.5"
                             >
                               <span
-                                class="truncate text-sm font-semibold leading-tight text-foreground"
+                                class="truncate text-sm leading-tight font-semibold text-foreground"
                                 data-testid="track-title"
                               >
                                 King of California
                               </span>
                               <div
-                                class="text-muted-foreground flex items-center gap-1.5 text-xs truncate"
+                                class="text-muted-foreground flex items-center gap-1.5 truncate text-xs"
                               >
                                 <span
                                   class="truncate"
