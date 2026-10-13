@@ -240,7 +240,7 @@ describe('PlayerBarMobile', () => {
       expect(loadingButton).toBeVisible();
       expect(loadingButton).toHaveAttribute('aria-busy', 'true');
       expect(loadingButton.className).toContain('surface-toxic-shimmer');
-      expect(loadingButton.className).toContain('animate-toxic-glow');
+      expect(loadingButton.className).toContain('overflow-hidden');
     });
 
     it('renders regular pause button and stops shimmer when playback starts', () => {

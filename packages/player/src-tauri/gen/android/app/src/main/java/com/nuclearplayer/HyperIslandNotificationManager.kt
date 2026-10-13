@@ -66,15 +66,11 @@ object HyperIslandNotificationManager {
                 )
                 setCallback(object : MediaSessionCompat.Callback() {
                     override fun onPlay() {
-                        if (!MainActivity.isMediaPlaying) {
-                            MainActivity.dispatchActionToNuclear("toggle")
-                        }
+                        MainActivity.dispatchActionToNuclear("play")
                     }
 
                     override fun onPause() {
-                        if (MainActivity.isMediaPlaying) {
-                            MainActivity.dispatchActionToNuclear("toggle")
-                        }
+                        MainActivity.dispatchActionToNuclear("pause")
                     }
 
                     override fun onSkipToNext() {

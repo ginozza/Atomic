@@ -76,7 +76,7 @@ export function SortableRow<T extends Track = Track>({
           'z-50': isDragging,
           'cursor-grab': isReorderable,
         },
-        isRowLoading && 'surface-toxic-shimmer animate-toxic-glow',
+        isRowLoading && 'surface-toxic-shimmer',
       )}
       {...attributes}
       {...listeners}

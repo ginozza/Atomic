@@ -25,26 +25,23 @@ class NuclearMediaService : Service() {
             AudioManager.AUDIOFOCUS_LOSS -> {
                 playbackPausedByTransientLoss = false
                 if (MainActivity.isMediaPlaying) {
-                    MainActivity.dispatchActionToNuclear("toggle")
+                    MainActivity.dispatchActionToNuclear("pause")
                 }
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 if (MainActivity.isMediaPlaying) {
                     playbackPausedByTransientLoss = true
-                    MainActivity.dispatchActionToNuclear("toggle")
+                    MainActivity.dispatchActionToNuclear("pause")
                 }
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                if (MainActivity.isMediaPlaying) {
-                    playbackPausedByTransientLoss = true
-                    MainActivity.dispatchActionToNuclear("toggle")
-                }
+                // Ignore transient ducking so playback does not abruptly cut off
             }
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (playbackPausedByTransientLoss) {
                     playbackPausedByTransientLoss = false
                     if (!MainActivity.isMediaPlaying) {
-                        MainActivity.dispatchActionToNuclear("toggle")
+                        MainActivity.dispatchActionToNuclear("play")
                     }
                 }
             }

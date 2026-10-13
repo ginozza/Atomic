@@ -224,7 +224,7 @@ describe('Atomic Phase 2 Resiliency & Platform Hardening E2E Suite', () => {
       expect(loadingButton).toHaveAttribute('aria-busy', 'true');
       expect(loadingButton).toHaveAttribute('aria-label', 'Loading');
       expect(loadingButton.className).toContain('surface-toxic-shimmer');
-      expect(loadingButton.className).toContain('animate-toxic-glow');
+      expect(loadingButton.className).toContain('overflow-hidden');
     });
 
     it('renders loading shimmer feedback on ConnectedFloatingMiniPlayer when item is loading', () => {
@@ -251,7 +251,7 @@ describe('Atomic Phase 2 Resiliency & Platform Hardening E2E Suite', () => {
       expect(miniPlayButton).toHaveAttribute('aria-busy', 'true');
       expect(miniPlayButton).toHaveAttribute('aria-label', 'Loading');
       expect(miniPlayButton.className).toContain('surface-toxic-shimmer');
-      expect(miniPlayButton.className).toContain('animate-toxic-glow');
+      expect(miniPlayButton.className).toContain('overflow-hidden');
     });
 
     it('renders loading shimmer feedback on ConnectedNowPlayingModal when item is loading', () => {
@@ -281,7 +281,7 @@ describe('Atomic Phase 2 Resiliency & Platform Hardening E2E Suite', () => {
       expect(modalPlayButton).toHaveAttribute('aria-busy', 'true');
       expect(modalPlayButton).toHaveAttribute('aria-label', 'Loading');
       expect(modalPlayButton.className).toContain('surface-toxic-shimmer');
-      expect(modalPlayButton.className).toContain('animate-toxic-glow');
+      expect(modalPlayButton.className).toContain('overflow-hidden');
     });
 
     it('extracts direct audio stream URL and routes via local proxy instead of iframe', async () => {

@@ -1,5 +1,5 @@
 import type { FC, PropsWithChildren } from 'react';
-import { Component, useCallback, useEffect } from 'react';
+import { Component, useCallback, useEffect, useRef } from 'react';
 
 import { LoggerProvider, Sound, SoundError } from '@nuclearplayer/hifi';
 import type { TFunction } from '@nuclearplayer/i18n';
@@ -108,24 +108,70 @@ export const SoundProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   }, [crossfadeMs]);
 
+  const watchdogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearWatchdog = useCallback(() => {
+    if (watchdogTimerRef.current) {
+      clearTimeout(watchdogTimerRef.current);
+      watchdogTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    clearWatchdog();
+    if (!source || status !== 'playing') {
+      return;
+    }
+
+    watchdogTimerRef.current = setTimeout(() => {
+      const currentItem = useQueueStore.getState().getCurrentItem();
+      const currentSeek = useSoundStore.getState().seek;
+      if (
+        currentItem &&
+        currentSeek === 0 &&
+        useSoundStore.getState().status === 'playing'
+      ) {
+        Logger.streaming.warn(
+          `Playback watchdog: stream stalled at 0:00 for item ${currentItem.id}, failing candidate and trying next`,
+        );
+        void streamResolution.failCurrentCandidateAndTryNext(currentItem.id);
+      }
+    }, 7000);
+
+    return () => {
+      clearWatchdog();
+    };
+  }, [source, status, clearWatchdog]);
+
   const handleTimeUpdate = useCallback(
     ({ position, duration }: { position: number; duration: number }) => {
       if (useSoundStore.getState().src !== source) {
         return;
       }
+      if (position > 0) {
+        clearWatchdog();
+        const currentItem = useQueueStore.getState().getCurrentItem();
+        if (currentItem && currentItem.status === 'loading') {
+          useQueueStore
+            .getState()
+            .updateItemState(currentItem.id, { status: 'success' });
+        }
+      }
       useSoundStore.getState().updatePlayback(position, duration);
     },
-    [source],
+    [source, clearWatchdog],
   );
 
   const handleEnd = useCallback(() => {
+    clearWatchdog();
     if (useSoundStore.getState().src !== source) {
       return;
     }
     playbackManager.finishTrack();
-  }, [source]);
+  }, [source, clearWatchdog]);
 
   const handleCanPlay = useCallback(() => {
+    clearWatchdog();
     if (useSoundStore.getState().src !== source) {
       return;
     }
@@ -135,7 +181,7 @@ export const SoundProvider: FC<PropsWithChildren> = ({ children }) => {
         .getState()
         .updateItemState(currentItem.id, { status: 'success' });
     }
-  }, [source]);
+  }, [source, clearWatchdog]);
 
   const handleSourceInvalid = useCallback(() => {
     if (useSoundStore.getState().src !== source) {

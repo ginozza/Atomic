@@ -161,6 +161,12 @@ export const useHyperIslandBridge = () => {
         case 'toggle':
           useSoundStore.getState().toggle();
           break;
+        case 'play':
+          useSoundStore.getState().play();
+          break;
+        case 'pause':
+          useSoundStore.getState().pause();
+          break;
         case 'next':
           useQueueStore.getState().goToNext();
           break;

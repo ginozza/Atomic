@@ -180,7 +180,7 @@ describe('TrackTable', () => {
     expect(activeRow).toHaveAttribute('aria-busy', 'true');
     expect(activeRow).toHaveAttribute('data-loading', 'true');
     expect(activeRow.className).toContain('surface-toxic-shimmer');
-    expect(activeRow.className).toContain('animate-toxic-glow');
+    expect(activeRow.className).not.toContain('animate-toxic-glow');
 
     // Inactive rows should not have shimmer loading
     expect(rows[1]).not.toHaveAttribute('aria-busy');

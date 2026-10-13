@@ -126,7 +126,7 @@ describe('ConnectedNowPlayingModal', () => {
     expect(playPauseBtn).toHaveAttribute('aria-busy', 'true');
     expect(playPauseBtn).toHaveAttribute('aria-label', 'Loading');
     expect(playPauseBtn.className).toContain('surface-toxic-shimmer');
-    expect(playPauseBtn.className).toContain('animate-toxic-glow');
+    expect(playPauseBtn.className).toContain('overflow-hidden');
   });
 
   it('stops shimmer loading styling and shows regular pause when playback starts', () => {

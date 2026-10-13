@@ -95,10 +95,11 @@ export const PlayerBarControls: FC<PlayerBarControlsProps> = ({
       aria-busy={isLoading ? 'true' : undefined}
       aria-label={isLoading ? 'Loading' : undefined}
       className={cn(
-        isLoading && 'surface-toxic-shimmer animate-toxic-glow text-black',
+        isLoading &&
+          'surface-toxic-shimmer overflow-hidden text-black shadow-none',
       )}
     >
-      {isPlaying ? (
+      {isPlaying && !isLoading ? (
         <Pause size={16} />
       ) : (
         <Play size={16} className={cn(isLoading && 'animate-pulse')} />

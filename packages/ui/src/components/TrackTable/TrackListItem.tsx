@@ -114,7 +114,7 @@ export function TrackListItem<T extends Track = Track>({
       }}
       className={cn(
         'group border-border/20 flex cursor-pointer items-center gap-3.5 rounded-xl border-b px-3 py-2.5 transition-all select-none last:border-b-0 hover:bg-white/5 active:bg-white/10',
-        isRowLoading && 'surface-toxic-shimmer animate-toxic-glow',
+        isRowLoading && 'surface-toxic-shimmer',
         isReorderable && 'cursor-grab',
         isDragging && 'z-50 opacity-50',
       )}

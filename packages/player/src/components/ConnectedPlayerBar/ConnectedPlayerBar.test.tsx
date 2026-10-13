@@ -181,7 +181,7 @@ describe('ConnectedControls', () => {
     const loadingBtn = Wrapper.controls.loadingButton.element;
     expect(loadingBtn).toHaveAttribute('aria-busy', 'true');
     expect(loadingBtn.className).toContain('surface-toxic-shimmer');
-    expect(loadingBtn.className).toContain('animate-toxic-glow');
+    expect(loadingBtn.className).toContain('overflow-hidden');
   });
 
   it('renders regular pause button and not shimmer when playback starts', async () => {
