@@ -211,14 +211,24 @@ export class StreamResolution {
     }
 
     let resolved: StreamCandidate | undefined;
-    try {
-      resolved = await this.resolveCandidateWithTimeout(candidate, signal);
-    } catch {
-      if (signal.aborted) {
+    if (candidate.stream && !candidate.failed) {
+      resolved = candidate;
+    } else {
+      try {
+        resolved = await this.resolveCandidateWithTimeout(candidate, signal);
+      } catch {
+        if (signal.aborted) {
+          return;
+        }
+        this.handleCandidateFailure(
+          item,
+          candidate,
+          candidates,
+          signal,
+          options,
+        );
         return;
       }
-      this.handleCandidateFailure(item, candidate, candidates, signal, options);
-      return;
     }
 
     if (signal.aborted) {
@@ -312,11 +322,76 @@ export class StreamResolution {
       playbackManager.startTrack(item, audioSource, {
         autoPlay: options.autoPlay,
       });
+      void this.preloadNextTrack();
     } catch {
       if (signal.aborted) {
         return;
       }
       this.failItem(item.id, 'streaming:errors.allCandidatesFailed');
+    }
+  }
+
+  private async preloadNextTrack(): Promise<void> {
+    try {
+      const { items, currentIndex } = useQueueStore.getState();
+      const nextIndex = currentIndex + 1;
+      if (nextIndex >= items.length) {
+        return;
+      }
+      const nextItem = items[nextIndex];
+      if (
+        !nextItem ||
+        nextItem.status === 'success' ||
+        nextItem.status === 'loading'
+      ) {
+        return;
+      }
+      const existingCandidates = nextItem.track.streamCandidates;
+      if (
+        existingCandidates &&
+        existingCandidates.length > 0 &&
+        existingCandidates[0]?.stream
+      ) {
+        return;
+      }
+
+      const candidates = await candidatesForTrack(nextItem.track);
+      if (!candidates || candidates.length === 0) {
+        return;
+      }
+
+      const topCandidate =
+        candidates.find((candidate) => !candidate.failed) ?? candidates[0];
+      if (!topCandidate) {
+        return;
+      }
+
+      let resolved = topCandidate;
+      if (!topCandidate.stream) {
+        const streamResult =
+          await streamingHost.resolveStreamForCandidate(topCandidate);
+        if (streamResult && streamResult.stream) {
+          resolved = streamResult;
+        }
+      }
+
+      const updatedCandidates = candidates.map((candidate) =>
+        candidate.id === resolved.id ? resolved : candidate,
+      );
+      if (
+        !updatedCandidates.some((candidate) => candidate.id === resolved.id)
+      ) {
+        updatedCandidates.unshift(resolved);
+      }
+
+      useQueueStore.getState().updateItemState(nextItem.id, {
+        track: {
+          ...nextItem.track,
+          streamCandidates: updatedCandidates,
+        },
+      });
+    } catch {
+      // Background preload errors are non-critical
     }
   }
 

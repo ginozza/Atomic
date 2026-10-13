@@ -114,6 +114,7 @@ pub async fn http_fetch(request: HttpRequest) -> Result<HttpResponse, String> {
         .connect_timeout(std::time::Duration::from_secs(8))
         .danger_accept_invalid_certs(true)
         .redirect(reqwest::redirect::Policy::limited(10))
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 

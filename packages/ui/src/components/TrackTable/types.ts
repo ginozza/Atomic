@@ -42,6 +42,7 @@ export type ContextMenuWrapperProps<T extends Track = Track> = {
 };
 
 export type TrackTableProps<T extends Track = Track> = {
+  variant?: 'table' | 'list';
   tracks: T[];
   getItemId?: (track: T, index: number) => string;
   customColumns?: unknown[];

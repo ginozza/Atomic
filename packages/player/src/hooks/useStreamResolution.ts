@@ -5,6 +5,7 @@ import type { QueueItem } from '@nuclearplayer/model';
 import { playbackManager } from '../services/playback';
 import { streamResolution } from '../services/streamResolution';
 import { useQueueStore } from '../stores/queueStore';
+import { useSoundStore } from '../stores/soundStore';
 import { useStreamRecovery } from './useStreamRecovery';
 
 const buildResolutionKey = (item: QueueItem): string => {
@@ -26,7 +27,12 @@ export const useStreamResolution = (): void => {
       }
 
       if (currentItem.status === 'loading') {
-        return;
+        const isSameItem = resolutionKeyRef.current?.startsWith(
+          `${currentItem.id}:`,
+        );
+        if (isSameItem) {
+          return;
+        }
       }
 
       if (currentItem.status === 'error') {
@@ -68,19 +74,19 @@ export const useStreamResolution = (): void => {
     const originalPlay = playbackManager.play;
     playbackManager.play = () => {
       const currentItem = useQueueStore.getState().getCurrentItem();
-      if (currentItem?.status === 'error') {
-        resolutionKeyRef.current = null;
-        void streamResolution.resolveWithFreshStreams(currentItem, {
-          autoPlay: true,
-        });
+      if (!currentItem) {
+        originalPlay();
         return;
       }
+      const soundSrc = useSoundStore.getState().src;
       if (
-        currentItem &&
-        (!currentItem.status || currentItem.status === 'idle')
+        !soundSrc ||
+        currentItem.status === 'error' ||
+        currentItem.status === 'idle' ||
+        !currentItem.status
       ) {
         resolutionKeyRef.current = null;
-        void streamResolution.resolve(currentItem, {
+        void streamResolution.resolveWithFreshStreams(currentItem, {
           autoPlay: true,
         });
         return;

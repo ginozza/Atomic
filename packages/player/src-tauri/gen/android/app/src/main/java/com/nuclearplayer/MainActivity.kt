@@ -35,6 +35,17 @@ class MainActivity : TauriActivity() {
                 }
             }
         }
+
+        fun dispatchSeekToNuclear(positionMs: Long) {
+            instance?.runOnUiThread {
+                instance?.let { activity ->
+                    val posSec = positionMs / 1000.0
+                    val js = "window.dispatchEvent(new CustomEvent('nuclear:hyperisland:seek', { detail: { position: $posSec } }));"
+                    val wv = activity.webViewRef ?: activity.findWebView()
+                    wv?.evaluateJavascript(js, null)
+                }
+            }
+        }
     }
 
     override fun onWebViewCreate(webView: WebView) {

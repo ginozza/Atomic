@@ -53,7 +53,7 @@ export const useNextTrackPrefetch = (): void => {
       }
 
       const remaining = duration - seek;
-      if (remaining > PREFETCH_THRESHOLD_SECONDS) {
+      if (seek < 5 && remaining > PREFETCH_THRESHOLD_SECONDS) {
         return;
       }
 
@@ -70,7 +70,10 @@ export const useNextTrackPrefetch = (): void => {
       }
 
       const existingCandidates = nextItem.track.streamCandidates?.filter(
-        (candidate) => !candidate.failed && !isStreamExpired(candidate),
+        (candidate) =>
+          !candidate.failed &&
+          !isStreamExpired(candidate) &&
+          Boolean(candidate.stream),
       );
       if (existingCandidates && existingCandidates.length > 0) {
         prefetchedItemIdRef.current = nextItem.id;
@@ -90,23 +93,28 @@ export const useNextTrackPrefetch = (): void => {
         }
 
         const headCandidate = candidates[0];
+        let resolved = headCandidate;
         if (!headCandidate.stream || isStreamExpired(headCandidate)) {
-          const resolved =
+          const streamResult =
             await streamingHost.resolveStreamForCandidate(headCandidate);
-          if (resolved && !resolved.failed) {
-            useQueueStore.getState().updateCandidate(nextItem.id, resolved);
-            Logger.queue.debug(
-              `Prefetch complete for: ${nextItem.track.title}`,
-            );
+          if (streamResult && !streamResult.failed) {
+            resolved = streamResult;
           }
-        } else {
-          useQueueStore.getState().updateItemState(nextItem.id, {
-            track: { ...nextItem.track, streamCandidates: candidates },
-          });
-          Logger.queue.debug(
-            `Prefetch used cached candidates for: ${nextItem.track.title}`,
-          );
         }
+
+        const updatedCandidates = candidates.map((candidate) =>
+          candidate.id === resolved.id ? resolved : candidate,
+        );
+        if (
+          !updatedCandidates.some((candidate) => candidate.id === resolved.id)
+        ) {
+          updatedCandidates.unshift(resolved);
+        }
+
+        useQueueStore.getState().updateItemState(nextItem.id, {
+          track: { ...nextItem.track, streamCandidates: updatedCandidates },
+        });
+        Logger.queue.debug(`Prefetch complete for: ${nextItem.track.title}`);
       } catch {
         Logger.queue.warn(`Prefetch failed for ${nextItem.track.title}`);
       } finally {

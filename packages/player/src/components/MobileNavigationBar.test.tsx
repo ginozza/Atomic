@@ -67,14 +67,14 @@ describe('MobileNavigationBar (Apple Music Style)', () => {
     expect(mockNavigate).toHaveBeenCalledWith({ to: '/playlists' });
   });
 
-  it('toggles Queue sidebar when clicking Queue button', async () => {
+  it('navigates to /queue when clicking Queue button', async () => {
     const user = userEvent.setup();
     render(<MobileNavigationBar />);
 
     const queueButton = screen.getByRole('button', { name: /queue/i });
     await user.click(queueButton);
 
-    expect(useLayoutStore.getState().rightSidebar.isCollapsed).toBe(false);
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/queue' });
   });
 
   it('navigates to /search when clicking the circular search button', async () => {

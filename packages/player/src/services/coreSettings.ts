@@ -124,7 +124,7 @@ export const CORE_SETTINGS: SettingDefinition[] = [
     description: 'preferences.playback.discovery.description',
     category: 'playback',
     kind: 'boolean',
-    default: false,
+    default: true,
     hidden: true,
     widget: { type: 'toggle' },
   },

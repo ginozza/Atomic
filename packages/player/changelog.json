@@ -1,5 +1,41 @@
 [
   {
+    "date": "2026-10-13T00:00",
+    "description": "Xiaomi HyperOS Dynamic Island: Pure native black media widget with real-time continuous seekbar progress interpolation, action seeking, and simplified release build pipeline.",
+    "type": "fix",
+    "contributors": ["atomic"],
+    "tags": [
+      {
+        "label": "Android",
+        "color": "cyan"
+      },
+      {
+        "label": "UI",
+        "color": "green"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-11T00:00",
+    "description": "Mobile & Playback Polish: Instantaneous track skips via queue prefetch preservation, full-height queue scrolling, ultra-fluid decoration gestures, and hardened Deezer dashboard streaming.",
+    "type": "improvement",
+    "contributors": ["atomic"],
+    "tags": [
+      {
+        "label": "Streaming",
+        "color": "red"
+      },
+      {
+        "label": "Android",
+        "color": "cyan"
+      },
+      {
+        "label": "UI",
+        "color": "green"
+      }
+    ]
+  },
+  {
     "date": "2026-10-09T00:00",
     "description": "YouTube stream resolution: Support InnerTube lockupViewModel format, pre-compile bundled YouTube plugin, and add Invidious/Piped fallbacks for search and direct audio streams.",
     "type": "fix",

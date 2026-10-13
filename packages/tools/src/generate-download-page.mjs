@@ -1,0 +1,340 @@
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const rootDir = resolve(__dirname, '../../..');
+const changelogPath = resolve(rootDir, 'packages/player/changelog.json');
+const pkgPath = resolve(rootDir, 'packages/player/package.json');
+
+const changelog = JSON.parse(readFileSync(changelogPath, 'utf-8'));
+const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+
+const version = process.env.APP_VERSION || pkg.version;
+const shortSha = process.env.SHORT_SHA || 'latest';
+const apkName = process.env.APK_NAME || `Atomic-v${version}.apk`;
+const repo = process.env.GITHUB_REPOSITORY || 'ginozza/Atomic';
+
+const isTag = Boolean(
+  process.env.GITHUB_REF && process.env.GITHUB_REF.startsWith('refs/tags/'),
+);
+const tagName = isTag
+  ? process.env.GITHUB_REF.replace('refs/tags/', '')
+  : `v${version}-${shortSha}`;
+
+const downloadUrl = `https://github.com/${repo}/releases/download/${tagName}/${apkName}`;
+const releasesUrl = `https://github.com/${repo}/releases`;
+
+const recentEntries = changelog.slice(0, 5);
+
+const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Atomic Music Player - Descargar APK</title>
+  <meta name="description" content="Reproductor de música libre, sin anuncios ni rastreo para Android y escritorio. Descarga el APK oficial.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2246%22 fill=%22%2300FFA3%22/><text y=%2265%22 font-size=%2250%22 font-weight=%22bold%22 text-anchor=%22middle%22 x=%2250%22 fill=%22%2308090C%22>A</text></svg>">
+  <style>
+    :root {
+      --bg: #090a0d;
+      --surface: #12141a;
+      --surface-subtle: #181b24;
+      --border: #222634;
+      --primary: #00FFA3;
+      --primary-hover: #1affb0;
+      --primary-glow: rgba(0, 255, 163, 0.25);
+      --foreground: #F4F5F7;
+      --muted: #8E92A4;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--foreground);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.25rem;
+      line-height: 1.5;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 255, 163, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(0, 255, 163, 0.04) 0%, transparent 40%);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.75rem;
+    }
+
+    .logo-badge {
+      width: 80px;
+      height: 80px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #00FFA3 0%, #00B371 100%);
+      box-shadow: 0 0 32px var(--primary-glow), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #08090C;
+      font-size: 2.5rem;
+      font-weight: 900;
+      user-select: none;
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      color: #FFFFFF;
+    }
+
+    .header p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 420px;
+    }
+
+    .pill-version {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 0.75rem;
+    }
+
+    .pill-version .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+    }
+
+    .action-card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 1.1rem 1.5rem;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #08090C;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px var(--primary-glow);
+    }
+
+    .btn-download:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0, 255, 163, 0.4);
+    }
+
+    .btn-download:active {
+      transform: translateY(1px);
+    }
+
+    .btn-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border-radius: 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--foreground);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-subtle);
+      border-color: #31374a;
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .spec-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+    }
+
+    .spec-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .spec-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .changelog-section {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    .changelog-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .changelog-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.9rem;
+      color: #D1D5DB;
+    }
+
+    .changelog-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 1rem;
+    }
+
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-badge">⚡</div>
+
+    <div class="header">
+      <h1>Atomic Music</h1>
+      <p>Música libre sin anuncios ni rastreo. Busca cualquier canción, crea playlists y reproduce al instante.</p>
+      <div class="pill-version">
+        <span class="dot"></span>
+        v${version} (${shortSha})
+      </div>
+    </div>
+
+    <div class="action-card">
+      <a class="btn-download" href="${downloadUrl}" download="${apkName}">
+        <span>⬇</span> Descargar APK Android
+      </a>
+      <a class="btn-secondary" href="${releasesUrl}" target="_blank" rel="noopener">
+        <span>🐙</span> Ver en GitHub Releases
+      </a>
+    </div>
+
+    <div class="specs-grid">
+      <div class="spec-item">
+        <div class="spec-label">Arquitectura</div>
+        <div class="spec-value">ARM64-v8a</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Requisitos</div>
+        <div class="spec-value">Android 8.0+</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Privacidad</div>
+        <div class="spec-value">100% Sin Rastreo</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Licencia</div>
+        <div class="spec-value">Open Source (GPL-3.0)</div>
+      </div>
+    </div>
+
+    <div class="changelog-section">
+      <div class="changelog-title">
+        <span>✨</span> Novedades recientes
+      </div>
+      ${recentEntries
+        .map(
+          (entry) => `
+        <div class="changelog-item">
+          ${entry.description}
+        </div>
+      `,
+        )
+        .join('')}
+    </div>
+
+    <div class="footer">
+      Desarrollado con ♥ por la comunidad Atomic • <a href="https://github.com/${repo}" target="_blank">GitHub</a>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+const outDir = resolve(rootDir, 'download-page');
+mkdirSync(outDir, { recursive: true });
+writeFileSync(resolve(outDir, 'index.html'), html, 'utf-8');
+console.log(
+  `Generated download landing page at ${resolve(outDir, 'index.html')}`,
+);

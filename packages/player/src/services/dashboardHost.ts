@@ -7,6 +7,7 @@ import {
 } from '@nuclearplayer/plugin-sdk';
 
 import { reportError } from '../utils/logging';
+import { Logger } from './logger';
 import { providersHost } from './providersHost';
 
 type FetchMethod = keyof {
@@ -81,6 +82,9 @@ const createAttributedFetcher =
               items,
             };
           } catch (error) {
+            Logger.dashboard.warn(
+              `Dashboard provider ${provider.name} failed for ${capability}: ${error}`,
+            );
             await reportError('dashboard', {
               userMessage: 'A dashboard provider failed to load data',
               error,

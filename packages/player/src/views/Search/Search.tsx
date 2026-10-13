@@ -58,54 +58,100 @@ const SearchContent: FC<{
   }
 
   const tabsItems = [
-    results?.tracks && {
-      id: 'tracks',
-      label: t('search:results.tracks'),
-      content: (
-        <div className="flex flex-col">
-          <ConnectedTrackTable
-            features={{ playAll: true, addAllToQueue: true }}
-            tracks={results.tracks}
-          />
-        </div>
-      ),
-    },
-    results?.albums && {
-      id: 'albums',
-      label: t('search:results.albums'),
-      content: (
-        <CardGrid>
-          {results.albums.map((item) => (
-            <Card
-              key={item.source.id}
-              title={item.title}
-              src={pickArtwork(item.artwork, 'cover', 300)?.url}
-              onClick={() =>
-                navigate({ to: `/album/${provider.id}/${item.source.id}` })
-              }
+    results?.tracks &&
+      results.tracks.length > 0 && {
+        id: 'tracks',
+        label: t('search:results.tracks'),
+        content: (
+          <div className="flex flex-col">
+            <ConnectedTrackTable
+              features={{ playAll: true, addAllToQueue: true }}
+              tracks={results.tracks}
             />
-          ))}
-        </CardGrid>
-      ),
-    },
-    results?.artists && {
-      id: 'artists',
-      label: t('search:results.artists'),
-      content: (
-        <CardGrid>
-          {results.artists.map((item) => (
-            <Card
-              key={item.source.id}
-              title={item.name}
-              src={pickArtwork(item.artwork, 'cover', 300)?.url}
-              onClick={() =>
-                navigate({ to: `/artist/${provider.id}/${item.source.id}` })
-              }
-            />
-          ))}
-        </CardGrid>
-      ),
-    },
+          </div>
+        ),
+      },
+    results?.playlists &&
+      results.playlists.length > 0 && {
+        id: 'playlists',
+        label: t('search:results.playlists') || 'Playlists',
+        content: (
+          <div className="flex w-full flex-col gap-1">
+            {results.playlists.map((playlist) => {
+              const cover = pickArtwork(playlist.artwork, 'cover', 300);
+              return (
+                <div
+                  key={playlist.source.id}
+                  onClick={() => {
+                    navigate({ to: `/playlists/${playlist.source.id}` });
+                  }}
+                  className="group border-border/20 flex cursor-pointer items-center gap-3.5 rounded-xl border-b px-3 py-2.5 transition-all select-none last:border-b-0 hover:bg-white/5 active:bg-white/10"
+                >
+                  <div className="bg-card border-border/40 relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border shadow-xs">
+                    {cover?.url ? (
+                      <img
+                        src={cover.url}
+                        alt={playlist.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="bg-card text-muted-foreground flex h-full w-full items-center justify-center text-xs font-bold">
+                        PL
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+                    <span className="text-foreground truncate text-sm font-semibold">
+                      {playlist.name}
+                    </span>
+                    <span className="text-muted-foreground truncate text-xs">
+                      Playlist
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ),
+      },
+    results?.albums &&
+      results.albums.length > 0 && {
+        id: 'albums',
+        label: t('search:results.albums'),
+        content: (
+          <CardGrid>
+            {results.albums.map((item) => (
+              <Card
+                key={item.source.id}
+                title={item.title}
+                src={pickArtwork(item.artwork, 'cover', 300)?.url}
+                onClick={() =>
+                  navigate({ to: `/album/${provider.id}/${item.source.id}` })
+                }
+              />
+            ))}
+          </CardGrid>
+        ),
+      },
+    results?.artists &&
+      results.artists.length > 0 && {
+        id: 'artists',
+        label: t('search:results.artists'),
+        content: (
+          <CardGrid>
+            {results.artists.map((item) => (
+              <Card
+                key={item.source.id}
+                title={item.name}
+                src={pickArtwork(item.artwork, 'cover', 300)?.url}
+                onClick={() =>
+                  navigate({ to: `/artist/${provider.id}/${item.source.id}` })
+                }
+              />
+            ))}
+          </CardGrid>
+        ),
+      },
   ].filter(Boolean);
 
   if (tabsItems.length === 0) {

@@ -323,6 +323,9 @@
       "general": "Settings",
       "app": "App"
     },
+    "decorations": {
+      "title": "Player Decorations"
+    },
     "general": {
       "title": "General",
       "language": {

@@ -4,6 +4,8 @@ import { FC, useEffect, useState } from 'react';
 
 import { Dialog, SettingsPanel, usePlatform } from '@nuclearplayer/ui';
 
+import { useNowPlayingModalStore } from '../stores/nowPlayingModalStore';
+import { usePlayerDecorationsStore } from '../stores/playerDecorationsStore';
 import { useSettingsModalStore } from '../stores/settingsModalStore';
 import { SocialLinks } from './SocialLinks';
 import { useSettingsNavigation } from './useSettingsNavigation';
@@ -13,6 +15,10 @@ const SETTINGS_CATEGORIES = [
   { id: 'general', defaultLabel: 'General' },
   { id: 'playback', defaultLabel: 'Playback' },
   { id: 'appearance', defaultLabel: 'Appearance & Themes' },
+  {
+    id: 'decorations',
+    defaultLabel: 'Player Decorations',
+  },
   { id: 'app-plugins', defaultLabel: 'Plugins & Extensions' },
   { id: 'themes', defaultLabel: 'Theme Store' },
   { id: 'integrations', defaultLabel: 'Connectivity & Jam' },
@@ -115,7 +121,15 @@ export const ConnectedSettingsModal: FC = () => {
                   key={item.id}
                   type="button"
                   data-testid={`settings-navigation-item-${item.id}`}
-                  onClick={() => selectItem(item.id)}
+                  onClick={() => {
+                    if (item.id === 'decorations') {
+                      close();
+                      useNowPlayingModalStore.getState().open();
+                      usePlayerDecorationsStore.getState().setEditMode(true);
+                      return;
+                    }
+                    selectItem(item.id);
+                  }}
                   className="hover:bg-card/80 active:bg-card flex w-full items-center justify-between px-4 py-4 text-left transition-all active:scale-[0.99]"
                 >
                   <span className="text-foreground text-base font-medium">

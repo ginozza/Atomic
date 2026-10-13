@@ -449,6 +449,225 @@ const scrapeYoutubeHtml = async (
   }
 };
 
+const searchYouTubeMusic = async (
+  query: string,
+  maxResults: number,
+): Promise<YtdlpSearchResult[]> => {
+  try {
+    const response = await safeFetch(
+      'https://music.youtube.com/youtubei/v1/search',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          Origin: 'https://music.youtube.com',
+          Referer: 'https://music.youtube.com/',
+        },
+        body: JSON.stringify({
+          context: {
+            client: {
+              clientName: 'WEB_REMIX',
+              clientVersion: '1.20240101.01.00',
+            },
+          },
+          query,
+        }),
+        signal: AbortSignal.timeout(6_000),
+      },
+    );
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = await response.json<Record<string, unknown>>();
+    const tabbed = (data?.contents as Record<string, unknown> | undefined)
+      ?.tabbedSearchResultsRenderer as Record<string, unknown> | undefined;
+    const tabs = (tabbed?.tabs as Record<string, unknown>[] | undefined) ?? [];
+    const firstTab = tabs[0]?.tabRenderer as
+      Record<string, unknown> | undefined;
+    const tabContent = firstTab?.content as Record<string, unknown> | undefined;
+    const sectionList = tabContent?.sectionListRenderer as
+      Record<string, unknown> | undefined;
+    const sections =
+      (sectionList?.contents as Record<string, unknown>[] | undefined) ?? [];
+
+    const results: YtdlpSearchResult[] = [];
+    const seenIds = new Set<string>();
+
+    for (const section of sections) {
+      if (results.length >= maxResults) {
+        break;
+      }
+
+      const card = section?.musicCardShelfRenderer as
+        Record<string, unknown> | undefined;
+      if (card) {
+        const titleObj = card.title as Record<string, unknown> | undefined;
+        const titleRuns = titleObj?.runs as
+          Record<string, unknown>[] | undefined;
+        const navEndpoint = titleRuns?.[0]?.navigationEndpoint as
+          Record<string, unknown> | undefined;
+        const watchEndpoint = navEndpoint?.watchEndpoint as
+          Record<string, unknown> | undefined;
+
+        const onTap = card.onTap as Record<string, unknown> | undefined;
+        const onTapWatch = onTap?.watchEndpoint as
+          Record<string, unknown> | undefined;
+
+        const videoId =
+          (watchEndpoint?.videoId as string | undefined) ??
+          (onTapWatch?.videoId as string | undefined);
+
+        if (
+          videoId &&
+          /^[a-zA-Z0-9_-]{11}$/.test(videoId) &&
+          !seenIds.has(videoId)
+        ) {
+          seenIds.add(videoId);
+          const title =
+            (titleRuns?.[0]?.text as string | undefined) ?? 'Unknown';
+
+          let channel: string | null = null;
+          let duration: number | null = null;
+
+          const subtitle = card.subtitle as Record<string, unknown> | undefined;
+          const subtitleRuns =
+            (subtitle?.runs as Record<string, unknown>[] | undefined) ?? [];
+
+          for (const run of subtitleRuns) {
+            const runText = (run?.text as string | undefined)?.trim();
+            if (!runText || runText === '•') {
+              continue;
+            }
+            if (DURATION_REGEX.test(runText)) {
+              duration = parseDurationToSeconds(runText) ?? null;
+            } else if (
+              !channel &&
+              !runText.includes('views') &&
+              !runText.includes('Video') &&
+              !runText.includes('Song')
+            ) {
+              channel = runText;
+            }
+          }
+
+          results.push({
+            id: videoId,
+            title,
+            duration,
+            thumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+            channel,
+          });
+        }
+      }
+
+      const itemSection = section?.itemSectionRenderer as
+        Record<string, unknown> | undefined;
+      const musicShelf = section?.musicShelfRenderer as
+        Record<string, unknown> | undefined;
+      const itemContents =
+        ((itemSection?.contents ?? musicShelf?.contents) as
+          Record<string, unknown>[] | undefined) ?? [];
+
+      for (const item of itemContents) {
+        if (results.length >= maxResults) {
+          break;
+        }
+
+        const renderer = item?.musicResponsiveListItemRenderer as
+          Record<string, unknown> | undefined;
+        if (!renderer) {
+          continue;
+        }
+
+        const overlay = renderer.overlay as Record<string, unknown> | undefined;
+        const overlayContent = (
+          overlay?.musicItemThumbnailOverlayRenderer as
+            Record<string, unknown> | undefined
+        )?.content as Record<string, unknown> | undefined;
+        const playBtn = (
+          overlayContent?.musicPlayButtonRenderer as
+            Record<string, unknown> | undefined
+        )?.playNavigationEndpoint as Record<string, unknown> | undefined;
+
+        const flexColumns =
+          (renderer.flexColumns as Record<string, unknown>[] | undefined) ?? [];
+        const col0 = flexColumns[0]
+          ?.musicResponsiveListItemFlexColumnRenderer as
+          Record<string, unknown> | undefined;
+        const col0Text = col0?.text as Record<string, unknown> | undefined;
+        const col0Runs =
+          (col0Text?.runs as Record<string, unknown>[] | undefined) ?? [];
+        const col0Nav = col0Runs[0]?.navigationEndpoint as
+          Record<string, unknown> | undefined;
+
+        const directNav = renderer.navigationEndpoint as
+          Record<string, unknown> | undefined;
+
+        const videoId =
+          ((playBtn?.watchEndpoint as Record<string, unknown> | undefined)
+            ?.videoId as string | undefined) ??
+          ((col0Nav?.watchEndpoint as Record<string, unknown> | undefined)
+            ?.videoId as string | undefined) ??
+          ((directNav?.watchEndpoint as Record<string, unknown> | undefined)
+            ?.videoId as string | undefined);
+
+        if (
+          videoId &&
+          /^[a-zA-Z0-9_-]{11}$/.test(videoId) &&
+          !seenIds.has(videoId)
+        ) {
+          seenIds.add(videoId);
+          const title = (col0Runs[0]?.text as string | undefined) ?? 'Unknown';
+
+          let channel: string | null = null;
+          let duration: number | null = null;
+
+          const col1 = flexColumns[1]
+            ?.musicResponsiveListItemFlexColumnRenderer as
+            Record<string, unknown> | undefined;
+          const col1Text = col1?.text as Record<string, unknown> | undefined;
+          const col1Runs =
+            (col1Text?.runs as Record<string, unknown>[] | undefined) ?? [];
+
+          for (const run of col1Runs) {
+            const runText = (run?.text as string | undefined)?.trim();
+            if (!runText || runText === '•') {
+              continue;
+            }
+            if (DURATION_REGEX.test(runText)) {
+              duration = parseDurationToSeconds(runText) ?? null;
+            } else if (
+              !channel &&
+              !runText.includes('views') &&
+              !runText.includes('Video') &&
+              !runText.includes('Song')
+            ) {
+              channel = runText;
+            }
+          }
+
+          results.push({
+            id: videoId,
+            title,
+            duration,
+            thumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+            channel,
+          });
+        }
+      }
+    }
+
+    return results;
+  } catch (error) {
+    Logger.streaming.debug(`searchYouTubeMusic failed: ${error}`);
+    return [];
+  }
+};
+
 const httpYoutubeSearch = async (
   query: string,
   maxResults: number,
@@ -504,6 +723,11 @@ const httpYoutubeSearch = async (
     }
   } catch (error) {
     Logger.streaming.error(`httpYoutubeSearch InnerTube failed: ${error}`);
+  }
+
+  const musicResults = await searchYouTubeMusic(query, maxResults);
+  if (musicResults.length > 0) {
+    return musicResults;
   }
 
   const scraped = await scrapeYoutubeHtml(query, maxResults);

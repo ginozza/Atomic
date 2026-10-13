@@ -37,13 +37,38 @@ export const initDiscoveryService = () => {
       .map((item) => item.track);
 
     try {
-      const recommendations = await discoveryHost.getRecommendations(
-        contextTracks,
-        { variety, limit: RECOMMENDATION_LIMIT },
+      const collected: Track[] = [];
+      const seenKeys = new Set(
+        items.map((it) =>
+          `${it.track.artists?.[0]?.name}::${it.track.title}`.toLowerCase(),
+        ),
       );
 
-      if (recommendations.length > 0) {
-        useQueueStore.getState().addToQueue(recommendations);
+      for (let iteration = 0; iteration < 5; iteration++) {
+        const queryContext = [...contextTracks, ...collected];
+        const recommendations = await discoveryHost.getRecommendations(
+          queryContext,
+          { variety, limit: RECOMMENDATION_LIMIT },
+        );
+        if (!recommendations || recommendations.length === 0) {
+          break;
+        }
+        let addedInIteration = false;
+        for (const rec of recommendations) {
+          const key = `${rec.artists?.[0]?.name}::${rec.title}`.toLowerCase();
+          if (!seenKeys.has(key)) {
+            seenKeys.add(key);
+            collected.push(rec);
+            addedInIteration = true;
+          }
+        }
+        if (!addedInIteration || collected.length >= RECOMMENDATION_LIMIT) {
+          break;
+        }
+      }
+
+      if (collected.length > 0) {
+        useQueueStore.getState().addToQueue(collected);
       }
     } catch (error) {
       reportError('discovery', {

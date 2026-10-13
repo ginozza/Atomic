@@ -36,6 +36,7 @@ export const ConnectedTrackTable: FC<ConnectedTrackTableProps> = (props) => {
 
   return (
     <TrackTable
+      variant={restProps.variant ?? 'list'}
       {...restProps}
       labels={labels}
       display={{
@@ -53,11 +54,10 @@ export const ConnectedTrackTable: FC<ConnectedTrackTableProps> = (props) => {
                 (candidate.title === track.title &&
                   candidate.artists?.[0]?.name === track.artists?.[0]?.name),
             );
-            queueActions.clearQueue();
-            queueActions.addToQueue(restProps.tracks);
-            if (trackIndex > 0) {
-              queueActions.goToIndex(trackIndex);
-            }
+            queueActions.loadQueue(
+              restProps.tracks,
+              trackIndex >= 0 ? trackIndex : 0,
+            );
             playbackManager.play();
           } else {
             trackActions.playNow(track);
@@ -68,8 +68,7 @@ export const ConnectedTrackTable: FC<ConnectedTrackTableProps> = (props) => {
         onRemove: externalActions?.onRemove,
         onReorder: externalActions?.onReorder,
         onPlayAll: () => {
-          queueActions.clearQueue();
-          queueActions.addToQueue(restProps.tracks);
+          queueActions.loadQueue(restProps.tracks, 0);
           playbackManager.play();
         },
         onAddAllToQueue: () => {

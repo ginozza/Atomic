@@ -14,12 +14,19 @@ import { useSettingsModalStore } from '../stores/settingsModalStore';
 import { KeyboardShortcuts } from '../views/KeyboardShortcuts';
 import { Logs } from '../views/Logs/Logs';
 import { Plugins } from '../views/Plugins/Plugins';
+import { PlayerDecorationsSettings } from '../views/Settings/PlayerDecorationsSettings';
 import { Settings } from '../views/Settings/Settings';
 import { useSettingsGroups } from '../views/Settings/useSettingsGroups';
 import { Themes } from '../views/Themes/Themes';
 import { WhatsNew } from '../views/WhatsNew';
 
 const APP_TABS = [
+  {
+    id: 'decorations',
+    labelKey: 'decorations.title',
+    icon: <SparklesIcon />,
+    view: <PlayerDecorationsSettings />,
+  },
   {
     id: 'shortcuts',
     labelKey: 'shortcuts.title',

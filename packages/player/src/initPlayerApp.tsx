@@ -10,6 +10,7 @@ import { initDiscordHandler } from './services/discordHandler';
 import { initDiscoveryService } from './services/discoveryService';
 import { initHistoryService } from './services/history';
 import { initHttpApiHandler } from './services/httpApi';
+import { initFetchProxyFallback } from './services/httpHost';
 import {
   applyLanguageFromSettings,
   initLanguageWatcher,
@@ -61,6 +62,7 @@ const startBackgroundTasks = () => {
 export const initPlayerApp = async (
   root: ReturnType<typeof import('react-dom/client').createRoot>,
 ) => {
+  initFetchProxyFallback();
   initLogStream();
 
   // Suppress DOMException/AbortError from interrupted media operations (play(),

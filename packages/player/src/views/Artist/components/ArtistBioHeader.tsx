@@ -51,8 +51,9 @@ export const ArtistBioHeader: FC<ArtistBioHeaderProps> = ({
     return null;
   }
 
-  const cover = pickArtwork(artist.artwork, 'cover', 1200);
-  const avatar = pickArtwork(artist.artwork, 'avatar', 300);
+  const circleImage =
+    pickArtwork(artist.artwork, 'avatar', 300) ||
+    pickArtwork(artist.artwork, 'cover', 1200);
 
   return (
     <div className="border-border surface-card shadow-shadow relative m-4 rounded-md border-(length:--border-width) p-6">
@@ -63,58 +64,47 @@ export const ArtistBioHeader: FC<ArtistBioHeaderProps> = ({
         className="bg-background border-border absolute top-4 right-4 z-10 rounded-md border-(length:--border-width)"
         data-testid="artist-favorite-button"
       />
-      <div className="flex gap-6">
-        <div className="flex flex-1 flex-col gap-4">
-          <div className="flex items-center gap-5">
-            {avatar && (
-              <img
-                className="border-border shadow-shadow h-24 w-24 rounded-full border-(length:--border-width) object-cover"
-                src={avatar.url}
-                alt={`${artist.name} avatar`}
-              />
-            )}
-            <div className="flex flex-col gap-1">
-              <h1 className="font-heading text-5xl font-extrabold tracking-tight">
-                {artist.name}
-              </h1>
-              {artist.disambiguation && (
-                <span className="text-card-foreground/60 text-sm">
-                  {artist.disambiguation}
-                </span>
-              )}
-            </div>
-          </div>
-          {!isEmpty(artist.tags) && (
-            <div className="flex flex-wrap gap-2">
-              {artist.tags?.map((tag) => (
-                <span
-                  key={tag}
-                  className="border-border bg-background rounded-md border px-2 py-0.5 text-sm font-bold"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-          {artist.onTour && (
-            <span className="surface-accent-green border-border inline-flex w-fit rounded-md border px-2 py-0.5 text-sm font-bold">
-              {t('onTour')}
-            </span>
-          )}
-          {artist.bio && (
-            <p className="text-card-foreground/60 line-clamp-5 text-sm leading-relaxed">
-              {stripHtml(artist.bio)}
-            </p>
-          )}
-        </div>
-        {cover && (
-          <div className="w-72 shrink-0 self-stretch">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-5">
+          {circleImage && (
             <img
-              className="border-border shadow-shadow h-full w-full rounded-md border-(length:--border-width) object-cover"
-              src={cover.url}
-              alt={`${artist.name} cover`}
+              className="border-border shadow-shadow h-24 w-24 shrink-0 rounded-full border-(length:--border-width) object-cover"
+              src={circleImage.url}
+              alt={`${artist.name} avatar`}
             />
+          )}
+          <div className="flex min-w-0 flex-col gap-1">
+            <h1 className="font-heading truncate text-3xl font-extrabold tracking-tight sm:text-5xl">
+              {artist.name}
+            </h1>
+            {artist.disambiguation && (
+              <span className="text-card-foreground/60 text-sm">
+                {artist.disambiguation}
+              </span>
+            )}
           </div>
+        </div>
+        {!isEmpty(artist.tags) && (
+          <div className="flex flex-wrap gap-2">
+            {artist.tags?.map((tag) => (
+              <span
+                key={tag}
+                className="border-border bg-background rounded-md border px-2 py-0.5 text-sm font-bold"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {artist.onTour && (
+          <span className="surface-accent-green border-border inline-flex w-fit rounded-md border px-2 py-0.5 text-sm font-bold">
+            {t('onTour')}
+          </span>
+        )}
+        {artist.bio && (
+          <p className="text-card-foreground/60 line-clamp-5 text-sm leading-relaxed">
+            {stripHtml(artist.bio)}
+          </p>
         )}
       </div>
     </div>

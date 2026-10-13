@@ -29,6 +29,7 @@ type QueueStore = Queue & {
   shuffleOrder: number[];
   shufflePosition: number;
   loadFromDisk: () => Promise<void>;
+  loadQueue: (tracks: Track[], startIndex?: number) => void;
   addToQueue: (tracks: Track[]) => void;
   addNext: (tracks: Track[]) => void;
   addAt: (tracks: Track[], index: number) => void;
@@ -186,6 +187,23 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     Logger.queue.info(`Loaded ${resetItems.length} items from disk`);
   },
 
+  loadQueue: withPersistence((tracks: Track[], startIndex = 0) => {
+    const newItems = tracks.map(createQueueItem);
+    const validIndex =
+      startIndex >= 0 && startIndex < newItems.length ? startIndex : 0;
+    useSoundStore.getState().stop();
+    useSoundStore.getState().setSrc(null);
+    set({
+      items: newItems,
+      currentIndex: validIndex,
+      shuffleOrder: [],
+      shufflePosition: -1,
+    });
+    Logger.queue.debug(
+      `Loaded ${tracks.length} tracks to queue at index ${validIndex}`,
+    );
+  }),
+
   addToQueue: withPersistence((tracks: Track[]) => {
     set(
       produce((state: QueueStore) => {
@@ -327,15 +345,20 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       return;
     }
     const { track } = item;
+    const existing = track.streamCandidates ?? [];
+    const hasCandidate = existing.some(
+      (current) => current.id === candidate.id,
+    );
+    const streamCandidates = hasCandidate
+      ? existing.map((current) =>
+          current.id === candidate.id ? candidate : current,
+        )
+      : [...existing, candidate];
+
     get().updateItemState(itemId, {
       track: {
         ...track,
-        streamCandidates: track.streamCandidates?.map((current) => {
-          if (current.id === candidate.id) {
-            return candidate;
-          }
-          return current;
-        }),
+        streamCandidates,
       },
     });
   },

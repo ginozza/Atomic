@@ -23,6 +23,7 @@ import { ReorderLayer } from './ReorderLayer';
 import { TrackTableSkeleton } from './Skeleton/TrackTableSkeleton';
 import { SortableRow } from './SortableRow';
 import { Toolbar } from './Toolbar';
+import { TrackListItem } from './TrackListItem';
 import { TrackTableProvider } from './TrackTableContext';
 import { TrackTableProps } from './types';
 import { DEFAULT_OVERSCAN, DEFAULT_ROW_HEIGHT } from './utils/constants';
@@ -39,8 +40,10 @@ function TrackTableBase<T extends Track = Track>({
   features,
   actions,
   meta,
+  variant = 'table',
   rowHeight = DEFAULT_ROW_HEIGHT,
   overscan = DEFAULT_OVERSCAN,
+  ...props
 }: TrackTableProps<T>) {
   const resolvedFeatures = {
     ...defaultFeatures,
@@ -138,50 +141,91 @@ function TrackTableBase<T extends Track = Track>({
             onDragStart={onDragStart}
             onDragEnd={onDragEnd as (evt: DragEndEvent) => void}
           >
-            <table
-              role="table"
-              className={cn(
-                'border-border relative w-full table-fixed border-(length:--border-width)',
-                classes?.root,
-              )}
-            >
-              {resolvedFeatures?.header && (
-                <thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr
-                      key={headerGroup.id}
-                      role="row"
-                      className="border-border surface-primary border-b-(length:--border-width)"
-                    >
-                      {headerGroup.headers.map((header) =>
-                        flexRender(header.column.columnDef.header, {
-                          ...header.getContext(),
-                          key: header.id,
-                        }),
+            {variant === 'list' ? (
+              <div
+                role="table"
+                aria-label={props['aria-label'] || 'Tracks'}
+                className={cn('flex w-full flex-col gap-1', classes?.root)}
+              >
+                {rows.map((row) => {
+                  const track = row.original;
+                  const itemId = getItemId(track, row.index);
+                  const isCurrent = Boolean(
+                    meta?.activeTrackId &&
+                    (itemId === meta.activeTrackId ||
+                      ('id' in track &&
+                        (track as { id?: unknown }).id ===
+                          meta.activeTrackId) ||
+                      track.source?.id === meta.activeTrackId),
+                  );
+                  return (
+                    <TrackListItem
+                      key={itemId}
+                      track={track}
+                      index={row.index}
+                      itemId={itemId}
+                      isReorderable={isReorderable}
+                      isCurrent={isCurrent}
+                      isLoading={Boolean(meta?.isLoading)}
+                      isFavorite={Boolean(meta?.isTrackFavorite?.(track))}
+                      displayDeleteButton={Boolean(
+                        resolvedDisplay.displayDeleteButton,
                       )}
-                    </tr>
-                  ))}
-                </thead>
-              )}
-              <VirtualizedBody
-                rows={rows}
-                virtualItems={virtualItems}
-                paddingTop={paddingTop}
-                paddingBottom={paddingBottom}
-                colSpan={colCount}
-                rowHeight={rowHeight}
-                renderRow={({ row, virtual }) => (
-                  <SortableRow
-                    key={getItemId(row.original, row.index)}
-                    row={row}
-                    itemId={getItemId(row.original, row.index)}
-                    style={{ height: rowHeight }}
-                    isReorderable={isReorderable}
-                    data-index={virtual.index}
-                  />
+                      displayFavorite={Boolean(resolvedDisplay.displayFavorite)}
+                      displayDuration={Boolean(resolvedDisplay.displayDuration)}
+                      labels={labels}
+                      actions={actions}
+                      ContextMenuWrapper={meta?.ContextMenuWrapper}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <table
+                role="table"
+                className={cn(
+                  'border-border relative w-full table-fixed border-(length:--border-width)',
+                  classes?.root,
                 )}
-              />
-            </table>
+              >
+                {resolvedFeatures?.header && (
+                  <thead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr
+                        key={headerGroup.id}
+                        role="row"
+                        className="border-border surface-primary border-b-(length:--border-width)"
+                      >
+                        {headerGroup.headers.map((header) =>
+                          flexRender(header.column.columnDef.header, {
+                            ...header.getContext(),
+                            key: header.id,
+                          }),
+                        )}
+                      </tr>
+                    ))}
+                  </thead>
+                )}
+                <VirtualizedBody
+                  rows={rows}
+                  virtualItems={virtualItems}
+                  paddingTop={paddingTop}
+                  paddingBottom={paddingBottom}
+                  colSpan={colCount}
+                  rowHeight={rowHeight}
+                  renderRow={({ row, virtual }) => (
+                    <SortableRow
+                      key={getItemId(row.original, row.index)}
+                      row={row}
+                      itemId={getItemId(row.original, row.index)}
+                      style={{ height: rowHeight }}
+                      isReorderable={isReorderable}
+                      data-index={virtual.index}
+                    />
+                  )}
+                />
+              </table>
+            )}
           </ReorderLayer>
         </ScrollableArea>
       </div>

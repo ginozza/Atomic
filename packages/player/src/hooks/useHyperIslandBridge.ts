@@ -34,6 +34,7 @@ export const useHyperIslandBridge = () => {
     id?: string;
     isPlaying?: boolean;
     posSec?: number;
+    durationSec?: number;
     timestamp?: number;
   }>({});
 
@@ -84,12 +85,26 @@ export const useHyperIslandBridge = () => {
         ? `https://i.ytimg.com/vi/${track.source.id}/hq720.jpg`
         : undefined;
     const coverUrl = artwork?.url || youtubeCoverUrl || '';
+
+    const effectiveDuration =
+      duration > 0
+        ? duration
+        : track.durationMs && track.durationMs > 0
+          ? track.durationMs / 1000
+          : 0;
+
     const posSec = Math.floor(seek);
+    const durationSec = Math.floor(effectiveDuration);
 
     const prev = lastNotifiedRef.current;
     const now = Date.now();
     const trackChanged = prev.id !== currentItem?.id;
     const playStateChanged = prev.isPlaying !== isPlaying;
+    const durationChanged =
+      durationSec > 0 &&
+      (prev.durationSec === undefined ||
+        prev.durationSec === 0 ||
+        Math.abs(durationSec - prev.durationSec) > 1);
 
     if (trackChanged && !isPlaying) {
       return;
@@ -99,18 +114,20 @@ export const useHyperIslandBridge = () => {
       !trackChanged && prev.posSec !== undefined && prev.timestamp
         ? (now - prev.timestamp) / 1000
         : 0;
-    const isManualSeek =
+    const isDriftOrSeek =
       !trackChanged &&
       prev.posSec !== undefined &&
-      Math.abs(posSec - prev.posSec - timeDeltaSec) > 3;
+      Math.abs(posSec - prev.posSec - timeDeltaSec) > 2;
 
-    const shouldUpdate = trackChanged || playStateChanged || isManualSeek;
+    const shouldUpdate =
+      trackChanged || playStateChanged || isDriftOrSeek || durationChanged;
 
     if (shouldUpdate) {
       lastNotifiedRef.current = {
         id: currentItem?.id,
         isPlaying,
         posSec,
+        durationSec,
         timestamp: now,
       };
 
@@ -121,7 +138,7 @@ export const useHyperIslandBridge = () => {
           coverUrl,
           isPlaying,
           Math.round(seek * 1000),
-          Math.round(duration * 1000),
+          Math.round(effectiveDuration * 1000),
         );
       } catch (error) {
         console.error(
@@ -158,9 +175,19 @@ export const useHyperIslandBridge = () => {
       }
     };
 
+    const handleSeek = (event: Event) => {
+      const customEvent = event as CustomEvent<{ position: number }>;
+      const position = customEvent.detail?.position;
+      if (typeof position === 'number' && !Number.isNaN(position)) {
+        useSoundStore.getState().seekTo(position);
+      }
+    };
+
     window.addEventListener('nuclear:hyperisland:action', handleAction);
+    window.addEventListener('nuclear:hyperisland:seek', handleSeek);
     return () => {
       window.removeEventListener('nuclear:hyperisland:action', handleAction);
+      window.removeEventListener('nuclear:hyperisland:seek', handleSeek);
     };
   }, []);
 };
