@@ -348,7 +348,7 @@ export const ConnectedNowPlayingModal: FC = () => {
           className={cn(
             'bg-foreground text-background flex h-16 w-16 items-center justify-center rounded-full shadow-xl transition-transform active:scale-90',
             isLoading &&
-              'surface-toxic-shimmer overflow-hidden text-black shadow-none',
+              'surface-toxic-shimmer overflow-hidden !border-none text-black !shadow-none ring-0',
           )}
           aria-label={isLoading ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
           aria-busy={isLoading ? 'true' : undefined}

@@ -96,7 +96,7 @@ export const PlayerBarControls: FC<PlayerBarControlsProps> = ({
       aria-label={isLoading ? 'Loading' : undefined}
       className={cn(
         isLoading &&
-          'surface-toxic-shimmer overflow-hidden text-black shadow-none',
+          'surface-toxic-shimmer overflow-hidden !border-none text-black !shadow-none ring-0',
       )}
     >
       {isPlaying && !isLoading ? (

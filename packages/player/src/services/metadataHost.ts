@@ -166,6 +166,18 @@ export const createMetadataHost = (): MetadataHost => {
         Logger.metadata.error(
           `Search failed for provider "${provider.name}" and query "${params.query}": ${errorMessage(error)}`,
         );
+        const alternateProviders = (
+          providersHost.list('metadata') as MetadataProvider[]
+        ).filter((candidate) => candidate.id !== provider.id);
+
+        for (const fallback of alternateProviders) {
+          try {
+            return await executeMetadataSearch(fallback, params);
+          } catch {
+            continue;
+          }
+        }
+
         throw error;
       }
     },

@@ -141,8 +141,9 @@ class NuclearMediaService : Service() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
-        if (!MainActivity.isMediaPlaying && !MainActivity.isMediaActive) {
+        if (MainActivity.instance == null || (!MainActivity.isMediaPlaying && !MainActivity.isMediaActive)) {
             stopSelf()
+            HyperIslandNotificationManager.cancel(this)
         }
     }
 

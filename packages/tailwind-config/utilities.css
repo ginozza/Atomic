@@ -269,7 +269,9 @@
 @utility surface-toxic-shimmer {
     position: relative;
     overflow: hidden;
-    box-shadow: none;
+    box-shadow: none !important;
+    filter: none !important;
+    outline: none !important;
     background: linear-gradient(
         110deg,
         color-mix(in srgb, var(--primary, #00FFA3) 25%, transparent) 0%,

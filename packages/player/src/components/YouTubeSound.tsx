@@ -168,6 +168,10 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
             disablekb: 1,
             fs: 0,
             rel: 0,
+            origin:
+              typeof window !== 'undefined'
+                ? window.location.origin
+                : undefined,
           },
           events: {
             onReady: (event: { target: YTPlayer }) => {
@@ -188,7 +192,6 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
               if (statusRef.current === 'playing') {
                 event.target.playVideo();
               }
-              onCanPlay?.();
             },
             onStateChange: (event: { data: number }) => {
               if (event.data === 1) {
@@ -376,7 +379,7 @@ export const YouTubeSound: FC<YouTubeSoundProps> = ({
   return (
     <div
       ref={wrapperRef}
-      className="pointer-events-none fixed right-0 bottom-0 z-0 h-1 w-1 overflow-hidden opacity-0"
+      className="pointer-events-none fixed -top-[9999px] -left-[9999px] z-[-1] h-48 w-72 overflow-hidden"
     />
   );
 };

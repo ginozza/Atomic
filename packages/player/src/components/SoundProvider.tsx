@@ -171,12 +171,12 @@ export const SoundProvider: FC<PropsWithChildren> = ({ children }) => {
   }, [source, clearWatchdog]);
 
   const handleCanPlay = useCallback(() => {
-    clearWatchdog();
     if (useSoundStore.getState().src !== source) {
       return;
     }
     const currentItem = useQueueStore.getState().getCurrentItem();
-    if (currentItem) {
+    if (currentItem && useSoundStore.getState().seek > 0) {
+      clearWatchdog();
       useQueueStore
         .getState()
         .updateItemState(currentItem.id, { status: 'success' });

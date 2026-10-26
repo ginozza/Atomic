@@ -54,6 +54,7 @@ class MainActivity : TauriActivity() {
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.domStorageEnabled = true
         webView.settings.javaScriptEnabled = true
+        webView.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         webView.addJavascriptInterface(NuclearBridge(), "NuclearAndroid")
     }
 
